@@ -25,6 +25,7 @@
     wget
     htop
     tree
+    tmux
     pciutils
     wl-clipboard
   ];
