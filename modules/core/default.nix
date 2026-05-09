@@ -27,7 +27,6 @@
     tree
     tmux
     pciutils
-    wl-clipboard
   ];
 
   # Allow unfree packages (needed for nvidia)
