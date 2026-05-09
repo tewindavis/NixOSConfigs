@@ -12,4 +12,12 @@
     nerd-fonts.zed-mono
     noto-fonts-color-emoji
   ];
+
+  # Stand alone programs I don't want to mess with much
+  environment.systemPackages = with pkgs; [
+    brave
+    libva-utils # for checking hardware acceleration
+  ];
+
+
 }
