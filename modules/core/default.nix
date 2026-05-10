@@ -37,4 +37,10 @@
   networking.networkmanager.enable = true;
   
   system.stateVersion = "25.11";
+
+  # start up the ssh agent
+  programs.ssh = {
+    startAgent = true;
+  };      
+
 }
