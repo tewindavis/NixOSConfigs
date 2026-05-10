@@ -61,14 +61,6 @@ in
     pkgs.waybar
     pkgs.dunst
   ];
-  
-  # Bind ghostty in hyprland
-  wayland.windowManager.hyprland.settings = {
-    bind = [
-      "SUPER, T, exec, ${ghostty}/bin/ghostty"
-      "SUPER, Return, exec, ${ghostty}/bin/ghostty"
-    ];
-  };
-
+ 
 }
 
