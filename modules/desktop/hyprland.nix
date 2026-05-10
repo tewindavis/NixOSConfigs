@@ -2,7 +2,8 @@
 
 let
   # Extract the ghostty binary path for convenience
-  ghostty = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  ghosttyPkg = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  ghosttyBin = "${ghosttyPkg}/bin/ghostty";
 in
 {
   # Enable hyprland flake
@@ -10,6 +11,28 @@ in
     enable = true;
     package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
     xwayland.enable = true;
+  
+    settings = {
+      bind = [
+        "SUPER, T, exec, ${ghosttyBin}"
+        "SUPER, Return, exec, ${ghosttyBin}"
+        "SUPER_SHIFT, E, exit" # exit hyprland
+        "SUPER, X, killactive"
+      ];
+
+      # Basic window behavior
+      input = {
+        kb_layout = "us";
+        follow_mouse = 1;
+      };
+
+      # Ensure spice-vdagent starts for clipboard functionality
+      exec-once = [
+        "spice-vdagent"
+      ];
+    };
+
+
   };
   
   # Wayland hardware-specific environment variables
@@ -23,7 +46,7 @@ in
     NIXOS_OZONE_WL = "1";
 
     # Default programs
-    TERMINAL = "ghostty";
+    TERMINAL = ghosttyBin;
   };
 
   # Screensharing and Portal
@@ -33,9 +56,7 @@ in
 
   # UI Survival Kit
   environment.systemPackages = [
-    # Pull Ghostty directly from flake
-    inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
-
+    ghosttyPkg
     pkgs.wofi
     pkgs.waybar
     pkgs.dunst
