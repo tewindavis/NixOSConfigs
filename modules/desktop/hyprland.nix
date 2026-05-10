@@ -1,6 +1,9 @@
 { inputs, pkgs, ...}:
 
-
+let
+  # Extract the ghostty binary path for convenience
+  ghostty = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default;
+in
 {
   # Enable hyprland flake
   programs.hyprland = {
@@ -37,5 +40,13 @@
     pkgs.waybar
     pkgs.dunst
   ];
+  
+  # Bind ghostty in hyprland
+  wayland.windowManager.hyprland.settings = {
+    bind = [
+      "SUPER, T, exec, ${ghostty}/bin/ghostty"
+      "SUPER, Return, exec, ${ghostty}/bin/ghostty"
+  }
+
 }
 
