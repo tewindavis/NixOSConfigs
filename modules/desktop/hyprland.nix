@@ -46,7 +46,8 @@ in
     bind = [
       "SUPER, T, exec, ${ghostty}/bin/ghostty"
       "SUPER, Return, exec, ${ghostty}/bin/ghostty"
-  }
+    ];
+  };
 
 }
 
