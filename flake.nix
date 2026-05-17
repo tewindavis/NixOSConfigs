@@ -23,6 +23,7 @@
          ./hosts/framework/configuration.nix
          hyprland.nixosModules.default
        ];
+     };
     };
   };
 }
