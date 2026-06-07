@@ -54,7 +54,7 @@ The `modules/dev/` directory contains task-specific configurations. For example,
     *   **Julia:** `julia` programming language.
     *   **C/C++:** `gcc`, `gnumake`, `cmake`, and `gdb`.
     *   **Python:** Python 3 with `pip`, `virtualenv`, and formatting tools (`black`, `isort`).
-*   **Modern CLI:** `gemini-cli` (AI Agent), `ripgrep`, `fd`, `bat`, `eza`, `zoxide`, `fzf`, and `bottom`.
+*   **Modern CLI:** `gemini-cli` (AI Agent), `starship` (custom prompt), `ripgrep`, `fd`, `bat`, `eza`, `zoxide`, `fzf`, and `bottom`.
 *   **Workflow:** `direnv` with `nix-direnv` for automatic, zero-latency flake environment loading.
 *   **Core Tools:** Git, Vim, Tmux, Htop, Curl, Wget.
 *   **Security:** Mullvad VPN (daemon + GUI), Proton VPN (CLI + GUI), SSH Agent enabled by default.

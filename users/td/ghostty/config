@@ -5,5 +5,15 @@ theme = catppuccin-mocha
 background-opacity = 0.8
 background-blur = true
 
+# Slick Window & UI
 window-decoration = false
 confirm-close-surface = false
+cursor-style = block
+cursor-style-blink = true
+
+# Tasteful overrides for the "vibes"
+# Bright pink and yellow accents
+palette = 5=#f5c2e7
+palette = 13=#f5c2e7
+palette = 3=#f9e2af
+palette = 11=#f9e2af

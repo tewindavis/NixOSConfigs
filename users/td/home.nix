@@ -327,6 +327,35 @@ in
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
 
+  # Starship Prompt (The "Slick" Prompt)
+  programs.starship = {
+    enable = true;
+    enableBashIntegration = true;
+    settings = {
+      add_newline = true;
+      character = {
+        success_symbol = "[󰄛](bold pink) "; # Cute pink cat/ghost symbol
+        error_symbol = "[󰄛](bold red) ";
+      };
+      directory = {
+        style = "bold yellow";
+        truncation_length = 3;
+        truncation_symbol = "…/";
+      };
+      git_branch = {
+        symbol = " ";
+        style = "bold pink";
+      };
+      git_status = {
+        style = "bold yellow";
+      };
+      # Other modules
+      python = { symbol = " "; style = "bold blue"; };
+      rust = { symbol = " "; style = "bold red"; };
+      nix_shell = { symbol = " "; style = "bold blue"; };
+    };
+  };
+
   # Default Browser / Mime Apps
   xdg.mimeApps = {
     enable = true;
