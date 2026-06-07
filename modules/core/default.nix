@@ -27,6 +27,10 @@
   services.openssh.enable = true;
   networking.networkmanager.enable = true;
 
+  # Keyboard
+  services.xserver.xkb.options = "ctrl:nocaps";
+  console.useXkbConfig = true;
+
   # Hardware/Firmware
   hardware.enableRedistributableFirmware = true;
 
