@@ -12,26 +12,26 @@ in
   home.stateVersion = "25.11";
 
   # User specific packages
-  home.packages = with pkgs; [
+  home.packages = [
     # Modern CLI
-    ripgrep
-    bat
-    eza
-    fd
-    bottom
+    pkgs.ripgrep
+    pkgs.bat
+    pkgs.eza
+    pkgs.fd
+    pkgs.bottom
     
     # Languages & Toolchains
-    rustup
-    rustlings
-    julia
-    octave
-    lua
-    gcc
-    gnumake
-    cmake
+    pkgs.rustup
+    pkgs.rustlings
+    pkgs.julia
+    pkgs.octave
+    pkgs.lua
+    pkgs.gcc
+    pkgs.gnumake
+    pkgs.cmake
     
     # Python (Base)
-    (python3.withPackages (ps: with ps; [
+    (pkgs.python3.withPackages (ps: with ps; [
       pip
       virtualenv
       ipython 
@@ -41,46 +41,22 @@ in
     ]))
 
     # UI Survival Kit
-    ghostty
-    wofi
-    waybar
-    dunst
-    libva-utils
-    brave
-    networkmanagerapplet
-    pavucontrol 
-    brightnessctl
-    ];
-
-    # Theming Packages
-    catppuccin-gtk
-    catppuccin-kvantum
-    catppuccin-cursors.mochaDark
-    catppuccin-papirus-folders
+    pkgs.ghostty
+    pkgs.wofi
+    pkgs.waybar
+    pkgs.dunst
+    pkgs.libva-utils
+    pkgs.brave
+    pkgs.networkmanagerapplet
+    pkgs.pavucontrol 
+    pkgs.brightnessctl
   ];
 
   # GTK Theming
   gtk = {
     enable = true;
     theme = {
-      name = "catppuccin-mocha-blue-standard";
-      package = pkgs.catppuccin-gtk.override {
-        accents = [ "blue" ];
-        size = "standard";
-        tweaks = [ "rimless" ];
-        variant = "mocha";
-      };
-    };
-    iconTheme = {
-      name = "Papirus-Dark";
-      package = pkgs.catppuccin-papirus-folders.override {
-        accent = "blue";
-        flavor = "mocha";
-      };
-    };
-    cursorTheme = {
-      name = "catppuccin-mocha-dark-cursors";
-      package = pkgs.catppuccin-cursors.mochaDark;
+      name = "Adwaita-dark";
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
@@ -151,20 +127,20 @@ in
         "SUPER_SHIFT, 7, movetoworkspace, 7"
         "SUPER_SHIFT, 8, movetoworkspace, 8"
         "SUPER_SHIFT, 9, movetoworkspace, 9"
-        ];
+      ];
 
-        # Media Keys
-        bindel = [
+      # Media Keys
+      bindel = [
         ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
         ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
         ", XF86MonBrightnessUp, exec, brightnessctl set 5%+"
         ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
-        ];
+      ];
 
-        bindl = [
+      bindl = [
         ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
         ", XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
-        ];
+      ];
 
         # Input Configuration
 
