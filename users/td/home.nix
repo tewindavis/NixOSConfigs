@@ -238,8 +238,8 @@ in
 
       decoration = {
         rounding = 6;
-        active_opacity = 0.7;
-        inactive_opacity = 0.4;
+        active_opacity = 0.15;
+        inactive_opacity = 0.1;
         blur = {
           enabled = true;
           size = 1;
@@ -274,7 +274,6 @@ in
       ];
 
       windowrule = [
-        "opacity 0.9 0.7, match:class ^(ghostty)$"
         "no_blur 0, match:class ^(ghostty)$"
       ];
     };
