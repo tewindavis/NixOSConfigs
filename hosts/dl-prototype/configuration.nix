@@ -3,19 +3,21 @@
 {
   imports =
     [ 
-      ./hardware-configuration.nix
+      ./hardware-configuration.nix # You'll need to generate this on the machine
       ../../modules/desktop
       ../../modules/core
-      ../../modules/hardware/framework.nix
+      ../../modules/hardware/nvidia.nix
       ../../modules/hardware/bluetooth.nix
       ../../modules/services/vpn.nix
+      ../../modules/dev/rl-binary.nix
       ../../users/td/nixos.nix
     ];
 
-  networking.hostName = "framework";
+  # CPU optimizations for Threadripper
+  hardware.cpu.amd.updateMicrocode = true;
+  powerManagement.cpuFreqGovernor = "performance";
 
-  # Enable touchpad support for the laptop
-  services.libinput.enable = true;
+  networking.hostName = "dl-prototype";
 
   # Standard bootloader
   boot.loader.systemd-boot.enable = true;

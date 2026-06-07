@@ -8,15 +8,6 @@
   time.timeZone = "America/Chicago";
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # User Account
-  users.users.td = {
-    isNormalUser = true;
-    description = "td";
-    extraGroups = [ "networkmanager" "wheel" "video" ];
-    # Use a basic shell for now
-    shell = pkgs.bash;
-  };
-
   # System-wide packages
   environment.systemPackages = with pkgs; [
     git
@@ -29,18 +20,18 @@
     pciutils
   ];
 
-  # Allow unfree packages (needed for nvidia)
+  # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   # Essential System Services
-  services.openssh.enable = true; # so we can SSH in if the display dies
+  services.openssh.enable = true;
   networking.networkmanager.enable = true;
+
+  # Hardware/Firmware
+  hardware.enableRedistributableFirmware = true;
   
   system.stateVersion = "25.11";
 
-  # start up the ssh agent
-  programs.ssh = {
-    startAgent = true;
-  };      
-
+  # SSH Agent
+  programs.ssh.startAgent = true;
 }
