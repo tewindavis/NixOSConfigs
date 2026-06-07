@@ -43,7 +43,7 @@ The `modules/dev/` directory contains task-specific configurations. For example,
 
 ## 🛠️ Key Functionalities Installed
 
-*   **Desktop:** Hyprland (Wayland) with a survival kit including Ghostty, Waybar, Wofi, Dunst, and Thunar.
+*   **Desktop:** Hyprland (Wayland) with a survival kit including Ghostty (riced/transparent), Waybar, Wofi, Dunst, and Thunar.
 *   **Editor:** Neovim with **LazyVim** framework.
     *   **Features:** Automated LSP management, syntax highlighting (Treesitter), and IDE-like UI.
     *   **Bundled LSPs:** `rust-analyzer` (Rust), `zls` (Zig), `nil` (Nix), `pyright`/`ruff` (Python), and more.

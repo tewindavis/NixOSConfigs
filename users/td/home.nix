@@ -189,6 +189,12 @@ in
         "hypridle"
         "waybar" # Start the status bar
       ];
+
+      # Window Rules
+      windowrulev2 = [
+        "opacity 0.9 0.8, class:^(ghostty)$" # Standard opacity
+        "blur, class:^(ghostty)$"            # Force blur
+      ];
     };
   };
 
@@ -203,6 +209,11 @@ in
   # Wofi Config Link
   xdg.configFile."wofi/style.css" = {
     source = ./wofi/style.css;
+  };
+
+  # Ghostty Config Link
+  xdg.configFile."ghostty/config" = {
+    source = ./ghostty/config;
   };
 
   # Lock Screen Config
