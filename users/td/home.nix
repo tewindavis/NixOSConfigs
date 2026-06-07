@@ -197,8 +197,8 @@ in
         rounding = 6;
         blur = {
           enabled = true;
-          size = 2;
-          passes = 1; # Very mild blur for 'pane of glass' look
+          size = 1;
+          passes = 1; # Absolute minimum blur for near-clear glass look
         };
       };
 
