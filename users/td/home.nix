@@ -182,7 +182,7 @@ in
         gaps_in = 5;
         gaps_out = 10;
         border_size = 2;
-        "col.active_border" = "rgba(f78fb3ee) rgba(f9d806ee) 45deg"; # Vibrant Pink & Yellow
+        "col.active_border" = "rgba(7aa2f7ee) rgba(9ece6aee) 45deg"; # Blue & Green
         "col.inactive_border" = "rgba(1a1a20aa)";
         layout = "dwindle";
       };
@@ -258,41 +258,41 @@ in
     enableBashIntegration = true;
     settings = {
       add_newline = true;
-      # Multi-line Powerline format (Zero Spaces between segments to prevent gaps)
-      format = ''[](#f78fb3)$username$hostname[](bg:#f9d806 fg:#f78fb3)$directory[](fg:#f9d806)$git_branch$git_status
+      # Multi-line Powerline format (Complementary Palette: Blue -> Green -> Orange)
+      format = ''[](#7aa2f7)$username$hostname[](bg:#9ece6a fg:#7aa2f7)$directory[](fg:#9ece6a)$git_branch$git_status
 $character'';
       
       username = {
         show_always = true;
-        style_user = "bg:#f78fb3 fg:#0a0a0f bold";
+        style_user = "bg:#7aa2f7 fg:#0a0a0f bold";
         format = "[$user]($style)";
       };
       
       hostname = {
         ssh_only = false;
-        style = "bg:#f78fb3 fg:#0a0a0f bold";
+        style = "bg:#7aa2f7 fg:#0a0a0f bold";
         format = "[@$hostname]($style)";
       };
       
       directory = {
-        style = "bg:#f9d806 fg:#0a0a0f bold";
+        style = "bg:#9ece6a fg:#0a0a0f bold";
         truncation_length = 3;
-        format = "[$path]($style)"; # Removed leading space
+        format = "[$path]($style)";
       };
       
       git_branch = {
         symbol = " ";
-        style = "bold #f78fb3"; # Vibrant Pink
+        style = "bold #ff9e64"; # Tokyo Night Orange
         format = " [$symbol$branch]($style)";
       };
 
       git_status = {
-        style = "bold #f9d806"; # Vibrant Yellow
+        style = "bold #ff9e64";
         format = "([\\[$all_status$ahead_behind\\]]($style))";
       };
 
       character = {
-        success_symbol = "[❯](bold #f78fb3) ";
+        success_symbol = "[❯](bold #ff9e64) ";
         error_symbol = "[❯](bold red) ";
       };
 
