@@ -261,11 +261,8 @@ in
     enableBashIntegration = true;
     settings = {
       add_newline = true;
-      # Multi-line Powerline format
-      # Line 1: [Username][Hostname][Directory][Git]
-      # Line 2: Character
-      format = ''
-[](#f5c2e7)$username$hostname[](bg:#f9e2af fg:#f5c2e7)$directory[](fg:#f9e2af)$git_branch$git_status
+      # Multi-line Powerline format (Zero Spaces between segments to prevent gaps)
+      format = ''[](#f5c2e7)$username$hostname[](bg:#f9e2af fg:#f5c2e7)$directory[](fg:#f9e2af)$git_branch$git_status
 $character'';
       
       username = {
@@ -283,7 +280,7 @@ $character'';
       directory = {
         style = "bg:#f9e2af fg:#1e1e2e bold";
         truncation_length = 3;
-        format = " [$path]($style)";
+        format = "[$path]($style)"; # Removed leading space
       };
       
       git_branch = {
