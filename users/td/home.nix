@@ -274,7 +274,7 @@ $character'';
       hostname = {
         ssh_only = false;
         style = "bg:#f5c2e7 fg:#1e1e2e bold";
-        format = "@[$hostname]($style)";
+        format = "[@$hostname]($style)";
       };
       
       directory = {
