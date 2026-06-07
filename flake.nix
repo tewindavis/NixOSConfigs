@@ -29,12 +29,11 @@
          }
        ];
      };
-     ...
-     dl-prototype = nixpkgs.lib.nixosSystem {
+     framework = nixpkgs.lib.nixosSystem {
        system = "x86_64-linux";
        specialArgs = {inherit inputs;};
        modules = [
-         ./hosts/dl-prototype/configuration.nix
+         ./hosts/framework/configuration.nix
          hyprland.nixosModules.default
          home-manager.nixosModules.home-manager
          {
@@ -46,7 +45,6 @@
          }
        ];
      };
-
      dl-prototype = nixpkgs.lib.nixosSystem {
        system = "x86_64-linux";
        specialArgs = {inherit inputs;};
@@ -55,6 +53,7 @@
          hyprland.nixosModules.default
          home-manager.nixosModules.home-manager
          {
+           nixpkgs.config.allowUnfree = true;
            home-manager.useGlobalPkgs = true;
            home-manager.useUserPackages = true;
            home-manager.extraSpecialArgs = { inherit inputs; };
