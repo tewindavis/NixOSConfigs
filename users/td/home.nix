@@ -68,6 +68,7 @@ in
     libva-utils
     brave
     networkmanagerapplet
+    pavucontrol # Audio control GUI
   ];
 
   # Hyprland User Config
@@ -158,11 +159,27 @@ in
         rounding = 10;
         blur = {
           enabled = true;
-          size = 3;
-          passes = 1;
+          size = 6;
+          passes = 2;
+          new_optimizations = true;
         };
-        # Shadow removed in newer Hyprland versions or renamed, 
-        # using safe modern defaults.
+        drop_shadow = true;
+        shadow_range = 4;
+        shadow_render_power = 3;
+        "col.shadow" = "rgba(1a1a1aee)";
+      };
+
+      animations = {
+        enabled = true;
+        bezier = "myBezier, 0.05, 0.9, 0.1, 1.05";
+        animation = [
+          "windows, 1, 7, myBezier"
+          "windowsOut, 1, 7, default, popin 80%"
+          "border, 1, 10, default"
+          "bordercycle, 1, 8, default"
+          "fade, 1, 7, default"
+          "workspaces, 1, 6, default"
+        ];
       };
 
       # Hardware-specific but safe defaults
@@ -170,8 +187,22 @@ in
         "spice-vdagent" # Safe to keep here, only does something if spice is present
         "nm-applet --indicator" # WiFi tray icon
         "hypridle"
+        "waybar" # Start the status bar
       ];
     };
+  };
+
+  # Waybar Config Link
+  xdg.configFile."waybar/config" = {
+    source = ./waybar/config.jsonc;
+  };
+  xdg.configFile."waybar/style.css" = {
+    source = ./waybar/style.css;
+  };
+  
+  # Wofi Config Link
+  xdg.configFile."wofi/style.css" = {
+    source = ./wofi/style.css;
   };
 
   # Lock Screen Config
