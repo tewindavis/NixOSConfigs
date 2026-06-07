@@ -50,6 +50,8 @@ in
     pkgs.networkmanagerapplet
     pkgs.pavucontrol 
     pkgs.brightnessctl
+    pkgs.hyprpaper # Wallpaper engine
+    ];
 
     # Fonts
     pkgs.inter
@@ -119,6 +121,7 @@ in
         "SUPER, E, exec, thunar"
         "SUPER, Space, exec, wofi --show drun"
         "SUPER, L, exec, hyprlock"
+        "SUPER, W, exec, cycle-wallpaper"
         "SUPER_SHIFT, E, exit"
         "SUPER, X, killactive"
 
@@ -188,7 +191,7 @@ in
       };
 
       misc = {
-        force_default_wallpaper = 2;
+        force_default_wallpaper = 0;
       };
 
       decoration = {
@@ -218,6 +221,8 @@ in
         "nm-applet --indicator"
         "hypridle"
         "waybar"
+        "hyprpaper"
+        "cycle-wallpaper"
         "gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
         "gsettings set org.gnome.desktop.interface gtk-theme 'Tokyonight-Dark'"
       ];
@@ -226,6 +231,31 @@ in
         "opacity 0.9 0.8, match:class ^(ghostty)$"
         "no_blur 0, match:class ^(ghostty)$"
       ];
+    };
+  };
+
+  # Wallpaper Cycling Script
+  home.file.".local/bin/cycle-wallpaper" = {
+    executable = true;
+    text = ''
+      #!/bin/bash
+      WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
+      mkdir -p "$WALLPAPER_DIR"
+      RANDOM_WALL=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \) | shuf -n 1)
+      if [ -n "$RANDOM_WALL" ]; then
+        hyprctl hyprpaper unload all
+        hyprctl hyprpaper preload "$RANDOM_WALL"
+        hyprctl hyprpaper wallpaper ",$RANDOM_WALL"
+      fi
+    '';
+  };
+
+  # hyprpaper Config
+  services.hyprpaper = {
+    enable = true;
+    settings = {
+      ipc = "on";
+      splash = false;
     };
   };
 
