@@ -63,7 +63,6 @@ in
     pkgs.bottom
     
     # Languages & Toolchains
-    pkgs.rustup
     pkgs.cargo
     pkgs.rustc
     pkgs.rustlings
