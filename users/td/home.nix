@@ -50,6 +50,9 @@ in
     pkgs.networkmanagerapplet
     pkgs.pavucontrol 
     pkgs.brightnessctl
+
+    # Fonts
+    pkgs.inter
   ];
 
   # GTK Theming
@@ -57,6 +60,10 @@ in
     enable = true;
     theme = {
       name = "Adwaita-dark";
+    };
+    font = {
+      name = "Inter";
+      size = 10;
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
@@ -73,6 +80,8 @@ in
   dconf.settings = {
     "org/gnome/desktop/interface" = {
       color-scheme = "prefer-dark";
+      font-name = "Inter 10";
+      document-font-name = "Inter 10";
     };
   };
 
