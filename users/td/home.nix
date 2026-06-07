@@ -51,7 +51,6 @@ in
     pkgs.pavucontrol 
     pkgs.brightnessctl
     pkgs.hyprpaper # Wallpaper engine
-    ];
 
     # Fonts
     pkgs.inter
