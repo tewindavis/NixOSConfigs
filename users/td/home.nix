@@ -1,4 +1,4 @@
-{ inputs, pkgs, ... }:
+{ config, inputs, pkgs, ... }:
 
 let
   # Extract the ghostty binary path for convenience
@@ -326,7 +326,7 @@ $character'';
 
     history = {
       size = 10000;
-      path = "${home.homeDirectory}/.zsh_history";
+      path = "${config.home.homeDirectory}/.zsh_history";
     };
   };
 
