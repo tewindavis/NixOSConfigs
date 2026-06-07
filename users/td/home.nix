@@ -75,6 +75,7 @@ in
         "SUPER, T, exec, ${ghosttyBin}"
         "SUPER, Return, exec, ${ghosttyBin}"
         "SUPER, E, exec, thunar"
+        "SUPER, Space, exec, wofi --show drun"
         "SUPER_SHIFT, E, exit"
         "SUPER, X, killactive"
       ];
