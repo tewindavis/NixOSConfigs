@@ -145,7 +145,7 @@ in
     enable = true;
     # Use system-provided package for stability
     package = pkgs.hyprland;
-    configType = "lua";
+    #configType = "lua";
     settings = {
       monitor = ",2256x1504@60,auto,1.17";
 
