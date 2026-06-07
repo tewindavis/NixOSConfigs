@@ -26,6 +26,9 @@
   # Essential System Services
   services.openssh.enable = true;
   networking.networkmanager.enable = true;
+
+  # Hardware/Firmware
+  hardware.enableRedistributableFirmware = true;
   
   system.stateVersion = "25.11";
 

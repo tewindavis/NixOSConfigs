@@ -61,6 +61,7 @@ in
     dunst
     libva-utils
     brave
+    networkmanagerapplet
   ];
 
   # Hyprland User Config
@@ -86,6 +87,7 @@ in
       # Hardware-specific but safe defaults
       exec-once = [
         "spice-vdagent" # Safe to keep here, only does something if spice is present
+        "nm-applet --indicator" # WiFi tray icon
       ];
     };
   };
