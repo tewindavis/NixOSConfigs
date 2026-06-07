@@ -230,7 +230,7 @@ in
         gaps_in = 2;
         gaps_out = 3;
         border_size = 2;
-        "col.active_border" = "rgba(7aa2f7ee) rgba(9ece6aee) 45deg"; # Blue & Green
+        "col.active_border" = "rgba(7aa2f7ee) rgba(9ece6aee) 45deg";
         "col.inactive_border" = "rgba(1a1a20aa)";
         layout = "dwindle";
       };
@@ -246,7 +246,7 @@ in
         blur = {
           enabled = true;
           size = 1;
-          passes = 1; # Absolute minimum blur for near-clear glass look
+          passes = 1;
         };
       };
 
@@ -269,7 +269,7 @@ in
         "hypridle"
         "waybar"
         "hyprpaper"
-        "hyprsunset --temperature 3500" # Moderate auto-start shift
+        "hyprsunset --temperature 3500"
         "setup-wallpapers"
         "cycle-wallpaper"
         "gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
