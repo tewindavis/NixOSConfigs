@@ -208,6 +208,12 @@ in
         ", XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
       ];
 
+      # Mouse Bindings (Drag to move/resize)
+      bindm = [
+        "SUPER, mouse:272, movewindow"
+        "SUPER, mouse:273, resizewindow"
+      ];
+
         # Input Configuration
 
       input = {
