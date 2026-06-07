@@ -145,7 +145,6 @@ in
     enable = true;
     # Use system-provided package for stability
     package = pkgs.hyprland;
-    configType = "hyprlang";
     settings = {
       monitor = ",2256x1504@60,auto,1.17";
 
@@ -277,9 +276,9 @@ in
         "gsettings set org.gnome.desktop.interface gtk-theme 'Tokyonight-Dark'"
       ];
 
-      windowrule = [
-        "opacity 0.95 0.85, match:class ^(ghostty)$"
-        "no_blur 0, match:class ^(ghostty)$"
+      windowrulev2 = [
+        "opacity 0.95 0.85, class:^(ghostty)$"
+        "blur, class:^(ghostty)$"
       ];
     };
   };
