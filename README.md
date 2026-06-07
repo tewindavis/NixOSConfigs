@@ -55,7 +55,8 @@ The `modules/dev/` directory contains task-specific configurations. For example,
 *   **Modern CLI:** `ripgrep`, `fd`, `bat`, `eza`, `zoxide`, `fzf`, and `bottom`.
 *   **Workflow:** `direnv` with `nix-direnv` for automatic, zero-latency flake environment loading.
 *   **Core Tools:** Git, Vim, Tmux, Htop, Curl, Wget.
-*   **Security:** SSH Agent enabled by default, OpenSSH for remote management.
+*   **Security:** Mullvad VPN (daemon + GUI), Proton VPN (CLI + GUI), SSH Agent enabled by default.
+*   **Networking:** `systemd-resolved` for reliable DNS with VPN switching.
 *   **Aesthetics:** Nerd Fonts (Fira Code, JetBrains Mono) and Emoji support.
 
 ---
