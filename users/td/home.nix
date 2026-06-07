@@ -53,8 +53,8 @@ in
       pandas # data manipulation
       numpy # math
       jax # high-performance compute
-      jaxlib
-      tensorflow # alternative ML stack
+      jaxlib-bin # Pre-compiled binary to avoid long/failing builds
+      tensorflow-bin # Pre-compiled binary to avoid massive compile times
       pytest # testing
       matplotlib # plotting
       seaborn # better plotting
