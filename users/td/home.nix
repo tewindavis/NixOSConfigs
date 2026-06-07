@@ -8,27 +8,30 @@ let
   # Wallpaper Setup Script
   setup-wallpapers = pkgs.writeShellScriptBin "setup-wallpapers" ''
     WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
-    if [ ! -d "$WALLPAPER_DIR" ] || [ -z "$(ls -A "$WALLPAPER_DIR")" ]; then
-      mkdir -p "$WALLPAPER_DIR"
-      # 1. Official Hyprchan (Kath)
-      ${pkgs.curl}/bin/curl -L "https://hypr.land/imgs/blog/contestWinners/Kath.png" -o "$WALLPAPER_DIR/hyprchan-kath.png"
-      
-      # 2. Tokyo Night City (Alternative high-reliability source)
-      ${pkgs.curl}/bin/curl -L "https://raw.githubusercontent.com/tewindavis/NixOSConfigs/main/README.md" -o "$WALLPAPER_DIR/placeholder.txt" # Just to test dir
-      
-      # Using a reliable community bank for Tokyo Night styles
-      ${pkgs.curl}/bin/curl -L "https://images.wallpaperscraft.com/image/single/shibuya_tokyo_night_city_140924_1920x1080.jpg" -o "$WALLPAPER_DIR/tokyo-night-shibuya.jpg"
-      ${pkgs.curl}/bin/curl -L "https://w.wallhaven.cc/full/y8/wallhaven-y863gx.jpg" -o "$WALLPAPER_DIR/tokyo-night-abstract.jpg"
-      
-      # 4. Tokyo Night Official Campfire (The Perfect Match)
-      ${pkgs.curl}/bin/curl -L "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/campfire.png" -o "$WALLPAPER_DIR/tokyo-night-campfire.png"
+    UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    
+    mkdir -p "$WALLPAPER_DIR"
+    
+    download_wall() {
+      local url=$1
+      local filename=$2
+      if [ ! -f "$WALLPAPER_DIR/$filename" ]; then
+        echo "Downloading $filename..."
+        ${pkgs.curl}/bin/curl -L -A "$UA" "$url" -o "$WALLPAPER_DIR/$filename"
+        # Validate it's actually an image
+        if ! ${pkgs.file}/bin/file "$WALLPAPER_DIR/$filename" | grep -qE 'image|JPEG|PNG|WebP'; then
+          echo "Error: $filename is not a valid image. Removing."
+          rm "$WALLPAPER_DIR/$filename"
+        fi
+      fi
+    }
 
-      # 5. Cozy Fall Campfire (Anime Style - AlphaCoders)
-      ${pkgs.curl}/bin/curl -L "https://images8.alphacoders.com/100/1008685.jpg" -o "$WALLPAPER_DIR/cozy-campfire-anime.jpg"
-
-      # 6. Fall Forest Path
-      ${pkgs.curl}/bin/curl -L "https://w.wallhaven.cc/full/x8/wallhaven-x838p3.jpg" -o "$WALLPAPER_DIR/fall-forest.jpg"
-    fi
+    download_wall "https://hypr.land/imgs/blog/contestWinners/Kath.png" "hyprchan-kath.png"
+    download_wall "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/campfire.png" "tokyo-night-campfire.png"
+    download_wall "https://images.wallpaperscraft.com/image/single/shibuya_tokyo_night_city_140924_1920x1080.jpg" "tokyo-night-shibuya.jpg"
+    download_wall "https://w.wallhaven.cc/full/y8/wallhaven-y863gx.jpg" "tokyo-night-abstract.jpg"
+    download_wall "https://w.wallhaven.cc/full/x8/wallhaven-x838p3.jpg" "fall-forest.jpg"
+    download_wall "https://images8.alphacoders.com/100/1008685.jpg" "cozy-campfire-anime.jpg"
   '';
 
   # Wallpaper Cycling Script
