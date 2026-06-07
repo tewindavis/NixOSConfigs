@@ -135,9 +135,9 @@ in
         "waybar"
       ];
 
-      windowrulev2 = [
-        "opacity 0.9 0.8, class:^(ghostty)$"
-        "blur, class:^(ghostty)$"
+      windowrule = [
+        "match:class ^(ghostty)$, opacity 0.9 0.8"
+        "match:class ^(ghostty)$, blur 1"
       ];
     };
   };
