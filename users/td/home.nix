@@ -39,9 +39,13 @@ in
     
     settings = {
       monitor = [
-        "eDP-1, 2256x1504@60, 0x0, 1.25"
+        "eDP-1, preferred, auto, 1.25"
         ", preferred, auto, 1"
       ];
+
+      xwayland = {
+        force_zero_scaling = true;
+      };
 
       bind = [
         "SUPER, T, exec, ${ghosttyBin}"
