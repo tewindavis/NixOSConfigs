@@ -19,6 +19,15 @@ let
       # Using a reliable community bank for Tokyo Night styles
       ${pkgs.curl}/bin/curl -L "https://images.wallpaperscraft.com/image/single/shibuya_tokyo_night_city_140924_1920x1080.jpg" -o "$WALLPAPER_DIR/tokyo-night-shibuya.jpg"
       ${pkgs.curl}/bin/curl -L "https://w.wallhaven.cc/full/y8/wallhaven-y863gx.jpg" -o "$WALLPAPER_DIR/tokyo-night-abstract.jpg"
+      
+      # 4. Tokyo Night Official Campfire (The Perfect Match)
+      ${pkgs.curl}/bin/curl -L "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/campfire.png" -o "$WALLPAPER_DIR/tokyo-night-campfire.png"
+
+      # 5. Cozy Fall Campfire (Anime Style - AlphaCoders)
+      ${pkgs.curl}/bin/curl -L "https://images8.alphacoders.com/100/1008685.jpg" -o "$WALLPAPER_DIR/cozy-campfire-anime.jpg"
+
+      # 6. Fall Forest Path
+      ${pkgs.curl}/bin/curl -L "https://w.wallhaven.cc/full/x8/wallhaven-x838p3.jpg" -o "$WALLPAPER_DIR/fall-forest.jpg"
     fi
   '';
 
