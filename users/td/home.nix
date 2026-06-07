@@ -89,6 +89,7 @@ in
         "SUPER, Return, exec, ${ghosttyBin}"
         "SUPER, E, exec, thunar"
         "SUPER, Space, exec, wofi --show drun"
+        "SUPER, L, exec, hyprlock"
         "SUPER_SHIFT, E, exit"
         "SUPER, X, killactive"
 
@@ -162,6 +163,70 @@ in
       exec-once = [
         "spice-vdagent" # Safe to keep here, only does something if spice is present
         "nm-applet --indicator" # WiFi tray icon
+        "hypridle"
+      ];
+    };
+  };
+
+  # Lock Screen Config
+  programs.hyprlock = {
+    enable = true;
+    settings = {
+      general = {
+        disable_loading = true;
+        hide_cursor = true;
+      };
+
+      background = [
+        {
+          path = "screenshot"; # Use a screenshot of current desktop
+          color = "rgba(25, 20, 20, 1.0)";
+          blur_passes = 3; # Heavy blur
+          blur_size = 8;
+        }
+      ];
+
+      input-field = [
+        {
+          size = "200, 50";
+          outline_thickness = 3;
+          dots_size = 0.33;
+          dots_spacing = 0.15;
+          dots_center = true;
+          outer_color = "rgb(151515)";
+          inner_color = "rgb(200, 200, 200)";
+          font_color = "rgb(10, 10, 10)";
+          fade_on_empty = true;
+          placeholder_text = "<i>Input Password...</i>";
+          hide_input = false;
+          position = "0, -20";
+          halign = "center";
+          valign = "center";
+        }
+      ];
+    };
+  };
+
+  # Idle Daemon Config
+  services.hypridle = {
+    enable = true;
+    settings = {
+      general = {
+        lock_cmd = "pidof hyprlock || hyprlock"; # avoid starting multiple hyprlock instances
+        before_sleep_cmd = "loginctl lock-session"; # lock before suspend
+        after_sleep_cmd = "hyprctl dispatch dpms on"; # to avoid stuck black screen
+      };
+
+      listener = [
+        {
+          timeout = 300; # 5 minutes
+          on-timeout = "loginctl lock-session"; # lock screen when timeout has passed
+        }
+        {
+          timeout = 330; # 5.5 minutes
+          on-timeout = "hyprctl dispatch dpms off"; # screen off after 5.5 minutes
+          on-resume = "hyprctl dispatch dpms on"; # screen on when activity is detected
+        }
       ];
     };
   };
