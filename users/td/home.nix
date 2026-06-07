@@ -32,6 +32,9 @@ in
     # Lua
     lua
     
+    # Julia
+    julia
+    
     # C/C++
     gcc
     gnumake
