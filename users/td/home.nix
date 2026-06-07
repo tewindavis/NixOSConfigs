@@ -295,8 +295,8 @@ $character'';
       };
 
       character = {
-        success_symbol = "[󰄛](bold #f5c2e7) ";
-        error_symbol = "[󰄛](bold red) ";
+        success_symbol = "[❯](bold #f5c2e7) ";
+        error_symbol = "[❯](bold red) ";
       };
 
       # Disable noisy modules
