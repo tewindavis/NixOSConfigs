@@ -332,7 +332,8 @@ $character'';
       
       directory = {
         style = "bg:#9ece6a fg:#0a0a0f bold";
-        truncation_length = 0; # Disable truncation, show full path
+        truncation_length = 100; # Show up to 100 levels
+        truncate_to_repo = false; # DO NOT truncate to the git root
         format = "[$path]($style)";
       };
       
