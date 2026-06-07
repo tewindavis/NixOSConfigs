@@ -197,8 +197,8 @@ in
         rounding = 6;
         blur = {
           enabled = true;
-          size = 6;
-          passes = 3; # Increased for bolder look
+          size = 2;
+          passes = 1; # Very mild blur for 'pane of glass' look
         };
       };
 
