@@ -5,56 +5,60 @@
 }
 
 window#waybar {
-    background: rgba(21, 18, 27, 0.8);
-    color: #cdd6f4;
-    border-bottom: 2px solid rgba(137, 180, 250, 0.5);
+    background: rgba(10, 11, 16, 0.85); /* Deeper black matching Ghostty */
+    color: #c0caf5;
+    border-bottom: 2px solid rgba(122, 162, 247, 0.5); /* Blue border accent */
 }
 
 #workspaces button {
     padding: 0 5px;
-    color: #cdd6f4;
+    color: #c0caf5;
 }
 
 #workspaces button.active {
-    color: #89b4fa;
-    border-bottom: 2px solid #89b4fa;
+    color: #7aa2f7;
+    border-bottom: 2px solid #7aa2f7;
 }
 
 #clock, #cpu, #memory, #battery, #bluetooth, #network, #pulseaudio, #tray {
     padding: 0 10px;
-    margin: 4px 2px;
+    margin: 4px 4px;
     border-radius: 8px;
-    background: rgba(30, 30, 46, 0.9);
+    background: rgba(26, 27, 38, 0.9); /* Darker module backgrounds */
 }
 
 #clock {
-    color: #fab387;
+    color: #ff9e64; /* Orange */
 }
 
 #cpu {
-    color: #f38ba8;
+    color: #7aa2f7; /* Blue */
 }
 
 #memory {
-    color: #a6e3a1;
+    color: #bb9af7; /* Purple */
 }
 
 #battery {
-    color: #f9e2af;
+    color: #ff9e64; /* Orange */
 }
 
 #battery.charging {
-    color: #a6e3a1;
+    color: #9ece6a; /* Green */
 }
 
 #bluetooth {
-    color: #94e2d5;
+    color: #7dcfff; /* Cyan/Blue */
 }
 
 #network {
-    color: #89dceb;
+    color: #9ece6a; /* Green */
 }
 
 #pulseaudio {
-    color: #cba6f7;
+    color: #7aa2f7; /* Blue */
+}
+
+#tray {
+    color: #c0caf5;
 }
