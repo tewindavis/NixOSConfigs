@@ -57,6 +57,7 @@ The `modules/dev/` directory contains task-specific configurations. For example,
 *   **Core Tools:** Git, Vim, Tmux, Htop, Curl, Wget.
 *   **Security:** Mullvad VPN (daemon + GUI), Proton VPN (CLI + GUI), SSH Agent enabled by default.
 *   **Networking:** `systemd-resolved` for reliable DNS with VPN switching.
+*   **Hardware:** Bluetooth enabled with `blueman` manager (Framework & DL).
 *   **Aesthetics:** Nerd Fonts (Fira Code, JetBrains Mono) and Emoji support.
 
 ---

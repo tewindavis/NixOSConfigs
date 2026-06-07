@@ -7,6 +7,7 @@
       ../../modules/desktop
       ../../modules/core
       ../../modules/hardware/nvidia.nix
+      ../../modules/hardware/bluetooth.nix
       ../../modules/services/vpn.nix
       ../../modules/dev/rl-binary.nix
       ../../users/td/nixos.nix

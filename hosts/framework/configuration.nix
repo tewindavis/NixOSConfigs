@@ -7,6 +7,7 @@
       ../../modules/desktop
       ../../modules/core
       ../../modules/hardware/framework.nix
+      ../../modules/hardware/bluetooth.nix
       ../../modules/services/vpn.nix
       ../../users/td/nixos.nix
     ];
