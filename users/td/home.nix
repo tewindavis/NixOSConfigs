@@ -120,7 +120,7 @@ in
         "SUPER, E, exec, thunar"
         "SUPER, Space, exec, wofi --show drun"
         "SUPER, L, exec, hyprlock"
-        "SUPER, W, exec, cycle-wallpaper"
+        "SUPER, W, exec, ~/.local/bin/cycle-wallpaper"
         "SUPER_SHIFT, E, exit"
         "SUPER, X, killactive"
 
@@ -221,7 +221,7 @@ in
         "hypridle"
         "waybar"
         "hyprpaper"
-        "cycle-wallpaper"
+        "~/.local/bin/cycle-wallpaper"
         "gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
         "gsettings set org.gnome.desktop.interface gtk-theme 'Tokyonight-Dark'"
       ];
@@ -368,5 +368,6 @@ $character'';
   home.sessionVariables = {
     TERMINAL = ghosttyBin;
     BROWSER = "brave";
+    PATH = "$HOME/.local/bin:$PATH";
   };
 }
