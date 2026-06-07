@@ -17,7 +17,6 @@
        specialArgs = {inherit inputs;};
        modules = [
          ./hosts/utm-vm/configuration.nix
-         hyprland.nixosModules.default
          home-manager.nixosModules.home-manager
          {
            nixpkgs.config.allowUnfree = true;
@@ -34,7 +33,6 @@
        specialArgs = {inherit inputs;};
        modules = [
          ./hosts/framework/configuration.nix
-         hyprland.nixosModules.default
          home-manager.nixosModules.home-manager
          {
            nixpkgs.config.allowUnfree = true;
@@ -51,7 +49,6 @@
        specialArgs = {inherit inputs;};
        modules = [
          ./hosts/dl-prototype/configuration.nix
-         hyprland.nixosModules.default
          home-manager.nixosModules.home-manager
          {
            nixpkgs.config.allowUnfree = true;
