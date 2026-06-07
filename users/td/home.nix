@@ -55,6 +55,9 @@ in
     pkgs.inter
 
     # Theming support
+    pkgs.catppuccin-gtk
+    pkgs.catppuccin-cursors.mochaDark
+    pkgs.catppuccin-papirus-folders
     pkgs.gnome-themes-extra
     pkgs.glib # for gsettings
   ];
@@ -63,12 +66,22 @@ in
   gtk = {
     enable = true;
     theme = {
-      name = "Adwaita-dark";
-      package = pkgs.gnome-themes-extra;
+      name = "catppuccin-mocha-blue-standard";
+      package = pkgs.catppuccin-gtk.override {
+        accents = [ "blue" ];
+        variant = "mocha";
+      };
     };
     font = {
       name = "Inter";
       size = 10;
+    };
+    iconTheme = {
+      name = "Papirus-Dark";
+    };
+    cursorTheme = {
+      name = "catppuccin-mocha-dark-cursors";
+      package = pkgs.catppuccin-cursors.mochaDark;
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
@@ -77,8 +90,8 @@ in
   # Qt Theming
   qt = {
     enable = true;
-    platformTheme.name = "kvantum";
-    style.name = "kvantum";
+    platformTheme.name = "gtk";
+    style.name = "adwaita-dark";
   };
 
   # XDG Desktop Portal Color Scheme
@@ -208,6 +221,8 @@ in
         "nm-applet --indicator"
         "hypridle"
         "waybar"
+        "gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
+        "gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard'"
       ];
 
       windowrule = [

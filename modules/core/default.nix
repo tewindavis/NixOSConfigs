@@ -43,4 +43,7 @@
 
   # SSH Agent
   programs.ssh.startAgent = true;
+
+  # Enable dconf (needed for GTK/Theming)
+  programs.dconf.enable = true;
 }
