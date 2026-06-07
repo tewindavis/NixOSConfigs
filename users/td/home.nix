@@ -64,6 +64,8 @@ in
     
     # Languages & Toolchains
     pkgs.rustup
+    pkgs.cargo
+    pkgs.rustc
     pkgs.rustlings
     pkgs.julia
     pkgs.octave
