@@ -20,38 +20,6 @@ in
     fd
     bottom
 
-    # Languages & Toolchains
-    rustup
-    zig
-    zls
-    lua
-    julia
-    gcc
-    gnumake
-    cmake
-    gdb 
-    
-    # Python (Safe Baseline)
-    (python3.withPackages (ps: with ps; [
-      pip
-      virtualenv
-      ipython 
-      requests 
-      pandas 
-      numpy 
-    ]))
-
-    # LSPs & Formatters
-    lua-language-server
-    stylua
-    rust-analyzer
-    pyright
-    ruff 
-    vscode-langservers-extracted 
-    typescript-language-server
-    yaml-language-server
-    nil 
-
     # UI Survival Kit
     ghostty
     wofi
