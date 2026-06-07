@@ -332,7 +332,8 @@ $character'';
       
       directory = {
         style = "bg:#9ece6a fg:#0a0a0f bold";
-        truncation_length = 3;
+        truncation_length = 8;
+        truncation_symbol = ".../";
         format = "[$path]($style)";
       };
       
