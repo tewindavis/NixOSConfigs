@@ -13,7 +13,6 @@
   outputs = { self, nixpkgs, hyprland, home-manager, ...}@inputs: {
     nixosConfigurations = {
      utm-vm = nixpkgs.lib.nixosSystem {
-       # May we never be forced to use x86 again...
        system = "aarch64-linux";
        specialArgs = {inherit inputs;};
        modules = [
