@@ -49,6 +49,8 @@ in
     brave
     networkmanagerapplet
     pavucontrol 
+    brightnessctl
+    ];
 
     # Theming Packages
     catppuccin-gtk
@@ -149,8 +151,23 @@ in
         "SUPER_SHIFT, 7, movetoworkspace, 7"
         "SUPER_SHIFT, 8, movetoworkspace, 8"
         "SUPER_SHIFT, 9, movetoworkspace, 9"
-      ];
-      # Input Configuration
+        ];
+
+        # Media Keys
+        bindel = [
+        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
+        ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+        ", XF86MonBrightnessUp, exec, brightnessctl set 5%+"
+        ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
+        ];
+
+        bindl = [
+        ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+        ", XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
+        ];
+
+        # Input Configuration
+
       input = {
         kb_layout = "us";
         follow_mouse = 1;

@@ -29,6 +29,15 @@
 
   # Hardware/Firmware
   hardware.enableRedistributableFirmware = true;
+
+  # Audio (Pipewire)
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    jack.enable = true;
+  };
   
   system.stateVersion = "25.11";
 
