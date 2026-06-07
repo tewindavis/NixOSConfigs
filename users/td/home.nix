@@ -55,7 +55,7 @@ in
     pkgs.inter
 
     # Theming support
-    pkgs.catppuccin-gtk
+    pkgs.tokyonight-gtk-theme
     pkgs.catppuccin-cursors.mochaDark
     pkgs.catppuccin-papirus-folders
     pkgs.gnome-themes-extra
@@ -66,11 +66,8 @@ in
   gtk = {
     enable = true;
     theme = {
-      name = "catppuccin-mocha-blue-standard";
-      package = pkgs.catppuccin-gtk.override {
-        accents = [ "blue" ];
-        variant = "mocha";
-      };
+      name = "Tokyonight-Dark";
+      package = pkgs.tokyonight-gtk-theme;
     };
     font = {
       name = "Inter";
@@ -185,8 +182,8 @@ in
         gaps_in = 5;
         gaps_out = 10;
         border_size = 2;
-        "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
-        "col.inactive_border" = "rgba(595959aa)";
+        "col.active_border" = "rgba(ff007cee) rgba(fff000ee) 45deg"; # Neon Pink & Yellow
+        "col.inactive_border" = "rgba(1a1a20aa)";
         layout = "dwindle";
       };
 
@@ -199,7 +196,7 @@ in
         blur = {
           enabled = true;
           size = 6;
-          passes = 2;
+          passes = 3; # Increased for bolder look
         };
       };
 
@@ -222,7 +219,7 @@ in
         "hypridle"
         "waybar"
         "gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
-        "gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard'"
+        "gsettings set org.gnome.desktop.interface gtk-theme 'Tokyonight-Dark'"
       ];
 
       windowrule = [
@@ -262,40 +259,40 @@ in
     settings = {
       add_newline = true;
       # Multi-line Powerline format (Zero Spaces between segments to prevent gaps)
-      format = ''[](#f5c2e7)$username$hostname[](bg:#f9e2af fg:#f5c2e7)$directory[](fg:#f9e2af)$git_branch$git_status
+      format = ''[](#ff007c)$username$hostname[](bg:#fff000 fg:#ff007c)$directory[](fg:#fff000)$git_branch$git_status
 $character'';
       
       username = {
         show_always = true;
-        style_user = "bg:#f5c2e7 fg:#1e1e2e bold";
+        style_user = "bg:#ff007c fg:#0a0a0f bold";
         format = "[$user]($style)";
       };
       
       hostname = {
         ssh_only = false;
-        style = "bg:#f5c2e7 fg:#1e1e2e bold";
+        style = "bg:#ff007c fg:#0a0a0f bold";
         format = "[@$hostname]($style)";
       };
       
       directory = {
-        style = "bg:#f9e2af fg:#1e1e2e bold";
+        style = "bg:#fff000 fg:#0a0a0f bold";
         truncation_length = 3;
         format = "[$path]($style)"; # Removed leading space
       };
       
       git_branch = {
         symbol = " ";
-        style = "bold #f5c2e7";
+        style = "bold #ff007c";
         format = " [$symbol$branch]($style)";
       };
 
       git_status = {
-        style = "bold #f9e2af";
+        style = "bold #fff000";
         format = "([\\[$all_status$ahead_behind\\]]($style))";
       };
 
       character = {
-        success_symbol = "[❯](bold #f5c2e7) ";
+        success_symbol = "[❯](bold #ff007c) ";
         error_symbol = "[❯](bold red) ";
       };
 
