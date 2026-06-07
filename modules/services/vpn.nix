@@ -13,7 +13,7 @@
   # Proton VPN & Mullvad GUI
   environment.systemPackages = with pkgs; [
     protonvpn-gui
-    protonvpn-cli_2
+    proton-vpn-cli
     mullvad-vpn # Graphical client
   ];
 }
