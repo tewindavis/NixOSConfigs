@@ -179,8 +179,8 @@ in
       ];
 
       general = {
-        gaps_in = 5;
-        gaps_out = 10;
+        gaps_in = 2;
+        gaps_out = 3;
         border_size = 2;
         "col.active_border" = "rgba(7aa2f7ee) rgba(9ece6aee) 45deg"; # Blue & Green
         "col.inactive_border" = "rgba(1a1a20aa)";
@@ -192,7 +192,7 @@ in
       };
 
       decoration = {
-        rounding = 10;
+        rounding = 6;
         blur = {
           enabled = true;
           size = 6;
