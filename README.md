@@ -73,4 +73,35 @@ To build a configuration:
 sudo nixos-rebuild switch --flake .#framework
 ```
 
-*Note: For new physical installs, ensure you generate and include a valid `hardware-configuration.nix` for the specific machine.*
+---
+
+## ❄️ Fresh Installation Guide
+
+If you are installing this configuration on a brand-new machine:
+
+1.  **Boot the NixOS Installer:**
+    Follow the standard [NixOS installation guide](https://nixos.org/manual/nixos/stable/index.html#sec-installation) to partition and mount your drives under `/mnt`.
+
+2.  **Clone this Repository:**
+    ```bash
+    git clone https://github.com/tewindavis/NixOSConfigs.git /mnt/etc/nixos
+    cd /mnt/etc/nixos
+    git checkout vibes
+    ```
+
+3.  **Generate Hardware Configuration:**
+    This step is critical to ensure your specific disk UUIDs and kernel modules are captured.
+    ```bash
+    # Ensure you are in the correct host directory (e.g., framework)
+    sudo nixos-generate-config --root /mnt --show-hardware-config > hosts/framework/hardware-configuration.nix
+    ```
+
+4.  **Install the System:**
+    ```bash
+    sudo nixos-install --flake .#framework
+    ```
+
+5.  **Reboot & Finalize:**
+    Reboot into your new system. Once logged in, the `home-manager` profile will automatically apply your desktop settings, terminal rice, and dev tools.
+
+*Note: For the Threadripper rig (`dl-prototype`), remember to verify your NVIDIA driver version in `modules/hardware/nvidia.nix` if the card is older than the GTX 900 series.*
