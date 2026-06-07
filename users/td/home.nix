@@ -148,6 +148,12 @@ in
         layout = "dwindle";
       };
 
+      # Mascot / Misc
+      misc = {
+        force_default_wallpaper = 2; # 2 forces the mascot (Hypr-chan) to always show
+        disable_hyprland_logo = false;
+      };
+
       decoration = {
         rounding = 10;
         blur = {
