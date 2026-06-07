@@ -260,26 +260,30 @@ in
     enable = true;
     enableBashIntegration = true;
     settings = {
-      add_newline = false;
-      # Classic Linux prompt format: [user@host:dir]$
-      format = "\\[$username$hostname$directory\\]$git_branch$character";
+      add_newline = true;
+      # Multi-line Powerline format
+      # Line 1: [Username][Hostname][Directory][Git]
+      # Line 2: Character
+      format = ''
+[](#f5c2e7)$username$hostname[](bg:#f9e2af fg:#f5c2e7)$directory[](fg:#f9e2af)$git_branch$git_status
+$character'';
       
       username = {
         show_always = true;
-        style_user = "bold #f5c2e7"; # Catppuccin Pink
+        style_user = "bg:#f5c2e7 fg:#1e1e2e bold";
         format = "[$user]($style)";
       };
       
       hostname = {
         ssh_only = false;
-        style = "bold #f5c2e7";
+        style = "bg:#f5c2e7 fg:#1e1e2e bold";
         format = "@[$hostname]($style)";
       };
       
       directory = {
-        style = "bold #f9e2af"; # Catppuccin Yellow
+        style = "bg:#f9e2af fg:#1e1e2e bold";
         truncation_length = 3;
-        format = ":[$path]($style)";
+        format = " [$path]($style)";
       };
       
       git_branch = {
@@ -288,12 +292,17 @@ in
         format = " [$symbol$branch]($style)";
       };
 
-      character = {
-        success_symbol = "[\\$](bold #f5c2e7) ";
-        error_symbol = "[\\$](bold red) ";
+      git_status = {
+        style = "bold #f9e2af";
+        format = "([\\[$all_status$ahead_behind\\]]($style))";
       };
 
-      # Disable noisy modules to keep the prompt classic and clean
+      character = {
+        success_symbol = "[󰄛](bold #f5c2e7) ";
+        error_symbol = "[󰄛](bold red) ";
+      };
+
+      # Disable noisy modules
       nix_shell = { disabled = true; };
       package = { disabled = true; };
       python = { disabled = true; };
