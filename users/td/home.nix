@@ -145,10 +145,10 @@ in
 
   # Config Links
   xdg.configFile."waybar/config".source = ./waybar/config.jsonc;
-
-  # Wallpaper Setup Script (Downloads a few high-quality themed images)
-
-  # Wallpaper Cycling Script
+  xdg.configFile."waybar/style.css".source = ./waybar/style.css;
+  xdg.configFile."wofi/style.css".source = ./wofi/style.css;
+  xdg.configFile."ghostty/config".source = ./ghostty/config;
+  xdg.configFile."nvim" = { source = ./nvim; recursive = true; };
 
   # hyprpaper Config
   services.hyprpaper = {
@@ -158,13 +158,6 @@ in
       splash = false;
     };
   };
-
-  # Config Links
-  xdg.configFile."waybar/config".source = ./waybar/config.jsonc;
-  xdg.configFile."waybar/style.css".source = ./waybar/style.css;
-  xdg.configFile."wofi/style.css".source = ./wofi/style.css;
-  xdg.configFile."ghostty/config".source = ./ghostty/config;
-  xdg.configFile."nvim" = { source = ./nvim; recursive = true; };
 
   # Services & Programs
   programs.hyprlock = {
