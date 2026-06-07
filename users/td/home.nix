@@ -258,9 +258,30 @@ in
 
   programs.starship = {
     enable = true;
+    enableBashIntegration = true;
     settings = {
-      character.success_symbol = "[󰄛](bold pink) ";
-      directory.style = "bold yellow";
+      add_newline = true;
+      character = {
+        success_symbol = "[󰄛](bold pink) ";
+        error_symbol = "[󰄛](bold red) ";
+      };
+      directory = {
+        style = "bold yellow";
+        truncation_length = 3;
+        truncation_symbol = "…/";
+      };
+      git_branch = {
+        symbol = " ";
+        style = "bold pink";
+      };
+      git_status = {
+        style = "bold yellow";
+      };
+      # Languages & Environments
+      python = { symbol = " "; style = "bold blue"; };
+      rust = { symbol = " "; style = "bold red"; };
+      nix_shell = { symbol = " "; style = "bold blue"; };
+      package = { symbol = "󰏗 "; style = "bold blue"; };
     };
   };
 
