@@ -219,7 +219,7 @@ in
         follow_mouse = 1;
         touchpad = {
           natural_scroll = true;
-          tap-to-click = true;
+          tap_to_click = true;
         };
       };
 
@@ -266,7 +266,7 @@ in
         ];
       };
 
-      exec-once = [
+      exec_once = [
         "spice-vdagent"
         "nm-applet --indicator"
         "hypridle"
