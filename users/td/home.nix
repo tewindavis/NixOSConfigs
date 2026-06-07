@@ -68,8 +68,8 @@ in
     rust-analyzer
     pyright
     ruff # Fast python linter/formatter
-    nodePackages.vscode-langservers-extracted # HTML/CSS/JSON/ESLint
-    nodePackages.typescript-language-server
+    vscode-langservers-extracted # HTML/CSS/JSON/ESLint
+    typescript-language-server
     yaml-language-server
     nil # Nix LSP
 
