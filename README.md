@@ -50,6 +50,7 @@ The `modules/dev/` directory contains task-specific configurations. For example,
 *   **Languages & Toolchains:**
     *   **Rust:** `rustup` and `rustlings` for learning.
     *   **Zig:** `zig` compiler and `zls` (Language Server).
+    *   **Lua:** `lua` interpreter and `lua-language-server`.
     *   **C/C++:** `gcc`, `gnumake`, `cmake`, and `gdb`.
     *   **Python:** Python 3 with `pip`, `virtualenv`, and formatting tools (`black`, `isort`).
 *   **Modern CLI:** `ripgrep`, `fd`, `bat`, `eza`, `zoxide`, `fzf`, and `bottom`.

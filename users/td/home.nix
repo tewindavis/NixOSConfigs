@@ -29,6 +29,9 @@ in
     zig
     zls # Zig Language Server
     
+    # Lua
+    lua
+    
     # C/C++
     gcc
     gnumake
