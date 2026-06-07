@@ -71,6 +71,13 @@ in
     package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
     
     settings = {
+      # Monitors
+      monitor = [
+        "eDP-1, 2256x1504@60, 0x0, 1.25" # Framework 13
+        ", preferred, auto, 1"           # Others
+      ];
+
+      # Keybindings
       bind = [
         "SUPER, T, exec, ${ghosttyBin}"
         "SUPER, Return, exec, ${ghosttyBin}"
@@ -78,11 +85,71 @@ in
         "SUPER, Space, exec, wofi --show drun"
         "SUPER_SHIFT, E, exit"
         "SUPER, X, killactive"
+
+        # Focus Navigation
+        "SUPER, h, movefocus, l"
+        "SUPER, l, movefocus, r"
+        "SUPER, k, movefocus, u"
+        "SUPER, j, movefocus, d"
+
+        # Workspace Switching
+        "SUPER, 1, workspace, 1"
+        "SUPER, 2, workspace, 2"
+        "SUPER, 3, workspace, 3"
+        "SUPER, 4, workspace, 4"
+        "SUPER, 5, workspace, 5"
+        "SUPER, 6, workspace, 6"
+        "SUPER, 7, workspace, 7"
+        "SUPER, 8, workspace, 8"
+        "SUPER, 9, workspace, 9"
+
+        # Move to Workspace
+        "SUPER_SHIFT, 1, movetoworkspace, 1"
+        "SUPER_SHIFT, 2, movetoworkspace, 2"
+        "SUPER_SHIFT, 3, movetoworkspace, 3"
+        "SUPER_SHIFT, 4, movetoworkspace, 4"
+        "SUPER_SHIFT, 5, movetoworkspace, 5"
+        "SUPER_SHIFT, 6, movetoworkspace, 6"
+        "SUPER_SHIFT, 7, movetoworkspace, 7"
+        "SUPER_SHIFT, 8, movetoworkspace, 8"
+        "SUPER_SHIFT, 9, movetoworkspace, 9"
       ];
 
+      # Input Configuration
       input = {
         kb_layout = "us";
-        follow_mouse = 1;
+        follow_mouse = 1; # Mouse switches focus
+        
+        touchpad = {
+          natural_scroll = "yes";
+          tap-to-click = "yes";
+        };
+      };
+
+      # Gestures
+      gestures = {
+        workspace_swipe = "yes"; # Swipe to move spaces
+      };
+
+      # Aesthetics
+      general = {
+        gaps_in = 5;
+        gaps_out = 10;
+        border_size = 2;
+        "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
+        "col.inactive_border" = "rgba(595959aa)";
+        layout = "dwindle";
+      };
+
+      decoration = {
+        rounding = 10;
+        blur = {
+          enabled = true;
+          size = 3;
+          passes = 1;
+        };
+        # Shadow removed in newer Hyprland versions or renamed, 
+        # using safe modern defaults.
       };
 
       # Hardware-specific but safe defaults
