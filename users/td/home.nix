@@ -66,6 +66,8 @@ in
     pkgs.cargo
     pkgs.rustc
     pkgs.rustlings
+    pkgs.zig
+    pkgs.zls
     pkgs.julia
     pkgs.octave
     pkgs.lua
