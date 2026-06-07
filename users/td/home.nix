@@ -158,7 +158,7 @@ in
         "SUPER, Return, exec, ${ghosttyBin}"
         "SUPER, E, exec, thunar"
         "SUPER, Space, exec, wofi --show drun"
-        "SUPER_SHIFT, L, exec, hyprlock"
+        "SUPER, L, exec, hyprlock"
         "SUPER, W, exec, cycle-wallpaper"
         "SUPER, R, exec, hyprsunset --temperature 2500" # Aggressive Night Mode
         "SUPER_SHIFT, R, exec, hyprsunset --identity" # Reset to Day Mode
