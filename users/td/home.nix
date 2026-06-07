@@ -19,6 +19,7 @@ in
     eza
     fd
     bottom
+    gemini-cli
 
     # Languages & Toolchains
     # Rust
