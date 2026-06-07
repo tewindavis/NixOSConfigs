@@ -15,7 +15,7 @@ background = 0a0b10
 foreground = ffffff
 selection-background = 3b3d4d
 selection-foreground = ffffff
-cursor-color = ff007c
+cursor-color = f78fb3
 
 palette = 0=#15161e
 palette = 8=#414868
@@ -23,20 +23,20 @@ palette = 1=#f7768e
 palette = 9=#f7768e
 palette = 2=#9ece6a
 palette = 10=#9ece6a
-palette = 3=#f0ff00
-palette = 11=#f0ff00
+palette = 3=#f9d806
+palette = 11=#f9d806
 palette = 4=#7aa2f7
 palette = 12=#7aa2f7
-palette = 5=#ff007c
-palette = 13=#ff007c
+palette = 5=#f78fb3
+palette = 13=#f78fb3
 palette = 6=#7dcfff
 palette = 14=#7dcfff
 palette = 7=#a9b1d6
 palette = 15=#c0caf5
 
 # Tasteful overrides for the "vibes"
-# Bright neon pink and yellow accents (re-confirmed)
-palette = 5=#ff007c
-palette = 13=#ff007c
-palette = 3=#f0ff00
-palette = 11=#f0ff00
+# Bright vibrant pink and yellow accents (re-confirmed)
+palette = 5=#f78fb3
+palette = 13=#f78fb3
+palette = 3=#f9d806
+palette = 11=#f9d806

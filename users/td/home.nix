@@ -182,7 +182,7 @@ in
         gaps_in = 5;
         gaps_out = 10;
         border_size = 2;
-        "col.active_border" = "rgba(ff007cee) rgba(fff000ee) 45deg"; # Neon Pink & Yellow
+        "col.active_border" = "rgba(f78fb3ee) rgba(f9d806ee) 45deg"; # Vibrant Pink & Yellow
         "col.inactive_border" = "rgba(1a1a20aa)";
         layout = "dwindle";
       };
@@ -259,40 +259,40 @@ in
     settings = {
       add_newline = true;
       # Multi-line Powerline format (Zero Spaces between segments to prevent gaps)
-      format = ''[](#ff007c)$username$hostname[](bg:#fff000 fg:#ff007c)$directory[](fg:#fff000)$git_branch$git_status
+      format = ''[](#f78fb3)$username$hostname[](bg:#f9d806 fg:#f78fb3)$directory[](fg:#f9d806)$git_branch$git_status
 $character'';
       
       username = {
         show_always = true;
-        style_user = "bg:#ff007c fg:#0a0a0f bold";
+        style_user = "bg:#f78fb3 fg:#0a0a0f bold";
         format = "[$user]($style)";
       };
       
       hostname = {
         ssh_only = false;
-        style = "bg:#ff007c fg:#0a0a0f bold";
+        style = "bg:#f78fb3 fg:#0a0a0f bold";
         format = "[@$hostname]($style)";
       };
       
       directory = {
-        style = "bg:#fff000 fg:#0a0a0f bold";
+        style = "bg:#f9d806 fg:#0a0a0f bold";
         truncation_length = 3;
         format = "[$path]($style)"; # Removed leading space
       };
       
       git_branch = {
         symbol = " ";
-        style = "bold #ff007c";
+        style = "bold #f78fb3"; # Vibrant Pink
         format = " [$symbol$branch]($style)";
       };
 
       git_status = {
-        style = "bold #fff000";
+        style = "bold #f9d806"; # Vibrant Yellow
         format = "([\\[$all_status$ahead_behind\\]]($style))";
       };
 
       character = {
-        success_symbol = "[❯](bold #ff007c) ";
+        success_symbol = "[❯](bold #f78fb3) ";
         error_symbol = "[❯](bold red) ";
       };
 
