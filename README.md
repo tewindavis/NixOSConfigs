@@ -31,7 +31,10 @@ User configurations are split into two layers:
 *   **System Layer (`users/td/nixos.nix`):** Handles UID, groups (`wheel`, `networkmanager`), and system-level shell.
 *   **User Layer (`users/td/home.nix`):** Managed via **Home Manager**, handling dotfiles, personal packages, and environment variables.
 
-### 3. Specialized Dev Profiles
+### 3. Desktop Environment via Home Manager
+Window manager settings (Hyprland keybindings, UI components like Waybar/Wofi) are managed at the user level in `users/td/home.nix`. This makes the desktop environment more portable and decoupled from system-level hardware configurations.
+
+### 4. Specialized Dev Profiles
 The `modules/dev/` directory contains task-specific configurations. For example, `rl-binary.nix` bundles a complete toolkit for low-level research:
 *   **Binary Analysis:** Ghidra, Radare2, GDB/Pwndbg.
 *   **RL Stack:** Python 3 environment with PyTorch and Stable Baselines 3.
@@ -40,7 +43,7 @@ The `modules/dev/` directory contains task-specific configurations. For example,
 
 ## 🛠️ Key Functionalities Installed
 
-*   **Desktop:** Hyprland (Wayland) with a survival kit including Ghostty, Waybar, Wofi, and Dunst.
+*   **Desktop:** Hyprland (Wayland) with a survival kit including Ghostty, Waybar, Wofi, Dunst, and Thunar.
 *   **Editor:** Neovim with **LazyVim** framework.
     *   **Features:** Automated LSP management, syntax highlighting (Treesitter), and IDE-like UI.
     *   **Bundled LSPs:** `rust-analyzer` (Rust), `zls` (Zig), `nil` (Nix), `pyright`/`ruff` (Python), and more.

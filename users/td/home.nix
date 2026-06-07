@@ -1,5 +1,10 @@
-{ pkgs, ... }:
+{ inputs, pkgs, ... }:
 
+let
+  # Extract the ghostty binary path for convenience
+  ghosttyPkg = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  ghosttyBin = "${ghosttyPkg}/bin/ghostty";
+in
 {
   home.username = "td";
   home.homeDirectory = "/home/td";
@@ -48,7 +53,48 @@
     nodePackages.typescript-language-server
     yaml-language-server
     nil # Nix LSP
+
+    # UI Survival Kit
+    ghosttyPkg
+    wofi
+    waybar
+    dunst
+    libva-utils
+    brave
   ];
+
+  # Hyprland User Config
+  wayland.windowManager.hyprland = {
+    enable = true;
+    # Use the same package as the system for consistency
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    
+    settings = {
+      bind = [
+        "SUPER, T, exec, ${ghosttyBin}"
+        "SUPER, Return, exec, ${ghosttyBin}"
+        "SUPER, E, exec, thunar"
+        "SUPER_SHIFT, E, exit"
+        "SUPER, X, killactive"
+      ];
+
+      input = {
+        kb_layout = "us";
+        follow_mouse = 1;
+      };
+
+      # Hardware-specific but safe defaults
+      exec-once = [
+        "spice-vdagent" # Safe to keep here, only does something if spice is present
+      ];
+    };
+  };
+
+  # User session variables
+  home.sessionVariables = {
+    TERMINAL = ghosttyBin;
+    BROWSER = "brave";
+  };
 
   # Neovim
   programs.neovim = {

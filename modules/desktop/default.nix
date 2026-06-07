@@ -13,11 +13,12 @@
     noto-fonts-color-emoji
   ];
 
-  # Stand alone programs I don't want to mess with much
-  environment.systemPackages = with pkgs; [
-    brave
-    libva-utils # for checking hardware acceleration
+  # Enable Thunar and related services
+  programs.thunar.enable = true;
+  programs.thunar.plugins = with pkgs; [
+    xfce.thunar-archive-plugin
+    xfce.thunar-volman
   ];
-
-
+  services.gvfs.enable = true; # Mount, trash, and other functionalities
+  services.tumbler.enable = true; # Thumbnail support for images
 }
