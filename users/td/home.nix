@@ -10,9 +10,15 @@ let
     WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
     if [ ! -d "$WALLPAPER_DIR" ] || [ -z "$(ls -A "$WALLPAPER_DIR")" ]; then
       mkdir -p "$WALLPAPER_DIR"
+      # 1. Official Hyprchan (Kath)
       ${pkgs.curl}/bin/curl -L "https://hypr.land/imgs/blog/contestWinners/Kath.png" -o "$WALLPAPER_DIR/hyprchan-kath.png"
-      ${pkgs.curl}/bin/curl -L "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/city/shibuya.png" -o "$WALLPAPER_DIR/tokyo-night-shibuya.png"
-      ${pkgs.curl}/bin/curl -L "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/minimal/tokyo-night-minimal.png" -o "$WALLPAPER_DIR/tokyo-night-minimal.png"
+      
+      # 2. Tokyo Night City (Alternative high-reliability source)
+      ${pkgs.curl}/bin/curl -L "https://raw.githubusercontent.com/tewindavis/NixOSConfigs/main/README.md" -o "$WALLPAPER_DIR/placeholder.txt" # Just to test dir
+      
+      # Using a reliable community bank for Tokyo Night styles
+      ${pkgs.curl}/bin/curl -L "https://images.wallpaperscraft.com/image/single/shibuya_tokyo_night_city_140924_1920x1080.jpg" -o "$WALLPAPER_DIR/tokyo-night-shibuya.jpg"
+      ${pkgs.curl}/bin/curl -L "https://w.wallhaven.cc/full/y8/wallhaven-y863gx.jpg" -o "$WALLPAPER_DIR/tokyo-night-abstract.jpg"
     fi
   '';
 
