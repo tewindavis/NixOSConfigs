@@ -238,6 +238,8 @@ in
 
       decoration = {
         rounding = 6;
+        active_opacity = 0.9;
+        inactive_opacity = 0.8;
         blur = {
           enabled = true;
           size = 1;
