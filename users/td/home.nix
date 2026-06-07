@@ -41,12 +41,18 @@ in
     cmake
     gdb # Already in rl-binary for one host, but good for all
     
-    # Python
+    # Python (Global "Greatest Hits" for quick scripts/research)
     (python3.withPackages (ps: with ps; [
       pip
       virtualenv
       black # formatter
       isort # import sorter
+      ipython # much better than the raw repl
+      requests # for networking
+      pandas # data manipulation
+      numpy # math
+      pytest # testing
+      matplotlib # plotting
     ]))
 
     # LSPs, Formatters, Linters for LazyVim
