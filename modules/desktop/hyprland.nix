@@ -25,11 +25,6 @@ in
         kb_layout = "us";
         follow_mouse = 1;
       };
-
-      # Ensure spice-vdagent starts for clipboard functionality
-      exec-once = [
-        "spice-vdagent"
-      ];
     };
 
 
@@ -47,6 +42,7 @@ in
 
     # Default programs
     TERMINAL = ghosttyBin;
+    BROWSER = "brave";
   };
 
   # Screensharing and Portal
