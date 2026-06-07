@@ -4,6 +4,28 @@ let
   # Extract the ghostty binary path for convenience
   ghosttyPkg = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default;
   ghosttyBin = "${ghosttyPkg}/bin/ghostty";
+
+  # Wallpaper Setup Script
+  setup-wallpapers = pkgs.writeShellScriptBin "setup-wallpapers" ''
+    WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
+    if [ ! -d "$WALLPAPER_DIR" ] || [ -z "$(ls -A "$WALLPAPER_DIR")" ]; then
+      mkdir -p "$WALLPAPER_DIR"
+      ${pkgs.curl}/bin/curl -L "https://hypr.land/imgs/blog/contestWinners/Kath.png" -o "$WALLPAPER_DIR/hyprchan-kath.png"
+      ${pkgs.curl}/bin/curl -L "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/city/shibuya.png" -o "$WALLPAPER_DIR/tokyo-night-shibuya.png"
+      ${pkgs.curl}/bin/curl -L "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/minimal/tokyo-night-minimal.png" -o "$WALLPAPER_DIR/tokyo-night-minimal.png"
+    fi
+  '';
+
+  # Wallpaper Cycling Script
+  cycle-wallpaper = pkgs.writeShellScriptBin "cycle-wallpaper" ''
+    WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
+    RANDOM_WALL=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \) | ${pkgs.coreutils}/bin/shuf -n 1)
+    if [ -n "$RANDOM_WALL" ]; then
+      ${pkgs.hyprland}/bin/hyprctl hyprpaper unload all
+      ${pkgs.hyprland}/bin/hyprctl hyprpaper preload "$RANDOM_WALL"
+      ${pkgs.hyprland}/bin/hyprctl hyprpaper wallpaper ",$RANDOM_WALL"
+    fi
+  '';
 in
 {
   home.username = "td";
@@ -13,6 +35,8 @@ in
 
   # User specific packages
   home.packages = [
+    setup-wallpapers
+    cycle-wallpaper
     # Modern CLI
     pkgs.ripgrep
     pkgs.bat
@@ -120,7 +144,7 @@ in
         "SUPER, E, exec, thunar"
         "SUPER, Space, exec, wofi --show drun"
         "SUPER, L, exec, hyprlock"
-        "SUPER, W, exec, ~/.local/bin/cycle-wallpaper"
+        "SUPER, W, exec, cycle-wallpaper"
         "SUPER_SHIFT, E, exit"
         "SUPER, X, killactive"
 
@@ -221,8 +245,8 @@ in
         "hypridle"
         "waybar"
         "hyprpaper"
-        "~/.local/bin/setup-wallpapers"
-        "~/.local/bin/cycle-wallpaper"
+        "setup-wallpapers"
+        "cycle-wallpaper"
         "gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
         "gsettings set org.gnome.desktop.interface gtk-theme 'Tokyonight-Dark'"
       ];
@@ -235,46 +259,8 @@ in
   };
 
   # Wallpaper Setup Script (Downloads a few high-quality themed images)
-  home.file.".local/bin/setup-wallpapers" = {
-    executable = true;
-    text = ''
-      #!/bin/bash
-      WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
-      
-      # Only run if directory is empty or missing
-      if [ ! -d "$WALLPAPER_DIR" ] || [ -z "$(ls -A "$WALLPAPER_DIR")" ]; then
-        echo "Populating Wallpaper Bank..."
-        mkdir -p "$WALLPAPER_DIR"
-        
-        # 1. Official Hyprchan (Kath)
-        curl -L "https://hypr.land/imgs/blog/contestWinners/Kath.png" -o "$WALLPAPER_DIR/hyprchan-kath.png"
-        
-        # 2. Tokyo Night Cityscape (Shibuya)
-        curl -L "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/city/shibuya.png" -o "$WALLPAPER_DIR/tokyo-night-shibuya.png"
-        
-        # 3. Tokyo Night Abstract
-        curl -L "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/minimal/tokyo-night-minimal.png" -o "$WALLPAPER_DIR/tokyo-night-minimal.png"
-        
-        echo "Wallpaper Bank Ready."
-      fi
-    '';
-  };
 
   # Wallpaper Cycling Script
-  home.file.".local/bin/cycle-wallpaper" = {
-    executable = true;
-    text = ''
-      #!/bin/bash
-      WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
-      mkdir -p "$WALLPAPER_DIR"
-      RANDOM_WALL=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \) | shuf -n 1)
-      if [ -n "$RANDOM_WALL" ]; then
-        hyprctl hyprpaper unload all
-        hyprctl hyprpaper preload "$RANDOM_WALL"
-        hyprctl hyprpaper wallpaper ",$RANDOM_WALL"
-      fi
-    '';
-  };
 
   # hyprpaper Config
   services.hyprpaper = {
