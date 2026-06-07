@@ -136,8 +136,8 @@ in
       ];
 
       windowrule = [
-        "match:class ^(ghostty)$, opacity 0.9 0.8"
-        "match:class ^(ghostty)$, blur 1"
+        "opacity 0.9 0.8, match:class ^(ghostty)$"
+        "no_blur 0, match:class ^(ghostty)$"
       ];
     };
   };
