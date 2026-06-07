@@ -4,6 +4,14 @@
   # Nix Settings
   nix.settings.experimental-features = [ "nix-command" "flakes"];
   
+  # Optimization and Garbage Collection
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
+  nix.settings.auto-optimise-store = true;
+
   # Time and locale
   time.timeZone = "America/Chicago";
   i18n.defaultLocale = "en_US.UTF-8";
