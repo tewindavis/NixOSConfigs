@@ -260,28 +260,44 @@ in
     enable = true;
     enableBashIntegration = true;
     settings = {
-      add_newline = true;
-      character = {
-        success_symbol = "[󰄛](bold pink) ";
-        error_symbol = "[󰄛](bold red) ";
+      add_newline = false;
+      # Classic Linux prompt format: [user@host:dir]$
+      format = "\\[$username$hostname$directory\\]$git_branch$character";
+      
+      username = {
+        show_always = true;
+        style_user = "bold #f5c2e7"; # Catppuccin Pink
+        format = "[$user]($style)";
       };
+      
+      hostname = {
+        ssh_only = false;
+        style = "bold #f5c2e7";
+        format = "@[$hostname]($style)";
+      };
+      
       directory = {
-        style = "bold yellow";
+        style = "bold #f9e2af"; # Catppuccin Yellow
         truncation_length = 3;
-        truncation_symbol = "…/";
+        format = ":[$path]($style)";
       };
+      
       git_branch = {
         symbol = " ";
-        style = "bold pink";
+        style = "bold #f5c2e7";
+        format = " [$symbol$branch]($style)";
       };
-      git_status = {
-        style = "bold yellow";
+
+      character = {
+        success_symbol = "[\\$](bold #f5c2e7) ";
+        error_symbol = "[\\$](bold red) ";
       };
-      # Languages & Environments
-      python = { symbol = " "; style = "bold blue"; };
-      rust = { symbol = " "; style = "bold red"; };
-      nix_shell = { symbol = " "; style = "bold blue"; };
-      package = { symbol = "󰏗 "; style = "bold blue"; };
+
+      # Disable noisy modules to keep the prompt classic and clean
+      nix_shell = { disabled = true; };
+      package = { disabled = true; };
+      python = { disabled = true; };
+      rust = { disabled = true; };
     };
   };
 
