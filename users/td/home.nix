@@ -93,6 +93,8 @@ in
     pkgs.pavucontrol 
     pkgs.brightnessctl
     pkgs.hyprpaper # Wallpaper engine
+    pkgs.hyprsunset # Blue light filter
+    ];
 
     # Fonts
     pkgs.inter
@@ -163,6 +165,8 @@ in
         "SUPER, Space, exec, wofi --show drun"
         "SUPER, L, exec, hyprlock"
         "SUPER, W, exec, cycle-wallpaper"
+        "SUPER, R, exec, hyprsunset --temperature 2500" # Aggressive Night Mode
+        "SUPER_SHIFT, R, exec, hyprsunset --identity" # Reset to Day Mode
         "SUPER_SHIFT, E, exit"
         "SUPER, X, killactive"
 
@@ -263,6 +267,7 @@ in
         "hypridle"
         "waybar"
         "hyprpaper"
+        "hyprsunset --temperature 3500" # Moderate auto-start shift
         "setup-wallpapers"
         "cycle-wallpaper"
         "gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
