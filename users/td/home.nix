@@ -79,17 +79,19 @@ in
         "SUPER_SHIFT, 8, movetoworkspace, 8"
         "SUPER_SHIFT, 9, movetoworkspace, 9"
       ];
-
+      # Input Configuration
       input = {
         kb_layout = "us";
         follow_mouse = 1;
         touchpad = {
-          natural_scroll = "yes";
-          tap-to-click = "yes";
+          natural_scroll = true;
+          tap-to-click = true;
         };
       };
 
-      gestures.workspace_swipe = "yes";
+      gestures = {
+        workspace_swipe = 1;
+      };
 
       general = {
         gaps_in = 5;
@@ -100,7 +102,9 @@ in
         layout = "dwindle";
       };
 
-      misc.force_default_wallpaper = 2;
+      misc = {
+        force_default_wallpaper = 2;
+      };
 
       decoration = {
         rounding = 10;
@@ -110,6 +114,7 @@ in
           passes = 2;
         };
       };
+
 
       animations = {
         enabled = true;
