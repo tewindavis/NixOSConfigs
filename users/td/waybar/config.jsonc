@@ -5,7 +5,7 @@
     "spacing": 4,
     "modules-left": ["hyprland/workspaces", "hyprland/window"],
     "modules-center": ["clock"],
-    "modules-right": ["cpu", "memory", "battery", "network", "pulseaudio", "tray"],
+    "modules-right": ["cpu", "memory", "battery", "bluetooth", "network", "pulseaudio", "tray"],
     
     "hyprland/workspaces": {
         "disable-scroll": true,
@@ -32,6 +32,17 @@
         "format-charging": " {capacity}%",
         "format-plugged": " {capacity}%",
         "format-icons": ["", "", "", "", ""]
+    },
+
+    "bluetooth": {
+        "format": " {status}",
+        "format-connected": " {device_alias}",
+        "format-connected-battery": " {device_alias} {device_battery_percentage}%",
+        "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+        "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+        "on-click": "blueman-manager"
     },
 
     "network": {

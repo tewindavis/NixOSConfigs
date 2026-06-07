@@ -20,7 +20,7 @@ window#waybar {
     border-bottom: 2px solid #89b4fa;
 }
 
-#clock, #cpu, #memory, #battery, #network, #pulseaudio, #tray {
+#clock, #cpu, #memory, #battery, #bluetooth, #network, #pulseaudio, #tray {
     padding: 0 10px;
     margin: 4px 2px;
     border-radius: 8px;
@@ -45,6 +45,10 @@ window#waybar {
 
 #battery.charging {
     color: #a6e3a1;
+}
+
+#bluetooth {
+    color: #94e2d5;
 }
 
 #network {
