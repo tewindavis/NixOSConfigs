@@ -24,6 +24,7 @@ in
     rustup
     julia
     octave
+    lua
     gcc
     gnumake
     cmake
