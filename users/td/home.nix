@@ -83,10 +83,7 @@ in
     package = pkgs.hyprland;
     
     settings = {
-      monitor = [
-        "eDP-1,preferred,auto,1.17"
-        ",preferred,auto,1"
-      ];
+      monitor = ",2256x1504@60,auto,1.17";
 
       xwayland = {
         force_zero_scaling = true;
