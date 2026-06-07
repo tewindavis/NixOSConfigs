@@ -27,12 +27,7 @@ let
     }
 
     download_wall "https://hypr.land/imgs/blog/contestWinners/Kath.png" "hyprchan-kath.png"
-    download_wall "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/campfire.png" "tokyo-night-campfire.png"
-    download_wall "https://images.wallpaperscraft.com/image/single/shibuya_tokyo_night_city_140924_1920x1080.jpg" "tokyo-night-shibuya.jpg"
-    download_wall "https://w.wallhaven.cc/full/y8/wallhaven-y863gx.jpg" "tokyo-night-abstract.jpg"
-    download_wall "https://w.wallhaven.cc/full/x8/wallhaven-x838p3.jpg" "fall-forest.jpg"
-    download_wall "https://images8.alphacoders.com/100/1008685.jpg" "cozy-campfire-anime.jpg"
-  '';
+ '';
 
   # Wallpaper Cycling Script
   cycle-wallpaper = pkgs.writeShellScriptBin "cycle-wallpaper" ''
