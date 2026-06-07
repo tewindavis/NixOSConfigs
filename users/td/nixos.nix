@@ -5,6 +5,6 @@
     isNormalUser = true;
     description = "td";
     extraGroups = [ "networkmanager" "wheel" "video" "audio" ];
-    shell = pkgs.bash;
+    shell = pkgs.zsh;
   };
 }

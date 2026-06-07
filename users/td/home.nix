@@ -308,7 +308,32 @@ $character'';
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
   programs.direnv = { enable = true; nix-direnv.enable = true; };
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    autosuggestion.enable = true;
+    syntaxHighlighting.enable = true;
+    
+    shellAliases = {
+      ls = "eza --icons";
+      ll = "eza -lh --icons";
+      la = "eza -a --icons";
+      grep = "rg";
+      cat = "bat";
+      cd = "z";
+      rebuild = "sudo nixos-rebuild switch --flake .";
+    };
+
+    history = {
+      size = 10000;
+      path = "${home.homeDirectory}/.zsh_history";
+    };
+  };
+
   programs.bash.enable = true;
+  programs.starship.enableZshIntegration = true;
+  programs.zoxide.enableZshIntegration = true;
+  programs.direnv.enableZshIntegration = true;
   programs.home-manager.enable = true;
 
   home.sessionVariables = {
