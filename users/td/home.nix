@@ -39,7 +39,7 @@ in
     
     settings = {
       monitor = [
-        "eDP-1, preferred, auto, 1.25"
+        "eDP-1, preferred, auto, 1.17"
         ", preferred, auto, 1"
       ];
 
