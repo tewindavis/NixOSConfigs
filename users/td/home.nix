@@ -1,8 +1,8 @@
 { inputs, pkgs, ... }:
 
 let
-  # Extract the ghostty binary path for convenience
-  ghosttyPkg = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  # Fallback to standard ghostty if flake version fails
+  ghosttyPkg = pkgs.ghostty;
   ghosttyBin = "${ghosttyPkg}/bin/ghostty";
 in
 {
@@ -40,26 +40,18 @@ in
     gcc
     gnumake
     cmake
-    gdb # Already in rl-binary for one host, but good for all
+    gdb 
     
-    # Python (Global "Greatest Hits" for quick scripts/research)
+    # Python (Simplified for troubleshooting)
     (python3.withPackages (ps: with ps; [
       pip
       virtualenv
-      black # formatter
-      isort # import sorter
-      ipython # much better than the raw repl
-      requests # for networking
-      pandas # data manipulation
-      numpy # math
-      jax # high-performance compute
-      jaxlib-bin # Pre-compiled binary to avoid long/failing builds
-      tensorflow-bin # Pre-compiled binary to avoid massive compile times
-      pytest # testing
-      matplotlib # plotting
-      seaborn # better plotting
-      flask # web dev
-      django # web dev
+      black 
+      isort 
+      ipython 
+      requests 
+      pandas 
+      numpy 
     ]))
 
     # LSPs, Formatters, Linters for LazyVim
@@ -67,28 +59,28 @@ in
     stylua
     rust-analyzer
     pyright
-    ruff # Fast python linter/formatter
-    vscode-langservers-extracted # HTML/CSS/JSON/ESLint
+    ruff 
+    vscode-langservers-extracted 
     typescript-language-server
     yaml-language-server
-    nil # Nix LSP
+    nil 
 
     # UI Survival Kit
-    ghosttyPkg
+    ghostty
     wofi
     waybar
     dunst
     libva-utils
     brave
     networkmanagerapplet
-    pavucontrol # Audio control GUI
+    pavucontrol 
   ];
 
   # Hyprland User Config
   wayland.windowManager.hyprland = {
     enable = true;
-    # Use the same package as the system for consistency
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    # Use standard package for troubleshooting
+    package = pkgs.hyprland;
     
     settings = {
       # Monitors
