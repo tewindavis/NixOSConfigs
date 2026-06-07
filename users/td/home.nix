@@ -94,12 +94,9 @@ in
     pkgs.brightnessctl
     pkgs.hyprpaper # Wallpaper engine
     pkgs.hyprsunset # Blue light filter
-    ];
 
-    # Fonts
+    # Fonts & Theming
     pkgs.inter
-
-    # Theming support
     pkgs.tokyonight-gtk-theme
     pkgs.catppuccin-cursors.mochaDark
     pkgs.catppuccin-papirus-folders
