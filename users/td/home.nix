@@ -221,6 +221,7 @@ in
         "hypridle"
         "waybar"
         "hyprpaper"
+        "~/.local/bin/setup-wallpapers"
         "~/.local/bin/cycle-wallpaper"
         "gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
         "gsettings set org.gnome.desktop.interface gtk-theme 'Tokyonight-Dark'"
@@ -231,6 +232,32 @@ in
         "no_blur 0, match:class ^(ghostty)$"
       ];
     };
+  };
+
+  # Wallpaper Setup Script (Downloads a few high-quality themed images)
+  home.file.".local/bin/setup-wallpapers" = {
+    executable = true;
+    text = ''
+      #!/bin/bash
+      WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
+      
+      # Only run if directory is empty or missing
+      if [ ! -d "$WALLPAPER_DIR" ] || [ -z "$(ls -A "$WALLPAPER_DIR")" ]; then
+        echo "Populating Wallpaper Bank..."
+        mkdir -p "$WALLPAPER_DIR"
+        
+        # 1. Official Hyprchan (Kath)
+        curl -L "https://hypr.land/imgs/blog/contestWinners/Kath.png" -o "$WALLPAPER_DIR/hyprchan-kath.png"
+        
+        # 2. Tokyo Night Cityscape (Shibuya)
+        curl -L "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/city/shibuya.png" -o "$WALLPAPER_DIR/tokyo-night-shibuya.png"
+        
+        # 3. Tokyo Night Abstract
+        curl -L "https://raw.githubusercontent.com/tokyo-night/wallpapers/main/minimal/tokyo-night-minimal.png" -o "$WALLPAPER_DIR/tokyo-night-minimal.png"
+        
+        echo "Wallpaper Bank Ready."
+      fi
+    '';
   };
 
   # Wallpaper Cycling Script
