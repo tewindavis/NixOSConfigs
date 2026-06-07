@@ -1,10 +1,9 @@
-{ inputs, pkgs, ...}:
+{ pkgs, ...}:
 
 {
   # Enable Hyprland at system level for SUID wrappers and system-wide integration
   programs.hyprland = {
     enable = true;
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
   };
 
   # Wayland hardware-specific environment variables (System Level)
