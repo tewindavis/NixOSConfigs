@@ -19,6 +19,24 @@ in
     eza
     fd
     bottom
+    
+    # Languages & Toolchains
+    rustup
+    julia
+    octave
+    gcc
+    gnumake
+    cmake
+    
+    # Python (Base)
+    (python3.withPackages (ps: with ps; [
+      pip
+      virtualenv
+      ipython 
+      requests 
+      pandas 
+      numpy 
+    ]))
 
     # UI Survival Kit
     ghostty
