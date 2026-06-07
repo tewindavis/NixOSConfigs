@@ -1,9 +1,9 @@
 { inputs, pkgs, ... }:
 
 let
-  # Use standard packages for maximum reliability during initial install
-  ghosttyPkg = pkgs.ghostty;
-  ghosttyBin = "ghostty";
+  # Extract the ghostty binary path for convenience
+  ghosttyPkg = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  ghosttyBin = "${ghosttyPkg}/bin/ghostty";
 in
 {
   home.username = "td";
@@ -19,7 +19,6 @@ in
     eza
     fd
     bottom
-    gemini-cli
 
     # Languages & Toolchains
     rustup
