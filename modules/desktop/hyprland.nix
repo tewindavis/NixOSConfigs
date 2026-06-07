@@ -14,10 +14,15 @@
     
     # Hint for electron apps
     NIXOS_OZONE_WL = "1";
+
+    # Force dark mode for apps that check these vars
+    GTK_THEME = "Adwaita-dark";
   };
 
   # Screensharing and Portal
   xdg.portal = {
     enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = "*";
   };
 }

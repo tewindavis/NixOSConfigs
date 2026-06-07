@@ -53,6 +53,10 @@ in
 
     # Fonts
     pkgs.inter
+
+    # Theming support
+    pkgs.gnome-themes-extra
+    pkgs.glib # for gsettings
   ];
 
   # GTK Theming
@@ -60,6 +64,7 @@ in
     enable = true;
     theme = {
       name = "Adwaita-dark";
+      package = pkgs.gnome-themes-extra;
     };
     font = {
       name = "Inter";
