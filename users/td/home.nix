@@ -51,8 +51,14 @@ in
       requests # for networking
       pandas # data manipulation
       numpy # math
+      jax # high-performance compute
+      jaxlib
+      tensorflow # alternative ML stack
       pytest # testing
       matplotlib # plotting
+      seaborn # better plotting
+      flask # web dev
+      django # web dev
     ]))
 
     # LSPs, Formatters, Linters for LazyVim
