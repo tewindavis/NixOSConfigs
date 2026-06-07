@@ -22,6 +22,7 @@ in
     
     # Languages & Toolchains
     rustup
+    rustlings
     julia
     octave
     lua
