@@ -145,7 +145,7 @@ in
     enable = true;
     # Use system-provided package for stability
     package = pkgs.hyprland;
-    configType = "lua";
+    configType = "hyprlang";
     settings = {
       monitor = ",2256x1504@60,auto,1.17";
 
@@ -231,10 +231,8 @@ in
         gaps_in = 2;
         gaps_out = 3;
         border_size = 2;
-        col = {
-          active_border = "rgba(7aa2f7ee) rgba(9ece6aee) 45deg"; # Blue & Green
-          inactive_border = "rgba(1a1a20aa)";
-        };
+        "col.active_border" = "rgba(7aa2f7ee) rgba(9ece6aee) 45deg"; # Blue & Green
+        "col.inactive_border" = "rgba(1a1a20aa)";
         layout = "dwindle";
       };
 
@@ -266,7 +264,7 @@ in
         ];
       };
 
-      exec_once = [
+      exec-once = [
         "spice-vdagent"
         "nm-applet --indicator"
         "hypridle"
