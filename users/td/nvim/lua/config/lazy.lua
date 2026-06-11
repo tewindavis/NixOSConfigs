@@ -16,6 +16,7 @@ require("lazy").setup({
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
     -- Import your plugins
     { import = "plugins" },
+    { "ThePrimeagen/vim-be-good", cmd="VimBeGood" }
   },
   defaults = {
     lazy = false,
