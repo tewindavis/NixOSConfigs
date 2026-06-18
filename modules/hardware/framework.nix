@@ -9,4 +9,8 @@
 
   # Additional framework-specific tweaks can go here
   services.fwupd.enable = true; # Recommended for Framework bios updates
+  services.fprintd.enable = true; # Fingerprint reader
+
+  security.pam.services.login.fprintAuth = true;
+  security.pam.services.sudo.fprintAuth = true;
 }
