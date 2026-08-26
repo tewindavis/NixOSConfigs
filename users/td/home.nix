@@ -95,7 +95,7 @@ in
 
     # Fonts & Theming
     pkgs.inter
-    pkgs.tokyonight-gtk-theme
+    #pkgs.tokyonight-gtk-theme
     pkgs.catppuccin-cursors.mochaDark
     pkgs.catppuccin-papirus-folders
     pkgs.gnome-themes-extra
@@ -106,7 +106,7 @@ in
   gtk = {
     enable = true;
     theme = {
-      name = "Tokyonight-Dark";
+      name = "Adwaita-dark";
       package = pkgs.tokyonight-gtk-theme;
     };
     font = {
