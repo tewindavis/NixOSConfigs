@@ -107,7 +107,7 @@ in
     enable = true;
     theme = {
       name = "Adwaita-dark";
-      package = pkgs.tokyonight-gtk-theme;
+      package = pkgs.orchis-theme;
     };
     font = {
       name = "Inter";
