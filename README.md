@@ -45,8 +45,8 @@ All system controls are bound to the **`SUPER`** (Command) key.
 |:--- |:---|
 | `SUPER + L` | Lock Screen (Heavy Blur) |
 | `SUPER + W` | Cycle Wallpaper |
-| `SUPER + R` | Aggressive Redshift (2500K) |
-| `SUPER + SHIFT + R` | Reset Redshift (Day Mode) |
+| `SUPER + R` | Aggressive Hyprsunset (2500K) |
+| `SUPER + SHIFT + R` | Reset Hyprsunset (Day Mode) |
 | `SUPER + Left Click` | **Drag to Move** (Snaps to Grid) |
 | `SUPER + Right Click`| **Drag to Resize** |
 | `Media Keys` | Volume, Mic, and Brightness Control |

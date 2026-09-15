@@ -93,6 +93,9 @@ in
     pkgs.hyprpaper # Wallpaper engine
     pkgs.hyprsunset # Blue light filter
 
+    # AI Integration
+    pkgs.gemini-cli
+
     # Fonts & Theming
     pkgs.inter
     #pkgs.tokyonight-gtk-theme

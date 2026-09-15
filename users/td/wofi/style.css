@@ -1,15 +1,15 @@
 window {
     font-family: "JetBrainsMono Nerd Font";
-    background-color: rgba(30, 30, 46, 0.9);
-    border: 2px solid #89b4fa;
+    background-color: rgba(26, 27, 38, 0.9); /* Tokyo Night bg, matches waybar modules */
+    border: 2px solid #7aa2f7; /* Blue accent */
     border-radius: 12px;
 }
 
 #input {
     margin: 5px;
     border: none;
-    color: #cdd6f4;
-    background-color: rgba(49, 50, 68, 0.9);
+    color: #c0caf5;
+    background-color: rgba(41, 46, 66, 0.9);
 }
 
 #inner-box {
@@ -25,14 +25,14 @@ window {
 }
 
 #text {
-    color: #cdd6f4;
+    color: #c0caf5;
 }
 
 #entry:selected {
-    background-color: #89b4fa;
+    background-color: #7aa2f7;
     border-radius: 8px;
 }
 
 #text:selected {
-    color: #1e1e2e;
+    color: #1a1b26;
 }

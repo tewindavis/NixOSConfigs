@@ -33,10 +33,3 @@ palette = 6=#7dcfff
 palette = 14=#7dcfff
 palette = 7=#a9b1d6
 palette = 15=#c0caf5
-
-# Tasteful overrides for the "vibes"
-# Vibrant Blue, Green, and Orange accents
-palette = 5=#ff9e64
-palette = 13=#ff9e64
-palette = 3=#9ece6a
-palette = 11=#9ece6a
