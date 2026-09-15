@@ -56,6 +56,7 @@ in
     pkgs.eza
     pkgs.fd
     pkgs.bottom
+    pkgs.gh # GitHub CLI, for agentic PR/issue workflows
     
     # Languages & Toolchains
     pkgs.cargo
@@ -95,6 +96,7 @@ in
 
     # AI Integration
     pkgs.gemini-cli
+    pkgs.claude-code
 
     # Fonts & Theming
     pkgs.inter
