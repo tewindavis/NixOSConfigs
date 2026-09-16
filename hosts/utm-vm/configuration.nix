@@ -7,6 +7,7 @@
     ../../modules/core
     ../../modules/hardware/utm.nix
     ../../modules/services/vpn.nix
+    ../../modules/services/syncthing.nix
     ../../users/td/nixos.nix
   ];
 

@@ -57,6 +57,7 @@ All system controls are bound to the **`SUPER`** (Command) key.
 | `SUPER + SHIFT + L` | Lock Screen (Heavy Blur) |
 | `SUPER + SHIFT + S` | Screenshot Region (Copy + Save) |
 | `Print` | Screenshot Full Output (Copy + Save) |
+| `SUPER + ALT + R` | Toggle Screen Recording (mp4, `~/Videos/Recordings`) |
 | `SUPER + V` | Clipboard History |
 | `SUPER + SHIFT + P` | Power Menu |
 | `SUPER + W` | Cycle Wallpaper |
@@ -77,6 +78,12 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 *   **CLI Essentials:** `ripgrep`, `fd`, `bat` (cat), `eza` (ls), `zoxide` (cd), `gh` (GitHub CLI), and `direnv` for automatic flake environment loading.
 *   **Media & Printing:** `mpv` handles video/audio opened from Thunar; CUPS + Avahi provide zero-config discovery and printing to network/AirPrint printers, managed via `system-config-printer`.
 *   **Screen Sharing:** `xdg-desktop-portal-hyprland` is wired in alongside the GTK portal, so screen/window capture works in Brave, Discord, OBS, etc.
+*   **Screen Recording:** `SUPER + ALT + R` toggles `wf-recorder` in the background, saving timestamped mp4s to `~/Videos/Recordings` with a dunst start/stop notification.
+*   **Archives:** `xarchiver` (Thunar's archive-plugin backend) plus `p7zip`/`unrar`/`zip`/`unzip` handle zip/7z/rar/tar/gzip out of the box.
+*   **Password Manager:** `keepassxc` is the default handler for `.kdbx` files.
+*   **File Sync:** `syncthing` runs as a system service (LAN/P2P sync), with `syncthingtray` in the waybar tray for status/control; `rclone` is available for cloud-storage remotes.
+*   **System Monitor:** `resources`, a GTK4/libadwaita system monitor, complements the CLI `htop`/`bottom`.
+*   **Firmware:** `gnome-firmware` gives a GUI alongside `fwupdmgr` for firmware updates.
 *   **AI Integration:** `claude-code` and `antigravity-cli` are pre-installed for agentic development and interactive codebase analysis.
 
 ### Neovim (LazyVim IDE)

@@ -8,6 +8,7 @@
     ../../modules/hardware/nvidia.nix
     ../../modules/hardware/bluetooth.nix
     ../../modules/services/vpn.nix
+    ../../modules/services/syncthing.nix
     ../../modules/dev/rl-binary.nix
     ../../users/td/nixos.nix
   ];

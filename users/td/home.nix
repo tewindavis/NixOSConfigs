@@ -111,6 +111,29 @@ let
     esac
     ${pkgs.jq}/bin/jq -nc --arg text "$ICON" --arg tooltip "Power profile: $PROFILE (click to cycle)" '{text: $text, tooltip: $tooltip}'
   '';
+
+  # Screen recording toggle (SUPER+ALT+R): mirrors the grimblast/swappy
+  # screenshot pattern above, but for video. First call starts wf-recorder
+  # in the background against the whole output and stashes its PID; second
+  # call sends SIGINT (wf-recorder's clean-stop signal, finalizes the mp4)
+  # and clears the PID file. dunstify gives a themed start/stop toast since
+  # dunst is already the notification daemon here.
+  toggle-recording = pkgs.writeShellScriptBin "toggle-recording" ''
+    PIDFILE="/tmp/wf-recorder-$USER.pid"
+    OUT_DIR="$HOME/Videos/Recordings"
+    mkdir -p "$OUT_DIR"
+
+    if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+      kill -INT "$(cat "$PIDFILE")"
+      rm -f "$PIDFILE"
+      ${pkgs.dunst}/bin/dunstify "Screen Recording" "Stopped"
+    else
+      FILE="$OUT_DIR/recording-$(date +%Y%m%d-%H%M%S).mp4"
+      ${pkgs.wf-recorder}/bin/wf-recorder -f "$FILE" >/tmp/wf-recorder.log 2>&1 &
+      echo $! > "$PIDFILE"
+      ${pkgs.dunst}/bin/dunstify "Screen Recording" "Started: $FILE"
+    fi
+  '';
 in
 {
   home.username = "td";
@@ -123,6 +146,7 @@ in
     setup-wallpapers
     cycle-wallpaper
     toggle-scratchpad
+    toggle-recording
     waybar-weather
     waybar-power-profile
     pkgs.power-profiles-daemon # powerprofilesctl CLI, used by waybar-power-profile above
@@ -184,6 +208,13 @@ in
     pkgs.imv # Image viewer, for screenshots/images opened from Thunar
     pkgs.zathura # PDF viewer, for docs opened from Thunar
     pkgs.mpv # Video/audio player, for media opened from Thunar
+    pkgs.wf-recorder # Screen recording backend for toggle-recording (SUPER+ALT+R)
+    pkgs.keepassxc # Password manager
+    pkgs.resources # GTK4/libadwaita system monitor (GUI complement to bottom/htop)
+    pkgs.rclone # CLI sync/mount for cloud storage remotes
+    pkgs.gnome-firmware # GUI firmware updater, complements fwupd (see framework host)
+    pkgs.syncthingtray # Waybar tray icon/control for the syncthing service
+    # (modules/services/syncthing.nix)
 
     # AI Integration
     pkgs.antigravity-cli
@@ -626,6 +657,12 @@ in
       "video/webm" = "mpv.desktop";
       "audio/mpeg" = "mpv.desktop";
       "audio/flac" = "mpv.desktop";
+      "application/x-keepass2" = "org.keepassxc.KeePassXC.desktop";
+      "application/zip" = "xarchiver.desktop";
+      "application/x-7z-compressed" = "xarchiver.desktop";
+      "application/vnd.rar" = "xarchiver.desktop";
+      "application/x-tar" = "xarchiver.desktop";
+      "application/gzip" = "xarchiver.desktop";
     };
   };
 
