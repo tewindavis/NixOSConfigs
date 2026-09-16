@@ -8,13 +8,35 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, hyprland, home-manager, ... }@inputs:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      treefmt-nix,
+      ...
+    }@inputs:
     let
+      # Hosts span both x86_64 (framework, dl-prototype) and aarch64 (utm-vm).
+      forAllSystems = nixpkgs.lib.genAttrs [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
+      treefmtEval = forAllSystems (
+        system: treefmt-nix.lib.evalModule nixpkgs.legacyPackages.${system} ./treefmt.nix
+      );
+
       # All three hosts share the same home-manager wiring; only the
       # per-host configuration.nix and target system differ.
-      mkHost = { hostname, system }:
+      mkHost =
+        { hostname, system }:
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = { inherit inputs; };
@@ -34,13 +56,31 @@
     {
       nixosConfigurations = {
         # Aarch64 sandbox optimized for MacOS/Apple Silicon (VirtIO/Spice).
-        utm-vm = mkHost { hostname = "utm-vm"; system = "aarch64-linux"; };
+        utm-vm = mkHost {
+          hostname = "utm-vm";
+          system = "aarch64-linux";
+        };
 
         # Primary x86_64 portable workstation (Framework 13).
-        framework = mkHost { hostname = "framework"; system = "x86_64-linux"; };
+        framework = mkHost {
+          hostname = "framework";
+          system = "x86_64-linux";
+        };
 
         # High-performance x86_64 training rig (Threadripper + NVIDIA).
-        dl-prototype = mkHost { hostname = "dl-prototype"; system = "x86_64-linux"; };
+        dl-prototype = mkHost {
+          hostname = "dl-prototype";
+          system = "x86_64-linux";
+        };
       };
+
+      # `nix fmt` — runs nixfmt/statix/deadnix over the tree (see treefmt.nix).
+      formatter = forAllSystems (system: treefmtEval.${system}.config.build.wrapper);
+
+      # `nix flake check` — validates formatting, plus (for free, via the
+      # nixosConfigurations schema check) that all three hosts still evaluate.
+      checks = forAllSystems (system: {
+        formatting = treefmtEval.${system}.config.build.check self;
+      });
     };
 }
