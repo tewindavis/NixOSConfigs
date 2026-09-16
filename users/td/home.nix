@@ -127,11 +127,12 @@ in
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
   };
+  gtk.gtk4.theme = config.gtk.theme;
 
   # Qt Theming
   qt = {
     enable = true;
-    platformTheme.name = "gtk";
+    platformTheme.name = "gtk3";
     style.name = "adwaita-dark";
   };
 
@@ -385,6 +386,8 @@ $character'';
   };
 
   programs.neovim.enable = true;
+  programs.neovim.withRuby = true;
+  programs.neovim.withPython3 = true;
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
   programs.direnv = { enable = true; nix-direnv.enable = true; };
