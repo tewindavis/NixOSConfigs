@@ -20,7 +20,7 @@ let
   # it's describing).
   hyprsunsetDayStart = "7:30";
   hyprsunsetNightStart = "20:00";
-  hyprsunsetNightTemp = "3500";
+  hyprsunsetNightTemp = "2450"; # ~30% warmer/redder than the previous 3500K
 
   # Wallpaper Setup Script
   setup-wallpapers = pkgs.writeShellScriptBin "setup-wallpapers" ''
