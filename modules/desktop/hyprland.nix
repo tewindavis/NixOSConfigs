@@ -34,10 +34,21 @@
   };
 
   # Screensharing and Portal
+  # xdg-desktop-portal-hyprland provides ScreenCast/Screenshot (needed for
+  # screen sharing in Brave/Discord/OBS etc. over wlr-screencopy); gtk
+  # handles FileChooser and everything else hyprland's portal doesn't
+  # implement. Explicit preference order (rather than "*") avoids the two
+  # portals racing/prompting for the same interface.
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-    config.common.default = "*";
+    extraPortals = [
+      pkgs.xdg-desktop-portal-hyprland
+      pkgs.xdg-desktop-portal-gtk
+    ];
+    config.common.default = [
+      "hyprland"
+      "gtk"
+    ];
   };
 
   # swayosd's udev rule grants the "video" group (td is a member, see
