@@ -145,7 +145,8 @@ in
   };
 
   # Manual Hyprland Config (Bypasses buggy HM module STUB)
-  xdg.configFile."hypr/hyprland.conf".source = ./hypr/hyprland.conf;
+  # Hyprland 0.56+ treats hyprland.conf as legacy and prefers hyprland.lua
+  xdg.configFile."hypr/hyprland.lua".source = ./hypr/hyprland.lua;
 
   # Config Links
   xdg.configFile."waybar/config".source = ./waybar/config.jsonc;
