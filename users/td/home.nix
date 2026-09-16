@@ -296,6 +296,26 @@ in
       ]
       (builtins.readFile ./hypr/hyprland.lua);
 
+  # hyprsunset auto day/night schedule: hyprsunset is a Hyprlang tool (not
+  # Lua like hyprland.lua), and reads this from its default XDG path on
+  # startup. Run bare (see autostart in hyprland.lua) it becomes a daemon
+  # that watches the clock and switches profiles itself — f.lux/redshift
+  # style — while the SUPER+R/SUPER+SHIFT+R keybinds still work as IPC
+  # clients against that daemon for a manual override until the next
+  # scheduled switch. Times reuse the same values the old fixed autostart
+  # (3500K) and the SHIFT+R "day mode" reset (identity) already used.
+  xdg.configFile."hypr/hyprsunset.conf".text = ''
+    profile {
+        time = 7:30
+        identity = true
+    }
+
+    profile {
+        time = 20:00
+        temperature = 3500
+    }
+  '';
+
   # Config Links
   xdg.configFile."waybar/config".source = ./waybar/config.jsonc;
   xdg.configFile."waybar/style.css".source = ./waybar/style.css;

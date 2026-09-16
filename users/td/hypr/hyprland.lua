@@ -169,7 +169,10 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("swayosd-server")
   hl.exec_cmd("waybar")
   hl.exec_cmd("hyprpaper")
-  hl.exec_cmd("hyprsunset --temperature 3500")
+  -- Bare invocation starts the daemon and loads the auto day/night schedule
+  -- from hyprsunset.conf (see home.nix); SUPER+R/SHIFT+R below become
+  -- manual IPC overrides against this same running daemon.
+  hl.exec_cmd("hyprsunset")
   hl.exec_cmd("setup-wallpapers")
   hl.exec_cmd("cycle-wallpaper")
 end)
