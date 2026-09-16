@@ -20,7 +20,7 @@ hl.config({
     follow_mouse = 1,
     touchpad = {
       natural_scroll = true,
-      ["tap-to-click"] = true,
+      tap_to_click = true,
     },
   },
 
@@ -72,7 +72,7 @@ hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 hl.window_rule({
   name = "ghostty-rice",
   match = { class = "^(ghostty)$" },
-  opacity = { 0.95, 0.85 },
+  opacity = "0.95 0.85",
 })
 
 -- Bindings
