@@ -26,7 +26,7 @@
     NIXOS_OZONE_WL = "1";
 
     # Force dark mode for apps that check these vars
-    GTK_THEME = "Adwaita-dark";
+    GTK_THEME = "adw-gtk3-dark";
   };
 
   # Screensharing and Portal
@@ -35,4 +35,9 @@
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     config.common.default = "*";
   };
+
+  # swayosd's udev rule grants the "video" group (td is a member, see
+  # users/td/nixos.nix) write access to /sys/class/backlight for its
+  # volume/brightness OSD (swayosd-server, started per-user in home.nix).
+  services.udev.packages = [ pkgs.swayosd ];
 }

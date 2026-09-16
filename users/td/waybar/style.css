@@ -7,7 +7,8 @@
 window#waybar {
     background: rgba(10, 11, 16, 0.85); /* Deeper black matching Ghostty */
     color: #c0caf5;
-    border-bottom: 2px solid rgba(122, 162, 247, 0.5); /* Blue border accent */
+    border: 2px solid rgba(122, 162, 247, 0.5); /* Blue border accent, matches wofi/hyprlock/dunst */
+    border-radius: 12px; /* Matches wofi/hyprlock/dunst radius */
 }
 
 #workspaces button {

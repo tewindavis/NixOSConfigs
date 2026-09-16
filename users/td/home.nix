@@ -1,6 +1,7 @@
 {
   config,
   inputs,
+  lib,
   pkgs,
   ...
 }:
@@ -99,6 +100,11 @@ in
     pkgs.brightnessctl
     pkgs.hyprpaper # Wallpaper engine
     pkgs.hyprsunset # Blue light filter
+    pkgs.grimblast # Screenshot tool (SUPER+SHIFT+S)
+    pkgs.wl-clipboard # wl-copy/wl-paste, needed by cliphist
+    pkgs.cliphist # Clipboard history (SUPER+V)
+    pkgs.swayosd # Volume/brightness on-screen display
+    pkgs.wlogout # Power menu (SUPER+SHIFT+P)
 
     # AI Integration
     pkgs.antigravity-cli
@@ -106,19 +112,21 @@ in
 
     # Fonts & Theming
     pkgs.inter
-    #pkgs.tokyonight-gtk-theme
-    pkgs.catppuccin-cursors.mochaDark
+    pkgs.adw-gtk3
+    pkgs.catppuccin-cursors.mochaBlue
     pkgs.catppuccin-papirus-folders
     pkgs.gnome-themes-extra
-    pkgs.glib # for gsettings
   ];
 
   # GTK Theming
+  # adw-gtk3 mirrors libadwaita's flat GTK4 look for GTK3 apps; native GTK4/
+  # libadwaita apps need no theme override, just color-scheme + accent-color
+  # below, so they stay in sync automatically.
   gtk = {
     enable = true;
     theme = {
-      name = "Adwaita-dark";
-      package = pkgs.orchis-theme;
+      name = "adw-gtk3-dark";
+      package = pkgs.adw-gtk3;
     };
     font = {
       name = "Inter";
@@ -128,13 +136,17 @@ in
       name = "Papirus-Dark";
     };
     cursorTheme = {
-      name = "catppuccin-mocha-dark-cursors";
-      package = pkgs.catppuccin-cursors.mochaDark;
+      # Blue accent, not the neutral "Dark" variant, so the cursor matches
+      # the blue accent used by waybar/wofi/hyprlock/GTK accent-color.
+      name = "catppuccin-mocha-blue-cursors";
+      package = pkgs.catppuccin-cursors.mochaBlue;
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
+    # GTK4/libadwaita apps theme natively off color-scheme + accent-color
+    # (set via dconf below) rather than the GTK3 adw-gtk3-dark theme.
+    gtk4.theme = null;
   };
-  gtk.gtk4.theme = config.gtk.theme;
 
   # Qt Theming
   qt = {
@@ -144,9 +156,14 @@ in
   };
 
   # XDG Desktop Portal Color Scheme
+  # Declarative source of truth for GTK/libadwaita theming — no need to
+  # re-run gsettings at every Hyprland startup (see hyprland.nix autostart).
   dconf.settings = {
     "org/gnome/desktop/interface" = {
       color-scheme = "prefer-dark";
+      gtk-theme = "adw-gtk3-dark";
+      icon-theme = "Papirus-Dark";
+      accent-color = "blue";
       font-name = "Inter 10";
       document-font-name = "Inter 10";
     };
@@ -160,6 +177,13 @@ in
   xdg.configFile."waybar/config".source = ./waybar/config.jsonc;
   xdg.configFile."waybar/style.css".source = ./waybar/style.css;
   xdg.configFile."wofi/style.css".source = ./wofi/style.css;
+  xdg.configFile."swayosd/style.css".source = ./swayosd/style.css;
+  xdg.configFile."wlogout/layout".source = ./wlogout/layout.json;
+  xdg.configFile."wlogout/style.css".source = ./wlogout/style.css;
+  xdg.configFile."wlogout/icons" = {
+    source = "${pkgs.wlogout}/share/wlogout/icons";
+    recursive = true;
+  };
   xdg.configFile."ghostty/config".source = ./ghostty/config;
   xdg.configFile."nvim" = {
     source = ./nvim;
@@ -348,8 +372,16 @@ in
       };
       listener = [
         {
+          # Lock at 5 min idle (loginctl broadcasts the Lock signal that
+          # general.lock_cmd above responds to).
           timeout = 300;
           on-timeout = "loginctl lock-session";
+        }
+        {
+          # DPMS off 5s after locking; on-resume wakes it on any input.
+          timeout = 305;
+          on-timeout = "hyprctl dispatch dpms off";
+          on-resume = "hyprctl dispatch dpms on";
         }
       ];
     };
@@ -453,9 +485,15 @@ in
   programs.direnv.enableZshIntegration = true;
   programs.home-manager.enable = true;
 
+  # grimblast (SUPER+SHIFT+S) reads this to decide where to save screenshots
   home.sessionVariables = {
     TERMINAL = ghosttyBin;
     BROWSER = "brave";
+    XDG_SCREENSHOTS_DIR = "${config.home.homeDirectory}/Pictures/Screenshots";
     PATH = "$HOME/.local/bin:$PATH";
   };
+
+  home.activation.createScreenshotsDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    mkdir -p ${config.home.homeDirectory}/Pictures/Screenshots
+  '';
 }

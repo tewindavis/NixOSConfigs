@@ -1,0 +1,44 @@
+/* Tokyo Night theme, matching waybar/wofi/hyprlock/dunst */
+window#osd {
+  border-radius: 999px;
+  border: 2px solid rgba(122, 162, 247, 0.5); /* Blue border accent */
+  background: rgba(26, 27, 38, 0.9); /* Matches waybar/wofi module bg */
+}
+window#osd #container {
+  margin: 16px;
+}
+window#osd image,
+window#osd label {
+  color: #c0caf5;
+}
+window#osd progressbar:disabled,
+window#osd image:disabled {
+  opacity: 0.5;
+}
+window#osd progressbar,
+window#osd segmentedprogress {
+  min-height: 6px;
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+}
+window#osd trough,
+window#osd segment {
+  min-height: inherit;
+  border-radius: inherit;
+  border: none;
+  background: rgba(192, 202, 245, 0.15);
+}
+window#osd progress,
+window#osd segment.active {
+  min-height: inherit;
+  border-radius: inherit;
+  border: none;
+  background: #7aa2f7; /* Blue fill, matches waybar/cursor/GTK accent */
+}
+window#osd segment {
+  margin-left: 8px;
+}
+window#osd segment:first-child {
+  margin-left: 0;
+}
