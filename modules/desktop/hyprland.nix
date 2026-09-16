@@ -6,6 +6,16 @@
     enable = true;
   };
 
+  # Log in straight to Hyprland via a TUI greeter
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd Hyprland";
+      };
+    };
+  };
+
   # Wayland hardware-specific environment variables (System Level)
   environment.sessionVariables = {
     # If using NVIDIA, these are crucial
