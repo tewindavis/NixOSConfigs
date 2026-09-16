@@ -32,6 +32,14 @@ window#waybar {
     color: #ff9e64; /* Orange */
 }
 
+#custom-weather {
+    color: #ff9e64; /* Orange, pairs with the adjacent clock module */
+    padding: 0 10px;
+    margin: 4px 4px;
+    border-radius: 8px;
+    background: rgba(26, 27, 38, 0.9);
+}
+
 #cpu {
     color: #7aa2f7; /* Blue */
 }

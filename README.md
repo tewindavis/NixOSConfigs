@@ -23,9 +23,10 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 *   **Vibrant Glass:** All windows feature a "True Glass" aesthetic (90% active / 80% inactive opacity) with absolute minimum blur (1/1) for maximum clarity.
 *   **Complementary Spectrum:** Status modules and UI accents use a bold spectrum: **Blue** (#7aa2f7) for identity, **Green** (#9ece6a) for location, and **Orange** (#ff9e64) for status.
 *   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first boot; drop in more images and `cycle-wallpaper` (`SUPER + W`) will pick a random one from the folder each time.
-*   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, and Fingerprint-or-Password prompt), `dunst`, the `swayosd` volume/brightness OSD, and the `wlogout` power menu are all styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors.
+*   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, and Fingerprint-or-Password prompt), `dunst`, the `swayosd` volume/brightness OSD, and the `wlogout` power menu are all styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors, including a recolored `wlogout` icon set (blue lock/logout, green suspend/hibernate, orange reboot, red shutdown).
 *   **Idle Inhibitor:** A clickable Waybar toggle (right of the volume module) suspends `hypridle`'s auto-lock/DPMS while active — turns red when suppressing.
 *   **Persistent Workspaces:** Waybar always shows workspaces 1-9, even when empty, so the active one is never ambiguous.
+*   **Weather:** A Waybar module next to the clock shows current conditions via `wttr.in`, with a graceful "N/A" fallback if the network or upstream service is unavailable.
 
 ---
 
@@ -55,6 +56,7 @@ All system controls are bound to the **`SUPER`** (Command) key.
 |:--- |:---|
 | `SUPER + SHIFT + L` | Lock Screen (Heavy Blur) |
 | `SUPER + SHIFT + S` | Screenshot Region (Copy + Save) |
+| `Print` | Screenshot Full Output (Copy + Save) |
 | `SUPER + V` | Clipboard History |
 | `SUPER + SHIFT + P` | Power Menu |
 | `SUPER + W` | Cycle Wallpaper |

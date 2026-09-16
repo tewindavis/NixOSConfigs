@@ -7,7 +7,7 @@
     "margin-right": 8,
     "spacing": 4,
     "modules-left": ["hyprland/workspaces", "hyprland/window"],
-    "modules-center": ["clock"],
+    "modules-center": ["clock", "custom/weather"],
     "modules-right": ["cpu", "memory", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "tray"],
 
     "hyprland/workspaces": {
@@ -80,6 +80,13 @@
     "clock": {
         "format": "{:%I:%M %p   %b %d}",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+
+    "custom/weather": {
+        "exec": "waybar-weather",
+        "return-type": "json",
+        "interval": 1800,
+        "tooltip": true
     },
 
     "tray": {

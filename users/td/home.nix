@@ -61,6 +61,21 @@ let
       ${pkgs.hyprland}/bin/hyprctl dispatch 'hl.dsp.workspace.toggle_special("scratchpad")'
     fi
   '';
+
+  # Waybar weather module: wttr.in's IP-geolocated one-liner, as JSON for
+  # waybar's custom-module return-type. Falls back to "N/A" on any fetch
+  # failure (e.g. wttr.in's TLS cert is currently expired) rather than
+  # erroring, so the module self-heals once the upstream issue clears.
+  waybar-weather = pkgs.writeShellScriptBin "waybar-weather" ''
+    WEATHER=$(${pkgs.curl}/bin/curl -fs --max-time 5 'https://wttr.in/?format=%c+%t' 2>/dev/null)
+    if [ -z "$WEATHER" ]; then
+      echo '{"text": " N/A", "tooltip": "Weather unavailable"}'
+      exit 0
+    fi
+    TOOLTIP=$(${pkgs.curl}/bin/curl -fs --max-time 5 'https://wttr.in/?format=%l:+%C+%t+(feels+like+%f),+humidity+%h,+wind+%w' 2>/dev/null)
+    TOOLTIP=''${TOOLTIP:-$WEATHER}
+    ${pkgs.jq}/bin/jq -nc --arg text "$WEATHER" --arg tooltip "$TOOLTIP" '{text: $text, tooltip: $tooltip}'
+  '';
 in
 {
   home.username = "td";
@@ -73,6 +88,7 @@ in
     setup-wallpapers
     cycle-wallpaper
     toggle-scratchpad
+    waybar-weather
     # Modern CLI
     pkgs.ripgrep
     pkgs.bat
@@ -210,8 +226,11 @@ in
   # alongside programs.wlogout below (which handles layout + style; wlogout
   # itself is launched on demand by the keybind, not autostarted, so it has
   # no graphical-session.target dependency to worry about).
+  # Recolored from the stock set (originally flat lavender) to match the
+  # Tokyo Night accents used everywhere else: blue for lock/logout, green for
+  # suspend/hibernate, orange for reboot, red for shutdown.
   xdg.configFile."wlogout/icons" = {
-    source = "${pkgs.wlogout}/share/wlogout/icons";
+    source = ./wlogout/icons;
     recursive = true;
   };
   xdg.configFile."ghostty/config".source = ./ghostty/config;
@@ -453,9 +472,18 @@ in
         }
         {
           # DPMS off 5s after locking; on-resume wakes it on any input.
+          # `hyprctl dispatch dpms off/on` errors on this Hyprland version
+          # (dispatch args are Lua expressions now); confirmed the fix live
+          # via `hyprctl monitors -j | jq '.[0].dpmsStatus'` toggling correctly.
           timeout = 305;
-          on-timeout = "hyprctl dispatch dpms off";
-          on-resume = "hyprctl dispatch dpms on";
+          on-timeout = "hyprctl dispatch 'hl.dsp.dpms(false)'";
+          on-resume = "hyprctl dispatch 'hl.dsp.dpms(true)'";
+        }
+        {
+          # Auto-suspend after 20 min idle, well past the lock/DPMS stage
+          # above, to save battery when left unattended.
+          timeout = 1200;
+          on-timeout = "systemctl suspend";
         }
       ];
     };
