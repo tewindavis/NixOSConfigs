@@ -85,7 +85,6 @@ in
     pkgs.ghostty
     pkgs.wofi
     pkgs.waybar
-    pkgs.dunst
     pkgs.libva-utils
     pkgs.brave
     pkgs.networkmanagerapplet
@@ -168,8 +167,159 @@ in
   programs.hyprlock = {
     enable = true;
     settings = {
-      background = [{ path = "screenshot"; blur_passes = 3; blur_size = 8; }];
-      input-field = [{ size = "200, 50"; outline_thickness = 3; dots_center = true; outer_color = "rgb(151515)"; inner_color = "rgb(200, 200, 200)"; }];
+      general = {
+        hide_cursor = false;
+        ignore_empty_input = true;
+      };
+
+      auth = {
+        fingerprint = {
+          enabled = true;
+          ready_message = "Scan fingerprint or type password";
+          present_message = "Scanning...";
+        };
+      };
+
+      background = [{
+        path = "screenshot";
+        blur_passes = 3;
+        blur_size = 8;
+        noise = 0.0117;
+        contrast = 0.8916;
+        brightness = 0.6;
+        vibrancy = 0.1696;
+        vibrancy_darkness = 0.0;
+      }];
+
+      input-field = [{
+        size = "300, 60";
+        outline_thickness = 2;
+        dots_size = 0.26;
+        dots_spacing = 0.3;
+        dots_center = true;
+        fade_on_empty = false;
+        placeholder_text = "<i> Fingerprint or Password...</i>";
+        outer_color = "rgb(122, 162, 247)"; # Tokyo Night Blue, matches waybar/wofi border accent
+        inner_color = "rgba(26, 27, 38, 0.9)"; # Matches waybar/wofi module bg
+        font_color = "rgb(192, 202, 245)"; # #c0caf5
+        check_color = "rgb(158, 206, 106)"; # Green (success)
+        fail_color = "rgb(247, 118, 142)"; # Red (fail)
+        fail_text = "<i>$FAIL <b>($ATTEMPTS)</b></i>";
+        capslock_color = "rgb(255, 158, 100)"; # Orange
+        position = "0, -60";
+        halign = "center";
+        valign = "center";
+      }];
+
+      label = [
+        {
+          # Big clock, orange like the waybar clock module
+          text = "cmd[update:1000] echo \"$(date +'%I:%M %p')\"";
+          color = "rgb(255, 158, 100)";
+          font_size = 90;
+          font_family = "JetBrainsMono Nerd Font";
+          position = "0, 160";
+          halign = "center";
+          valign = "center";
+        }
+        {
+          text = "cmd[update:60000] echo \"$(date +'%A, %B %d')\"";
+          color = "rgb(192, 202, 245)";
+          font_size = 22;
+          font_family = "JetBrainsMono Nerd Font";
+          position = "0, 80";
+          halign = "center";
+          valign = "center";
+        }
+        {
+          text = "  $USER";
+          color = "rgb(122, 162, 247)";
+          font_size = 16;
+          font_family = "JetBrainsMono Nerd Font";
+          position = "0, 20";
+          halign = "center";
+          valign = "center";
+        }
+      ];
+    };
+  };
+
+  services.dunst = {
+    enable = true;
+    settings = {
+      global = {
+        monitor = 0;
+        follow = "mouse";
+        width = 320;
+        height = "(0, 300)";
+        origin = "top-right";
+        offset = "(12, 40)";
+        scale = 0;
+        notification_limit = 5;
+
+        progress_bar = true;
+        progress_bar_height = 10;
+        progress_bar_frame_width = 1;
+        progress_bar_min_width = 150;
+        progress_bar_max_width = 300;
+
+        transparency = 10;
+        separator_height = 2;
+        separator_color = "frame";
+        padding = 12;
+        horizontal_padding = 12;
+        text_icon_padding = 8;
+        frame_width = 2;
+        frame_color = "#7aa2f7"; # Blue, matches waybar border accent
+        corner_radius = 12; # Matches wofi/waybar module radius
+
+        sort = true;
+        idle_threshold = 120;
+
+        font = "JetBrainsMono Nerd Font 10";
+        line_height = 2;
+        markup = "full";
+        format = "<b>%s</b>\\n%b";
+        alignment = "left";
+        vertical_alignment = "center";
+        show_age_threshold = 60;
+        ellipsize = "middle";
+        stack_duplicates = true;
+        hide_duplicate_count = false;
+        show_indicators = true;
+
+        icon_position = "left";
+        min_icon_size = 32;
+        max_icon_size = 48;
+
+        sticky_history = true;
+        history_length = 20;
+
+        mouse_left_click = "close_current";
+        mouse_middle_click = "do_action, close_current";
+        mouse_right_click = "close_all";
+      };
+
+      urgency_low = {
+        background = "#1a1b26";
+        foreground = "#c0caf5";
+        frame_color = "#9ece6a"; # Green
+        timeout = 5;
+      };
+
+      urgency_normal = {
+        background = "#1a1b26";
+        foreground = "#c0caf5";
+        frame_color = "#7aa2f7"; # Blue
+        timeout = 8;
+      };
+
+      urgency_critical = {
+        background = "#1a1b26";
+        foreground = "#c0caf5";
+        frame_color = "#f7768e"; # Tokyo Night Red
+        timeout = 0;
+      };
     };
   };
 

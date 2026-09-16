@@ -64,5 +64,10 @@
     "clock": {
         "format": "{:%I:%M %p   %b %d}",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+
+    "tray": {
+        "icon-size": 18,
+        "spacing": 10
     }
 }
