@@ -14,6 +14,14 @@ let
   ghosttyPkg = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default;
   ghosttyBin = "${ghosttyPkg}/bin/ghostty";
 
+  # hyprsunset day/night schedule, shared between hyprsunset.conf (the
+  # daemon's own schedule) and waybar-hyprsunset below (so the widget's
+  # "what should be active right now" math can't drift from the config
+  # it's describing).
+  hyprsunsetDayStart = "7:30";
+  hyprsunsetNightStart = "20:00";
+  hyprsunsetNightTemp = "3500";
+
   # Wallpaper Setup Script
   setup-wallpapers = pkgs.writeShellScriptBin "setup-wallpapers" ''
     WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
@@ -112,6 +120,98 @@ let
     ${pkgs.jq}/bin/jq -nc --arg text "$ICON" --arg tooltip "Power profile: $PROFILE (click to cycle)" '{text: $text, tooltip: $tooltip}'
   '';
 
+  # Waybar hyprsunset widget: hyprsunset has no IPC query for its current
+  # state (only --temperature/--identity/--gamma "set" flags, used both to
+  # configure the daemon and as commands sent to an already-running one), so
+  # this reconstructs "what should be active right now" from the same
+  # schedule hyprsunset.conf uses, rather than trying to ask the daemon.
+  #
+  # Every manual override — this widget's click, or the SUPER+R/SHIFT+R
+  # keybinds below, which both call into this script rather than hyprsunset
+  # directly — writes {mode, epoch} to a state file, so there's one shared
+  # source of truth regardless of entry point. On the next render that
+  # override is honored only if it's newer than the most recent schedule
+  # boundary crossing; once the real daemon's own scheduler has since
+  # crossed that boundary and silently re-applied the schedule, the override
+  # is stale and this falls back to the computed schedule state — so the
+  # widget can't drift from what hyprsunset is actually showing on screen
+  # for more than one boundary crossing.
+  #
+  # Usage: `waybar-hyprsunset` (render only), `waybar-hyprsunset toggle`
+  # (flip day/night), `waybar-hyprsunset day` / `waybar-hyprsunset night
+  # [temp]` (set explicitly — temp defaults to the scheduled night value).
+  waybar-hyprsunset = pkgs.writeShellScriptBin "waybar-hyprsunset" ''
+    DATE="${pkgs.coreutils}/bin/date"
+    DAY_START="${hyprsunsetDayStart}"
+    NIGHT_START="${hyprsunsetNightStart}"
+    NIGHT_TEMP="${hyprsunsetNightTemp}"
+    STATE_FILE="/tmp/hyprsunset-widget-$USER"
+
+    now_epoch=$($DATE +%s)
+    day_epoch=$($DATE -d "today $DAY_START" +%s)
+    night_epoch=$($DATE -d "today $NIGHT_START" +%s)
+
+    if [ "$now_epoch" -ge "$night_epoch" ]; then
+      scheduled_mode="night"
+      boundary_epoch=$night_epoch
+    elif [ "$now_epoch" -ge "$day_epoch" ]; then
+      scheduled_mode="day"
+      boundary_epoch=$day_epoch
+    else
+      # Before today's day-start: still in last night's warm window, so the
+      # most recent boundary crossing was yesterday's night-start.
+      scheduled_mode="night"
+      boundary_epoch=$($DATE -d "yesterday $NIGHT_START" +%s)
+    fi
+
+    mode="$scheduled_mode"
+    overridden=false
+    if [ -f "$STATE_FILE" ]; then
+      read -r override_mode override_epoch < "$STATE_FILE"
+      if [ -n "$override_epoch" ] && [ "$override_epoch" -gt "$boundary_epoch" ]; then
+        mode="$override_mode"
+        overridden=true
+      else
+        rm -f "$STATE_FILE"
+      fi
+    fi
+
+    case "$1" in
+      toggle)
+        [ "$mode" = "day" ] && mode="night" || mode="day"
+        ;;
+      day | night)
+        mode="$1"
+        ;;
+    esac
+
+    case "$1" in
+      toggle | day | night)
+        if [ "$mode" = "day" ]; then
+          ${pkgs.hyprsunset}/bin/hyprsunset --identity
+        else
+          ${pkgs.hyprsunset}/bin/hyprsunset --temperature "''${2:-$NIGHT_TEMP}"
+        fi
+        echo "$mode $now_epoch" > "$STATE_FILE"
+        overridden=true
+        ;;
+    esac
+
+    if [ "$mode" = "day" ]; then
+      icon=""
+    else
+      icon=""
+    fi
+
+    if $overridden; then
+      tooltip="Blue light filter: $mode (manual override, click to toggle)"
+    else
+      tooltip="Blue light filter: $mode (auto-scheduled, click to toggle)"
+    fi
+
+    ${pkgs.jq}/bin/jq -nc --arg text "$icon" --arg tooltip "$tooltip" --arg class "$mode" '{text: $text, tooltip: $tooltip, class: $class}'
+  '';
+
   # Screen recording toggle (SUPER+ALT+R): mirrors the grimblast/swappy
   # screenshot pattern above, but for video. First call starts wf-recorder
   # in the background against the whole output and stashes its PID; second
@@ -149,6 +249,7 @@ in
     toggle-recording
     waybar-weather
     waybar-power-profile
+    waybar-hyprsunset
     pkgs.power-profiles-daemon # powerprofilesctl CLI, used by waybar-power-profile above
     # Modern CLI
     pkgs.ripgrep
@@ -306,13 +407,13 @@ in
   # (3500K) and the SHIFT+R "day mode" reset (identity) already used.
   xdg.configFile."hypr/hyprsunset.conf".text = ''
     profile {
-        time = 7:30
+        time = ${hyprsunsetDayStart}
         identity = true
     }
 
     profile {
-        time = 20:00
-        temperature = 3500
+        time = ${hyprsunsetNightStart}
+        temperature = ${hyprsunsetNightTemp}
     }
   '';
 

@@ -79,3 +79,15 @@ window#waybar {
 #idle_inhibitor.activated {
     color: #f7768e; /* Red - lock/DPMS suppressed, matches dunst critical */
 }
+
+#custom-hyprsunset {
+    padding: 0 10px;
+    margin: 4px 4px;
+    border-radius: 8px;
+    background: rgba(26, 27, 38, 0.9);
+    color: #7dcfff; /* Cyan/Blue - day/neutral, matches bluetooth's cool tone */
+}
+
+#custom-hyprsunset.night {
+    color: #ff9e64; /* Orange - warm filter active, matches clock/weather */
+}

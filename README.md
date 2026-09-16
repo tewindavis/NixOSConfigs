@@ -27,7 +27,7 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 *   **Idle Inhibitor:** A clickable Waybar toggle (right of the volume module) suspends `hypridle`'s auto-lock/DPMS while active — turns red when suppressing.
 *   **Persistent Workspaces:** Waybar always shows workspaces 1-9, even when empty, so the active one is never ambiguous.
 *   **Weather:** A Waybar module next to the clock shows current conditions via `wttr.in`, with a graceful "N/A" fallback if the network or upstream service is unavailable.
-*   **Auto Blue-Light Filter:** `hyprsunset` runs as a daemon on login and switches itself between neutral (7:30am) and warm 3500K (8:00pm) — f.lux/redshift-style — per the schedule in `hyprsunset.conf`. `SUPER + R`/`SUPER + SHIFT + R` still work as manual overrides until the next scheduled switch.
+*   **Auto Blue-Light Filter:** `hyprsunset` runs as a daemon on login and switches itself between neutral (7:30am) and warm 3500K (8:00pm) — f.lux/redshift-style — per the schedule in `hyprsunset.conf`. A Waybar toggle (sun/moon icon, next to the idle inhibitor) shows and flips the current state; `SUPER + R`/`SUPER + SHIFT + R` do the same from the keyboard. Any of the three count as a manual override until the next scheduled switch.
 
 ---
 

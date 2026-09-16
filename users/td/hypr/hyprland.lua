@@ -112,8 +112,10 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("thunar"))
 hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("wofi --show drun"))
 hl.bind(mainMod .. " + SHIFT + L", hl.dsp.exec_cmd("hyprlock"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("cycle-wallpaper"))
-hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("hyprsunset --temperature 2500"))
-hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprsunset --identity"))
+-- Routed through waybar-hyprsunset (not hyprsunset directly) so the waybar
+-- widget's override-tracking state file stays in sync with these too.
+hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("waybar-hyprsunset night 2500"))
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("waybar-hyprsunset day"))
 hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exit())
 hl.bind(mainMod .. " + X", hl.dsp.window.kill())
 -- Area screenshot opens swappy for annotation; swappy's own toolbar does the
