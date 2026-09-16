@@ -1,7 +1,6 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    hyprland.url = "github:hyprwm/Hyprland";
     ghostty.url = "github:ghostty-org/ghostty";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     home-manager = {
