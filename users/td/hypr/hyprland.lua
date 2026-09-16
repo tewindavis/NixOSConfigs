@@ -6,7 +6,7 @@ hl.monitor({
   output = "",
   mode = "2256x1504@60",
   position = "auto",
-  scale = 1.17,
+  scale = 1.175, -- 2256x1504 panel; 1.175 is the exact divisor Hyprland wants (-> 1920x1280 logical)
 })
 
 hl.config({
