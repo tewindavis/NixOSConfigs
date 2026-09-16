@@ -71,8 +71,21 @@ hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 -- Window Rules
 hl.window_rule({
   name = "ghostty-rice",
-  match = { class = "^(ghostty)$" },
+  -- Ghostty's real Wayland app-id is "com.mitchellh.ghostty", not "ghostty"
+  -- (confirmed via `hyprctl activewindow`) — the bare-word regex never matched.
+  match = { class = "^(com.mitchellh.ghostty)$" },
   opacity = "0.95 0.85",
+})
+
+-- Dropdown scratchpad terminal (SUPER + S), spawned/toggled by toggle-scratchpad.
+-- Class must be a valid GTK app-id (dotted); a bare word like "scratchpad" is
+-- silently rejected by ghostty ("invalid 'class' in config, ignoring").
+hl.window_rule({
+  name = "scratchpad-term",
+  match = { class = "^(com.td.scratchpad)$" },
+  float = true,
+  size = "1400 900",
+  workspace = "special:scratchpad",
 })
 
 -- Bindings
@@ -91,6 +104,12 @@ hl.bind(mainMod .. " + X", hl.dsp.window.kill())
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("grimblast --notify copysave area"))
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("sh -c 'cliphist list | wofi --dmenu | cliphist decode | wl-copy'"))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("wlogout"))
+hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("toggle-scratchpad"))
+
+-- Window State
+hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen(0))
+hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
+hl.bind(mainMod .. " + SHIFT + Space", hl.dsp.window.float())
 
 -- Navigation
 hl.bind(mainMod .. " + h", hl.dsp.focus({ direction = "left" }))

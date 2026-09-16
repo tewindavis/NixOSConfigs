@@ -63,3 +63,11 @@ window#waybar {
 #tray {
     color: #c0caf5;
 }
+
+#idle_inhibitor {
+    color: #c0caf5;
+}
+
+#idle_inhibitor.activated {
+    color: #f7768e; /* Red - lock/DPMS suppressed, matches dunst critical */
+}

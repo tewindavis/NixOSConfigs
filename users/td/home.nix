@@ -45,6 +45,22 @@ let
       ${pkgs.hyprland}/bin/hyprctl hyprpaper wallpaper ",$RANDOM_WALL"
     fi
   '';
+
+  # Dropdown Scratchpad Terminal (SUPER+S): spawns a class-tagged ghostty into
+  # the "scratchpad" special workspace on first call (see the scratchpad-term
+  # window rule in hyprland.lua), then just toggles its visibility afterward.
+  # Class must be a dotted GTK app-id ("com.td.scratchpad") — ghostty silently
+  # ignores a bare-word --class value. Dispatch args are Lua expressions in
+  # this Hyprland version (`hyprctl dispatch <dispatcher> <args>` no longer
+  # works), confirmed live via `hyprctl dispatch 'hl.dsp.window.float()'` etc.
+  toggle-scratchpad = pkgs.writeShellScriptBin "toggle-scratchpad" ''
+    if ${pkgs.hyprland}/bin/hyprctl clients -j | ${pkgs.jq}/bin/jq -e '.[] | select(.class == "com.td.scratchpad")' >/dev/null 2>&1; then
+      ${pkgs.hyprland}/bin/hyprctl dispatch 'hl.dsp.workspace.toggle_special("scratchpad")'
+    else
+      ${pkgs.hyprland}/bin/hyprctl dispatch "hl.dsp.exec_cmd(\"[workspace special:scratchpad silent] ${ghosttyBin} --class=com.td.scratchpad\")"
+      ${pkgs.hyprland}/bin/hyprctl dispatch 'hl.dsp.workspace.toggle_special("scratchpad")'
+    fi
+  '';
 in
 {
   home.username = "td";
@@ -56,12 +72,14 @@ in
   home.packages = [
     setup-wallpapers
     cycle-wallpaper
+    toggle-scratchpad
     # Modern CLI
     pkgs.ripgrep
     pkgs.bat
     pkgs.eza
     pkgs.fd
     pkgs.bottom
+    pkgs.jq # Used by toggle-scratchpad to query hyprctl clients JSON
     pkgs.gh # GitHub CLI, for agentic PR/issue workflows
 
     # Languages & Toolchains
@@ -141,6 +159,9 @@ in
       # the blue accent used by waybar/wofi/hyprlock/GTK accent-color.
       name = "catppuccin-mocha-blue-cursors";
       package = pkgs.catppuccin-cursors.mochaBlue;
+      # Explicit size so it renders consistently at the framework host's
+      # 1.175 HiDPI scale instead of falling back to an unscaled default.
+      size = 24;
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
@@ -165,6 +186,7 @@ in
       gtk-theme = "adw-gtk3-dark";
       icon-theme = "Papirus-Dark";
       accent-color = "blue";
+      cursor-size = 24;
       font-name = "Inter 10";
       document-font-name = "Inter 10";
     };

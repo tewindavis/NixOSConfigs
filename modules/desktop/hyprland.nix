@@ -27,6 +27,10 @@
 
     # Force dark mode for apps that check these vars
     GTK_THEME = "adw-gtk3-dark";
+
+    # Explicit cursor size (matches gtk.cursorTheme.size/dconf cursor-size in
+    # home.nix) so non-GTK/Wayland-native clients render it consistently too
+    XCURSOR_SIZE = "24";
   };
 
   # Screensharing and Portal
