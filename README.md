@@ -64,7 +64,7 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 *   **Languages:** Rust (Cargo/Rustc/Rustlings), Zig (ZLS), Julia, Lua, Octave, C/C++, and Python 3.
 *   **Modern Shell:** Zsh is the default shell, featuring syntax highlighting, auto-suggestions, and the **Starship** Powerline prompt.
 *   **CLI Essentials:** `ripgrep`, `fd`, `bat` (cat), `eza` (ls), `zoxide` (cd), `gh` (GitHub CLI), and `direnv` for automatic flake environment loading.
-*   **AI Integration:** `claude-code` and `gemini-cli` are pre-installed for agentic development and interactive codebase analysis.
+*   **AI Integration:** `claude-code` and `antigravity-cli` are pre-installed for agentic development and interactive codebase analysis.
 
 ### Neovim (LazyVim IDE)
 Neovim is configured as a full IDE using the **LazyVim** framework, featuring:

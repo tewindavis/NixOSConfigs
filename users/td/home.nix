@@ -94,7 +94,7 @@ in
     pkgs.hyprsunset # Blue light filter
 
     # AI Integration
-    pkgs.gemini-cli
+    pkgs.antigravity-cli
     pkgs.claude-code
 
     # Fonts & Theming
