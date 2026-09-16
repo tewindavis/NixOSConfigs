@@ -16,10 +16,12 @@
   # RL Development Environment (CPU focused)
   # Global profile already handles numpy/torch/ipython
   users.users.td.packages = with pkgs; [
-    (python3.withPackages (ps: with ps; [
-      stable-baselines3
-      gymnasium
-      scikit-learn
-    ]))
+    (python3.withPackages (
+      ps: with ps; [
+        stable-baselines3
+        gymnasium
+        scikit-learn
+      ]
+    ))
   ];
 }

@@ -1,4 +1,9 @@
-{ config, inputs, pkgs, ... }:
+{
+  config,
+  inputs,
+  pkgs,
+  ...
+}:
 
 let
   # Extract the ghostty binary path for convenience
@@ -9,9 +14,9 @@ let
   setup-wallpapers = pkgs.writeShellScriptBin "setup-wallpapers" ''
     WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
     UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    
+
     mkdir -p "$WALLPAPER_DIR"
-    
+
     download_wall() {
       local url=$1
       local filename=$2
@@ -27,7 +32,7 @@ let
     }
 
     download_wall "https://hypr.land/imgs/blog/contestWinners/Kath.png" "hyprchan-kath.png"
- '';
+  '';
 
   # Wallpaper Cycling Script
   cycle-wallpaper = pkgs.writeShellScriptBin "cycle-wallpaper" ''
@@ -57,7 +62,7 @@ in
     pkgs.fd
     pkgs.bottom
     pkgs.gh # GitHub CLI, for agentic PR/issue workflows
-    
+
     # Languages & Toolchains
     pkgs.cargo
     pkgs.rustc
@@ -70,16 +75,18 @@ in
     pkgs.gcc
     pkgs.gnumake
     pkgs.cmake
-    
+
     # Python (Base)
-    (pkgs.python3.withPackages (ps: with ps; [
-      pip
-      virtualenv
-      ipython 
-      requests 
-      pandas 
-      numpy 
-    ]))
+    (pkgs.python3.withPackages (
+      ps: with ps; [
+        pip
+        virtualenv
+        ipython
+        requests
+        pandas
+        numpy
+      ]
+    ))
 
     # UI Survival Kit
     pkgs.ghostty
@@ -88,7 +95,7 @@ in
     pkgs.libva-utils
     pkgs.brave
     pkgs.networkmanagerapplet
-    pkgs.pavucontrol 
+    pkgs.pavucontrol
     pkgs.brightnessctl
     pkgs.hyprpaper # Wallpaper engine
     pkgs.hyprsunset # Blue light filter
@@ -154,7 +161,10 @@ in
   xdg.configFile."waybar/style.css".source = ./waybar/style.css;
   xdg.configFile."wofi/style.css".source = ./wofi/style.css;
   xdg.configFile."ghostty/config".source = ./ghostty/config;
-  xdg.configFile."nvim" = { source = ./nvim; recursive = true; };
+  xdg.configFile."nvim" = {
+    source = ./nvim;
+    recursive = true;
+  };
 
   # hyprpaper Config
   services.hyprpaper = {
@@ -182,36 +192,40 @@ in
         };
       };
 
-      background = [{
-        path = "screenshot";
-        blur_passes = 3;
-        blur_size = 8;
-        noise = 0.0117;
-        contrast = 0.8916;
-        brightness = 0.6;
-        vibrancy = 0.1696;
-        vibrancy_darkness = 0.0;
-      }];
+      background = [
+        {
+          path = "screenshot";
+          blur_passes = 3;
+          blur_size = 8;
+          noise = 0.0117;
+          contrast = 0.8916;
+          brightness = 0.6;
+          vibrancy = 0.1696;
+          vibrancy_darkness = 0.0;
+        }
+      ];
 
-      input-field = [{
-        size = "300, 60";
-        outline_thickness = 2;
-        dots_size = 0.26;
-        dots_spacing = 0.3;
-        dots_center = true;
-        fade_on_empty = false;
-        placeholder_text = "<i> Fingerprint or Password...</i>";
-        outer_color = "rgb(122, 162, 247)"; # Tokyo Night Blue, matches waybar/wofi border accent
-        inner_color = "rgba(26, 27, 38, 0.9)"; # Matches waybar/wofi module bg
-        font_color = "rgb(192, 202, 245)"; # #c0caf5
-        check_color = "rgb(158, 206, 106)"; # Green (success)
-        fail_color = "rgb(247, 118, 142)"; # Red (fail)
-        fail_text = "<i>$FAIL <b>($ATTEMPTS)</b></i>";
-        capslock_color = "rgb(255, 158, 100)"; # Orange
-        position = "0, -60";
-        halign = "center";
-        valign = "center";
-      }];
+      input-field = [
+        {
+          size = "300, 60";
+          outline_thickness = 2;
+          dots_size = 0.26;
+          dots_spacing = 0.3;
+          dots_center = true;
+          fade_on_empty = false;
+          placeholder_text = "<i> Fingerprint or Password...</i>";
+          outer_color = "rgb(122, 162, 247)"; # Tokyo Night Blue, matches waybar/wofi border accent
+          inner_color = "rgba(26, 27, 38, 0.9)"; # Matches waybar/wofi module bg
+          font_color = "rgb(192, 202, 245)"; # #c0caf5
+          check_color = "rgb(158, 206, 106)"; # Green (success)
+          fail_color = "rgb(247, 118, 142)"; # Red (fail)
+          fail_text = "<i>$FAIL <b>($ATTEMPTS)</b></i>";
+          capslock_color = "rgb(255, 158, 100)"; # Orange
+          position = "0, -60";
+          halign = "center";
+          valign = "center";
+        }
+      ];
 
       label = [
         {
@@ -328,8 +342,16 @@ in
   services.hypridle = {
     enable = true;
     settings = {
-      general = { lock_cmd = "pidof hyprlock || hyprlock"; before_sleep_cmd = "loginctl lock-session"; };
-      listener = [ { timeout = 300; on-timeout = "loginctl lock-session"; } ];
+      general = {
+        lock_cmd = "pidof hyprlock || hyprlock";
+        before_sleep_cmd = "loginctl lock-session";
+      };
+      listener = [
+        {
+          timeout = 300;
+          on-timeout = "loginctl lock-session";
+        }
+      ];
     };
   };
 
@@ -339,28 +361,29 @@ in
     settings = {
       add_newline = true;
       # Multi-line Powerline format (Complementary Palette: Blue -> Green -> Orange)
-      format = ''[](#7aa2f7)$username$hostname[](bg:#9ece6a fg:#7aa2f7)$directory[](fg:#9ece6a)$git_branch$git_status
-$character'';
-      
+      format = ''
+        [](#7aa2f7)$username$hostname[](bg:#9ece6a fg:#7aa2f7)$directory[](fg:#9ece6a)$git_branch$git_status
+        $character'';
+
       username = {
         show_always = true;
         style_user = "bg:#7aa2f7 fg:#0a0a0f bold";
         format = "[$user]($style)";
       };
-      
+
       hostname = {
         ssh_only = false;
         style = "bg:#7aa2f7 fg:#0a0a0f bold";
         format = "[@$hostname]($style)";
       };
-      
+
       directory = {
         style = "bg:#9ece6a fg:#0a0a0f bold";
         truncation_length = 100; # Show up to 100 levels
         truncate_to_repo = false; # DO NOT truncate to the git root
         format = "[$path]($style)";
       };
-      
+
       git_branch = {
         symbol = " ";
         style = "bold #ff9e64"; # Tokyo Night Orange
@@ -378,10 +401,18 @@ $character'';
       };
 
       # Disable noisy modules
-      nix_shell = { disabled = true; };
-      package = { disabled = true; };
-      python = { disabled = true; };
-      rust = { disabled = true; };
+      nix_shell = {
+        disabled = true;
+      };
+      package = {
+        disabled = true;
+      };
+      python = {
+        disabled = true;
+      };
+      rust = {
+        disabled = true;
+      };
     };
   };
 
@@ -390,13 +421,16 @@ $character'';
   programs.neovim.withPython3 = true;
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
-  programs.direnv = { enable = true; nix-direnv.enable = true; };
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
   programs.zsh = {
     enable = true;
     enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
-    
+
     shellAliases = {
       ls = "eza --icons";
       ll = "eza -lh --icons";

@@ -2,8 +2,11 @@
 
 {
   # Nix Settings
-  nix.settings.experimental-features = [ "nix-command" "flakes"];
-  
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+
   # Optimization and Garbage Collection
   nix.gc = {
     automatic = true;
@@ -50,7 +53,7 @@
     pulse.enable = true;
     jack.enable = true;
   };
-  
+
   system.stateVersion = "25.11";
 
   # SSH Agent
