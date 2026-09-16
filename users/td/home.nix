@@ -121,10 +121,12 @@ let
   '';
 
   # Waybar hyprsunset widget: hyprsunset has no IPC query for its current
-  # state (only --temperature/--identity/--gamma "set" flags, used both to
-  # configure the daemon and as commands sent to an already-running one), so
-  # this reconstructs "what should be active right now" from the same
-  # schedule hyprsunset.conf uses, rather than trying to ask the daemon.
+  # state, so this reconstructs "what should be active right now" from the
+  # same schedule hyprsunset.conf uses, rather than trying to ask the
+  # daemon. Manual overrides below are also sent over the daemon's own
+  # control socket rather than via `hyprsunset --temperature/--identity`
+  # (v0.4.0's CLI doesn't relay those to an already-running daemon — it
+  # tries to bind its own CTM manager and just fails).
   #
   # Every manual override — this widget's click, or the SUPER+R/SHIFT+R
   # keybinds below, which both call into this script rather than hyprsunset
@@ -187,10 +189,18 @@ let
 
     case "$1" in
       toggle | day | night)
+        # Re-running the hyprsunset binary here (e.g. `hyprsunset
+        # --identity`) does NOT control the already-running daemon in
+        # v0.4.0 — it tries to bind its own CTM manager, loses to the
+        # daemon that's already bound, and fails with "A CTM manager is
+        # already running" without changing anything on screen. The
+        # daemon does accept plain-text commands on its own control
+        # socket, so talk to that instead.
+        SOCK="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.hyprsunset.sock"
         if [ "$mode" = "day" ]; then
-          ${pkgs.hyprsunset}/bin/hyprsunset --identity
+          echo "identity" | ${pkgs.socat}/bin/socat - "UNIX-CONNECT:$SOCK"
         else
-          ${pkgs.hyprsunset}/bin/hyprsunset --temperature "''${2:-$NIGHT_TEMP}"
+          echo "temperature ''${2:-$NIGHT_TEMP}" | ${pkgs.socat}/bin/socat - "UNIX-CONNECT:$SOCK"
         fi
         echo "$mode $now_epoch" > "$STATE_FILE"
         overridden=true
@@ -198,9 +208,9 @@ let
     esac
 
     if [ "$mode" = "day" ]; then
-      icon=""
+      icon=""
     else
-      icon=""
+      icon=""
     fi
 
     if $overridden; then

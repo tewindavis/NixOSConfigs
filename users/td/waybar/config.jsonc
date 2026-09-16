@@ -23,8 +23,8 @@
     "idle_inhibitor": {
         "format": "{icon}",
         "format-icons": {
-            "activated": "",
-            "deactivated": ""
+            "activated": "",
+            "deactivated": ""
         },
         "tooltip-format-activated": "Idle inhibitor: ON (lock/DPMS suppressed)",
         "tooltip-format-deactivated": "Idle inhibitor: OFF"
@@ -115,7 +115,7 @@
     },
 
     "custom/power": {
-        "format": "",
+        "format": "",
         "tooltip-format": "Power menu",
         "on-click": "wlogout"
     },
