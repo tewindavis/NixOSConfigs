@@ -183,6 +183,7 @@ in
     pkgs.swayosd # Volume/brightness on-screen display
     pkgs.imv # Image viewer, for screenshots/images opened from Thunar
     pkgs.zathura # PDF viewer, for docs opened from Thunar
+    pkgs.mpv # Video/audio player, for media opened from Thunar
 
     # AI Integration
     pkgs.antigravity-cli
@@ -620,12 +621,26 @@ in
       "image/jpeg" = "imv.desktop";
       "image/webp" = "imv.desktop";
       "image/gif" = "imv.desktop";
+      "video/mp4" = "mpv.desktop";
+      "video/x-matroska" = "mpv.desktop";
+      "video/webm" = "mpv.desktop";
+      "audio/mpeg" = "mpv.desktop";
+      "audio/flac" = "mpv.desktop";
     };
   };
 
   programs.neovim.enable = true;
   programs.neovim.withRuby = true;
   programs.neovim.withPython3 = true;
+  # withRuby/withPython3 make HM generate an init.lua that sets
+  # vim.g.{python3,ruby}_host_prog to the Nix-built provider binaries, and by
+  # default it writes that to xdg.configFile."nvim/init.lua" — which collides
+  # with our own recursively-linked ./nvim (below) and gets silently dropped
+  # (visible as a "conflicts with recursively symlinked file" build warning),
+  # leaving those two options inert. sideloadInitLua instead loads the
+  # generated content via a wrapper --cmd flag, so it coexists with our
+  # hand-managed init.lua rather than fighting it for the same path.
+  programs.neovim.sideloadInitLua = true;
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
   programs.direnv = {
