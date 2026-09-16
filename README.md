@@ -23,7 +23,7 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 *   **Vibrant Glass:** All windows feature a "True Glass" aesthetic (90% active / 80% inactive opacity) with absolute minimum blur (1/1) for maximum clarity.
 *   **Complementary Spectrum:** Status modules and UI accents use a bold spectrum: **Blue** (#7aa2f7) for identity, **Green** (#9ece6a) for location, and **Orange** (#ff9e64) for status.
 *   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first boot; drop in more images and `cycle-wallpaper` (`SUPER + W`) will pick a random one from the folder each time.
-*   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, and Fingerprint-or-Password prompt) and `dunst` are styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors.
+*   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, and Fingerprint-or-Password prompt), `dunst`, the `swayosd` volume/brightness OSD, and the `wlogout` power menu are all styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors.
 
 ---
 
@@ -48,12 +48,15 @@ All system controls are bound to the **`SUPER`** (Command) key.
 | Key | Action |
 |:--- |:---|
 | `SUPER + SHIFT + L` | Lock Screen (Heavy Blur) |
+| `SUPER + SHIFT + S` | Screenshot Region (Copy + Save) |
+| `SUPER + V` | Clipboard History |
+| `SUPER + SHIFT + P` | Power Menu |
 | `SUPER + W` | Cycle Wallpaper |
 | `SUPER + R` | Aggressive Hyprsunset (2500K) |
 | `SUPER + SHIFT + R` | Reset Hyprsunset (Day Mode) |
 | `SUPER + Left Click` | **Drag to Move** Window |
 | `SUPER + Right Click`| **Drag to Resize** Window |
-| `Media Keys` | Volume, Mic, and Brightness Control |
+| `Media Keys` | Volume, Mic, and Brightness Control (with on-screen display) |
 
 ---
 

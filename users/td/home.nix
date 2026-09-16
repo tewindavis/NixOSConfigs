@@ -99,12 +99,13 @@ in
     pkgs.pavucontrol
     pkgs.brightnessctl
     pkgs.hyprpaper # Wallpaper engine
+    pkgs.hypridle # Idle daemon (autolock/DPMS); unlike hyprlock/hyprpaper,
+    # the HM module for this doesn't add its package to home.packages
     pkgs.hyprsunset # Blue light filter
     pkgs.grimblast # Screenshot tool (SUPER+SHIFT+S)
     pkgs.wl-clipboard # wl-copy/wl-paste, needed by cliphist
     pkgs.cliphist # Clipboard history (SUPER+V)
     pkgs.swayosd # Volume/brightness on-screen display
-    pkgs.wlogout # Power menu (SUPER+SHIFT+P)
 
     # AI Integration
     pkgs.antigravity-cli
@@ -177,9 +178,16 @@ in
   xdg.configFile."waybar/config".source = ./waybar/config.jsonc;
   xdg.configFile."waybar/style.css".source = ./waybar/style.css;
   xdg.configFile."wofi/style.css".source = ./wofi/style.css;
+  # No HM module here would actually help: hyprland.nix/hyprland.lua don't
+  # activate graphical-session.target (that's a UWSM thing, and this config
+  # doesn't use UWSM), so a systemd-user-gated services.swayosd would never
+  # start — swayosd-server has to be launched directly from autostart below,
+  # picking up this default-location style.css on its own.
   xdg.configFile."swayosd/style.css".source = ./swayosd/style.css;
-  xdg.configFile."wlogout/layout".source = ./wlogout/layout.json;
-  xdg.configFile."wlogout/style.css".source = ./wlogout/style.css;
+  # wlogout has no HM option for its icon set, so it's linked manually
+  # alongside programs.wlogout below (which handles layout + style; wlogout
+  # itself is launched on demand by the keybind, not autostarted, so it has
+  # no graphical-session.target dependency to worry about).
   xdg.configFile."wlogout/icons" = {
     source = "${pkgs.wlogout}/share/wlogout/icons";
     recursive = true;
@@ -197,6 +205,50 @@ in
       ipc = "on";
       splash = false;
     };
+  };
+
+  # Power menu (SUPER+SHIFT+P)
+  programs.wlogout = {
+    enable = true;
+    style = ./wlogout/style.css;
+    layout = [
+      {
+        label = "lock";
+        action = "hyprlock";
+        text = "Lock";
+        keybind = "l";
+      }
+      {
+        label = "logout";
+        action = "hyprctl dispatch exit";
+        text = "Logout";
+        keybind = "e";
+      }
+      {
+        label = "suspend";
+        action = "systemctl suspend";
+        text = "Suspend";
+        keybind = "u";
+      }
+      {
+        label = "hibernate";
+        action = "systemctl hibernate";
+        text = "Hibernate";
+        keybind = "h";
+      }
+      {
+        label = "reboot";
+        action = "systemctl reboot";
+        text = "Reboot";
+        keybind = "r";
+      }
+      {
+        label = "shutdown";
+        action = "systemctl poweroff";
+        text = "Shutdown";
+        keybind = "s";
+      }
+    ];
   };
 
   # Services & Programs
