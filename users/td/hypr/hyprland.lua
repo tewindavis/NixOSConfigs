@@ -2,12 +2,27 @@
 -- .conf/hyprlang syntax as legacy and looks for hyprland.lua first.
 -- See https://wiki.hypr.land/configuring/
 
-hl.monitor({
-  output = "",
-  mode = "2256x1504@60",
-  position = "auto",
-  scale = 1.175, -- 2256x1504 panel; 1.175 is the exact divisor Hyprland wants (-> 1920x1280 logical)
-})
+-- The hostname placeholder below is substituted by home.nix at build time
+-- (osConfig.networking.hostName), since this same file is shared, unmodified,
+-- across all three hosts. Only "framework" has its exact panel mode/scale
+-- tuned below; dl-prototype and utm-nixos fall back to Hyprland's own
+-- auto-detection rather than inheriting Framework's HiDPI panel mode, which
+-- wouldn't exist on them.
+if "@HOSTNAME@" == "framework" then
+  hl.monitor({
+    output = "",
+    mode = "2256x1504@60",
+    position = "auto",
+    scale = 1.175, -- 2256x1504 panel; 1.175 is the exact divisor Hyprland wants (-> 1920x1280 logical)
+  })
+else
+  hl.monitor({
+    output = "",
+    mode = "preferred",
+    position = "auto",
+    scale = "auto",
+  })
+end
 
 hl.config({
   xwayland = {
@@ -101,11 +116,16 @@ hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("hyprsunset --temperature 2500"))
 hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprsunset --identity"))
 hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exit())
 hl.bind(mainMod .. " + X", hl.dsp.window.kill())
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("grimblast --notify copysave area"))
+-- Area screenshot opens swappy for annotation; swappy's own toolbar does the
+-- copy/save (early_exit in its config closes it right after). Fullscreen
+-- (Print) stays a plain instant copysave — no annotate step.
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("sh -c 'grimblast save area - | swappy -f -'"))
 hl.bind("Print", hl.dsp.exec_cmd("grimblast --notify copysave output"))
+hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("sh -c 'cliphist list | wofi --dmenu | cliphist decode | wl-copy'"))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("wlogout"))
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("toggle-scratchpad"))
+hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("dunstctl history-pop"))
 
 -- Window State
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen(0))
@@ -140,9 +160,11 @@ hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("swayosd-client --input-volume mute-
 hl.on("hyprland.start", function()
   hl.exec_cmd("spice-vdagent")
   hl.exec_cmd("nm-applet --indicator")
+  hl.exec_cmd("hyprpolkitagent")
   hl.exec_cmd("hypridle")
   hl.exec_cmd("wl-paste --type text --watch cliphist store")
   hl.exec_cmd("wl-paste --type image --watch cliphist store")
+  hl.exec_cmd("wl-clip-persist --clipboard both")
   hl.exec_cmd("swayosd-server")
   hl.exec_cmd("waybar")
   hl.exec_cmd("hyprpaper")

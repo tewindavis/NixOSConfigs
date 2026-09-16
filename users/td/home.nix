@@ -3,6 +3,9 @@
   inputs,
   lib,
   pkgs,
+  # Provided by home-manager's NixOS module integration: the underlying
+  # system config, used below to make hyprland.lua's monitor block host-aware.
+  osConfig,
   ...
 }:
 
@@ -76,6 +79,38 @@ let
     TOOLTIP=''${TOOLTIP:-$WEATHER}
     ${pkgs.jq}/bin/jq -nc --arg text "$WEATHER" --arg tooltip "$TOOLTIP" '{text: $text, tooltip: $tooltip}'
   '';
+
+  # Waybar power-profile module: reads/cycles power-profiles-daemon's
+  # balanced/power-saver/performance profile. Only "framework" runs the
+  # daemon (see modules/hardware/framework.nix); on the other two hosts
+  # powerprofilesctl errors and this reports "unavailable", same graceful-
+  # degradation pattern as waybar's built-in bluetooth module on utm-vm.
+  waybar-power-profile = pkgs.writeShellScriptBin "waybar-power-profile" ''
+    PPCTL="${pkgs.power-profiles-daemon}/bin/powerprofilesctl"
+
+    if [ "$1" = "cycle" ]; then
+      CURRENT=$($PPCTL get 2>/dev/null)
+      case "$CURRENT" in
+        power-saver) NEXT=balanced ;;
+        balanced) NEXT=performance ;;
+        performance) NEXT=power-saver ;;
+        *) NEXT=balanced ;;
+      esac
+      $PPCTL set "$NEXT" 2>/dev/null
+    fi
+
+    PROFILE=$($PPCTL get 2>/dev/null)
+    case "$PROFILE" in
+      power-saver) ICON="" ;;
+      balanced) ICON="" ;;
+      performance) ICON="" ;;
+      *)
+        ICON=""
+        PROFILE="unavailable"
+        ;;
+    esac
+    ${pkgs.jq}/bin/jq -nc --arg text "$ICON" --arg tooltip "Power profile: $PROFILE (click to cycle)" '{text: $text, tooltip: $tooltip}'
+  '';
 in
 {
   home.username = "td";
@@ -89,6 +124,8 @@ in
     cycle-wallpaper
     toggle-scratchpad
     waybar-weather
+    waybar-power-profile
+    pkgs.power-profiles-daemon # powerprofilesctl CLI, used by waybar-power-profile above
     # Modern CLI
     pkgs.ripgrep
     pkgs.bat
@@ -137,9 +174,15 @@ in
     # the HM module for this doesn't add its package to home.packages
     pkgs.hyprsunset # Blue light filter
     pkgs.grimblast # Screenshot tool (SUPER+SHIFT+S)
+    pkgs.swappy # Screenshot annotation, chained after grimblast (see keybind)
+    pkgs.hyprpicker # On-screen color picker (SUPER+C)
     pkgs.wl-clipboard # wl-copy/wl-paste, needed by cliphist
     pkgs.cliphist # Clipboard history (SUPER+V)
+    pkgs.wl-clip-persist # Keeps the live clipboard selection alive after its
+    # source app/window closes, which wlroots otherwise drops (autostarted below)
     pkgs.swayosd # Volume/brightness on-screen display
+    pkgs.imv # Image viewer, for screenshots/images opened from Thunar
+    pkgs.zathura # PDF viewer, for docs opened from Thunar
 
     # AI Integration
     pkgs.antigravity-cli
@@ -209,8 +252,17 @@ in
   };
 
   # Manual Hyprland Config (Bypasses buggy HM module STUB)
-  # Hyprland 0.56+ treats hyprland.conf as legacy and prefers hyprland.lua
-  xdg.configFile."hypr/hyprland.lua".source = ./hypr/hyprland.lua;
+  # Hyprland 0.56+ treats hyprland.conf as legacy and prefers hyprland.lua.
+  # This same file is shared across all three hosts (see flake.nix's mkHost),
+  # so @HOSTNAME@ is substituted here rather than hardcoding one host's
+  # monitor mode/scale into a config that also deploys to dl-prototype/utm-nixos.
+  xdg.configFile."hypr/hyprland.lua".text =
+    builtins.replaceStrings
+      [ "@HOSTNAME@" ]
+      [
+        osConfig.networking.hostName
+      ]
+      (builtins.readFile ./hypr/hyprland.lua);
 
   # Config Links
   xdg.configFile."waybar/config".source = ./waybar/config.jsonc;
@@ -234,6 +286,15 @@ in
     recursive = true;
   };
   xdg.configFile."ghostty/config".source = ./ghostty/config;
+  # save_dir matches XDG_SCREENSHOTS_DIR below; show_panel keeps the
+  # annotate toolbar open, early_exit closes swappy once you copy/save.
+  xdg.configFile."swappy/config".text = ''
+    [Default]
+    save_dir=${config.home.homeDirectory}/Pictures/Screenshots
+    save_filename_format=swappy-%Y%m%d-%H%M%S.png
+    show_panel=true
+    early_exit=true
+  '';
   xdg.configFile."nvim" = {
     source = ./nvim;
     recursive = true;
@@ -547,6 +608,18 @@ in
       rust = {
         disabled = true;
       };
+    };
+  };
+
+  # So Thunar/xdg-open have somewhere to send images/PDFs instead of erroring
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "application/pdf" = "org.pwmt.zathura.desktop";
+      "image/png" = "imv.desktop";
+      "image/jpeg" = "imv.desktop";
+      "image/webp" = "imv.desktop";
+      "image/gif" = "imv.desktop";
     };
   };
 

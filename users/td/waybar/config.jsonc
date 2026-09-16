@@ -8,7 +8,7 @@
     "spacing": 4,
     "modules-left": ["hyprland/workspaces", "hyprland/window"],
     "modules-center": ["clock", "custom/weather"],
-    "modules-right": ["cpu", "memory", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "tray"],
+    "modules-right": ["cpu", "memory", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "tray", "custom/power"],
 
     "hyprland/workspaces": {
         "disable-scroll": true,
@@ -32,11 +32,13 @@
 
     "cpu": {
         "format": "  {usage}%",
-        "tooltip": false
+        "tooltip": false,
+        "on-click": "ghostty -e btm"
     },
     
     "memory": {
-        "format": "  {}%"
+        "format": "  {}%",
+        "on-click": "ghostty -e btm"
     },
 
     "battery": {
@@ -87,6 +89,23 @@
         "return-type": "json",
         "interval": 1800,
         "tooltip": true
+    },
+
+    // Only "framework" runs power-profiles-daemon; on the other hosts this
+    // just reports "unavailable" (same graceful-degradation pattern as the
+    // built-in bluetooth module on utm-vm, which has no bluetooth hardware).
+    "custom/power-profile": {
+        "exec": "waybar-power-profile status",
+        "on-click": "waybar-power-profile cycle",
+        "return-type": "json",
+        "interval": 5,
+        "tooltip": true
+    },
+
+    "custom/power": {
+        "format": "",
+        "tooltip-format": "Power menu",
+        "on-click": "wlogout"
     },
 
     "tray": {

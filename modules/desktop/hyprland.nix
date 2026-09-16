@@ -44,4 +44,23 @@
   # users/td/nixos.nix) write access to /sys/class/backlight for its
   # volume/brightness OSD (swayosd-server, started per-user in home.nix).
   services.udev.packages = [ pkgs.swayosd ];
+
+  # Polkit GUI agent: without one, privileged GUI actions (Thunar mounting
+  # internal/LUKS drives, GParted, fwupd's updater) silently fail since
+  # nothing is listening to show the auth prompt. hyprpolkitagent is the
+  # Hypr ecosystem's own agent; autostarted per-session in hyprland.lua.
+  security.polkit.enable = true;
+  environment.systemPackages = [ pkgs.hyprpolkitagent ];
+
+  # Secret-service keyring, so Brave/git-credential/etc. can store logins
+  # instead of nagging about a locked keyring. Auto-unlocks on login by
+  # wiring PAM into greetd's session (the actual login path here, since
+  # this config uses greetd/tuigreet rather than a "login" getty).
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services.greetd.enableGnomeKeyring = true;
+  # gnome-keyring.enable defaults this on, but it conflicts with
+  # programs.ssh.startAgent (modules/core/default.nix) — only one SSH agent
+  # can be active, and the plain one is already working, so keep it and only
+  # use gnome-keyring for the secrets/login-credential portion.
+  services.gnome.gcr-ssh-agent.enable = false;
 }
