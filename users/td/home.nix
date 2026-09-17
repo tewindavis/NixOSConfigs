@@ -55,6 +55,22 @@ let
     fi
   '';
 
+  # High-Contrast Blackout Toggle (SUPER+SHIFT+W): swaps to a solid black
+  # background for glare/contrast relief, then restores whatever image was
+  # showing before. `awww clear` defaults to black and `awww restore` recalls
+  # the daemon's own last-displayed image, so no wallpaper path needs tracking
+  # here — just whether we're currently in the blacked-out state.
+  toggle-blackout = pkgs.writeShellScriptBin "toggle-blackout" ''
+    STATE_FILE="/tmp/wallpaper-blackout-$USER"
+    if [ -f "$STATE_FILE" ]; then
+      ${pkgs.awww}/bin/awww restore
+      rm -f "$STATE_FILE"
+    else
+      ${pkgs.awww}/bin/awww clear
+      touch "$STATE_FILE"
+    fi
+  '';
+
   # Dropdown Scratchpad Terminal (SUPER+S): spawns a class-tagged ghostty into
   # the "scratchpad" special workspace on first call (see the scratchpad-term
   # window rule in hyprland.lua), then just toggles its visibility afterward.
@@ -253,6 +269,7 @@ in
   home.packages = [
     setup-wallpapers
     cycle-wallpaper
+    toggle-blackout
     toggle-scratchpad
     toggle-recording
     waybar-weather

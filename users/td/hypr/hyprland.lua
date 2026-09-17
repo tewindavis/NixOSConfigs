@@ -41,7 +41,10 @@ hl.config({
 
   general = {
     gaps_in = 2,
-    gaps_out = 3,
+    -- Matches waybar's margin-left/margin-right (8, see waybar/config.jsonc)
+    -- so tiled windows' outer edge lines up with the bar instead of
+    -- extending past it.
+    gaps_out = 8,
     border_size = 2,
     col = {
       active_border = { colors = { "rgba(7aa2f7ee)", "rgba(9ece6aee)" }, angle = 45 },
@@ -92,6 +95,15 @@ hl.window_rule({
   opacity = "0.95 0.85",
 })
 
+-- Brave doesn't paint a fully opaque backing surface the way native GTK/Qt
+-- apps do, so the global active/inactive_opacity + blur above let the
+-- wallpaper show through it (but not other apps). Force it fully opaque.
+hl.window_rule({
+  name = "brave-opaque",
+  match = { class = "^(brave-browser)$" },
+  opacity = "1.0 1.0",
+})
+
 -- Dropdown scratchpad terminal (SUPER + S), spawned/toggled by toggle-scratchpad.
 -- Class must be a valid GTK app-id (dotted); a bare word like "scratchpad" is
 -- silently rejected by ghostty ("invalid 'class' in config, ignoring").
@@ -112,6 +124,7 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("thunar"))
 hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("wofi --show drun"))
 hl.bind(mainMod .. " + SHIFT + L", hl.dsp.exec_cmd("hyprlock"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("cycle-wallpaper"))
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("toggle-blackout"))
 -- Routed through waybar-hyprsunset (not hyprsunset directly) so the waybar
 -- widget's override-tracking state file stays in sync with these too.
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("waybar-hyprsunset night 2500"))
