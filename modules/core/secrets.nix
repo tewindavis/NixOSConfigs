@@ -1,4 +1,4 @@
-{ ... }:
+_:
 
 {
   # sops-nix: encrypted secrets, decrypted at activation using each host's own
