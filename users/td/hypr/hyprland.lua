@@ -170,7 +170,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("wl-clip-persist --clipboard both")
   hl.exec_cmd("swayosd-server")
   hl.exec_cmd("waybar")
-  hl.exec_cmd("hyprpaper")
+  hl.exec_cmd("awww-daemon")
   -- Bare invocation starts the daemon and loads the auto day/night schedule
   -- from hyprsunset.conf (see home.nix); SUPER+R/SHIFT+R below become
   -- manual IPC overrides against this same running daemon.

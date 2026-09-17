@@ -11,6 +11,10 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -19,6 +23,7 @@
       nixpkgs,
       home-manager,
       treefmt-nix,
+      sops-nix,
       ...
     }@inputs:
     let
@@ -41,6 +46,7 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./hosts/${hostname}/configuration.nix
+            sops-nix.nixosModules.sops
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;

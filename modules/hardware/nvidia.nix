@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
 {
   # NVIDIA drivers
@@ -33,4 +33,7 @@
   hardware.graphics = {
     enable = true;
   };
+
+  # Live GPU utilization/VRAM/temp monitoring for the training rig
+  environment.systemPackages = [ pkgs.nvtopPackages.nvidia ];
 }

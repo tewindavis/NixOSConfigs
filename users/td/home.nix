@@ -51,9 +51,7 @@ let
     WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
     RANDOM_WALL=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \) | ${pkgs.coreutils}/bin/shuf -n 1)
     if [ -n "$RANDOM_WALL" ]; then
-      ${pkgs.hyprland}/bin/hyprctl hyprpaper unload all
-      ${pkgs.hyprland}/bin/hyprctl hyprpaper preload "$RANDOM_WALL"
-      ${pkgs.hyprland}/bin/hyprctl hyprpaper wallpaper ",$RANDOM_WALL"
+      ${pkgs.awww}/bin/awww img "$RANDOM_WALL" --transition-type wipe --transition-fps 60
     fi
   '';
 
@@ -269,6 +267,9 @@ in
     pkgs.bottom
     pkgs.jq # Used by toggle-scratchpad to query hyprctl clients JSON
     pkgs.gh # GitHub CLI, for agentic PR/issue workflows
+    pkgs.nh # Nicer nixos-rebuild wrapper (diffed switches, easy GC); reads
+    # NH_FLAKE below for the default flake path
+    pkgs.fastfetch # System-info splash, shown on interactive shell start (see initContent)
 
     # Languages & Toolchains
     pkgs.cargo
@@ -304,7 +305,8 @@ in
     pkgs.networkmanagerapplet
     pkgs.pavucontrol
     pkgs.brightnessctl
-    pkgs.hyprpaper # Wallpaper engine
+    pkgs.awww # Wallpaper engine w/ animated transitions (formerly swww,
+    # renamed upstream; same CLI/daemon shape)
     pkgs.hypridle # Idle daemon (autolock/DPMS); unlike hyprlock/hyprpaper,
     # the HM module for this doesn't add its package to home.packages
     pkgs.hyprsunset # Blue light filter
@@ -463,13 +465,33 @@ in
     recursive = true;
   };
 
-  # hyprpaper Config
-  services.hyprpaper = {
+  # awww Config (wallpaper daemon; see cycle-wallpaper above for transitions)
+  services.awww.enable = true;
+
+  # Kanshi: auto-switches monitor layout when the Framework docks/undocks,
+  # instead of re-running `hyprctl monitors` by hand. "laptop" (just the
+  # internal panel) always matches and works out of the box; "docked" is a
+  # template — kanshi simply won't match it until CHANGE_ME below is replaced
+  # with the real external display's name from `hyprctl monitors` once one is
+  # actually plugged in (can't be known ahead of time from here).
+  services.kanshi = {
     enable = true;
-    settings = {
-      ipc = "on";
-      splash = false;
-    };
+    settings = [
+      {
+        profile.name = "laptop";
+        profile.outputs = [ { criteria = "eDP-1"; } ];
+      }
+      {
+        profile.name = "docked";
+        profile.outputs = [
+          { criteria = "eDP-1"; }
+          {
+            criteria = "CHANGE_ME"; # e.g. "Dell Inc. DELL U2718Q ABC123"
+            mode = "preferred";
+          }
+        ];
+      }
+    ];
   };
 
   # Power menu (SUPER+SHIFT+P)
@@ -835,6 +857,14 @@ in
       size = 10000;
       path = "${config.home.homeDirectory}/.zsh_history";
     };
+
+    # Themed system-info splash on shell start; TERM=dumb guard matches the
+    # starship one above (VS Code's shell integration, CI, etc).
+    initContent = lib.mkAfter ''
+      if [[ $TERM != "dumb" ]]; then
+        fastfetch
+      fi
+    '';
   };
 
   programs.bash.enable = true;
@@ -849,6 +879,7 @@ in
     BROWSER = "brave";
     XDG_SCREENSHOTS_DIR = "${config.home.homeDirectory}/Pictures/Screenshots";
     PATH = "$HOME/.local/bin:$PATH";
+    NH_FLAKE = "/etc/nixos"; # lets `nh os switch`/`nh os boot` find this flake from anywhere
   };
 
   home.activation.createScreenshotsDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
