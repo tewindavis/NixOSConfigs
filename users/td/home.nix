@@ -284,6 +284,32 @@ in
     pkgs.gnumake
     pkgs.cmake
 
+    # Neovim LSP servers, formatters & linters. Installed here (Nix-managed)
+    # rather than via Mason, so editor tooling stays reproducible with
+    # nixos-rebuild instead of drifting from whatever Mason downloaded at
+    # runtime; Mason itself is disabled in nvim/lua/plugins/mason.lua. Names
+    # below are grouped by the LazyVim language extra that consumes them
+    # (see nvim/lua/config/lazy.lua).
+    pkgs.rust-analyzer # lang.rust (rustaceanvim)
+    pkgs.rustfmt # rust-analyzer shells out to this for formatting
+    pkgs.nil # lang.nix (nil_ls)
+    pkgs.nixfmt # lang.nix formatter; same binary this repo's `nix fmt` uses
+    pkgs.statix # lang.nix linter
+    pkgs.deadnix # dead-code checks, same as this repo's treefmt.nix
+    pkgs.basedpyright # lang.python LSP (see vim.g.lazyvim_python_lsp)
+    pkgs.ruff # lang.python lint + format
+    pkgs.clang-tools # lang.clangd: clangd, clang-format, clang-tidy
+    pkgs.lua-language-server # Lua LSP (LazyVim core, for editing this config)
+    pkgs.stylua # Lua formatter (LazyVim core default)
+    pkgs.vscode-langservers-extracted # lang.json (jsonls)
+    pkgs.yaml-language-server # lang.yaml (yamlls)
+    pkgs.taplo # lang.toml (LSP + formatter)
+    pkgs.marksman # lang.markdown
+    pkgs.markdownlint-cli2 # lang.markdown linter
+    pkgs.tree-sitter # CLI nvim-treesitter needs to compile parsers; without
+    # this and with Mason disabled, `:TSInstall`/ensure_installed silently
+    # can't fetch any parser at all
+
     # Python (Base)
     (pkgs.python3.withPackages (
       ps: with ps; [
