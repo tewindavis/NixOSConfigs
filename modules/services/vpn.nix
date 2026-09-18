@@ -9,6 +9,16 @@
 
   # Essential for proper DNS handling when using VPNs
   services.resolved.enable = true;
+  # resolved otherwise also speaks LLMNR (UDP/TCP 5355) and mDNS on every
+  # link. LLMNR is the protocol Responder-style spoofing targets on shared
+  # LANs, and it broadcasts every failed single-label lookup there. mDNS is
+  # already handled by avahi (modules/core), so resolved's copy is a
+  # duplicate responder. `.local` resolution still works where avahi's port
+  # is open, via nssmdns4.
+  services.resolved.settings.Resolve = {
+    LLMNR = false;
+    MulticastDNS = false;
+  };
 
   # Proton VPN & Mullvad GUI
   environment.systemPackages = with pkgs; [
