@@ -73,6 +73,25 @@
   # SSH Agent
   programs.ssh.startAgent = true;
 
+  # An agent alone isn't enough for a passphrase-protected key: something has
+  # to be able to *ask* for the passphrase. enableAskPassword defaults to
+  # services.xserver.enable, which is false here (greetd + Hyprland, no
+  # xserver), so SSH_ASKPASS went unset and ssh fell back to a compiled-in
+  # path that doesn't exist on NixOS — any non-TTY caller (a GUI app, or a
+  # command run without a controlling terminal) died with
+  # "ssh_askpass: exec(): No such file or directory" instead of prompting.
+  # seahorse's askpass is GTK, so it inherits the adw-gtk3-dark/Papirus
+  # theming from home.nix; the default x11-ssh-askpass would need XWayland.
+  programs.ssh.enableAskPassword = true;
+  programs.ssh.askPassword = "${pkgs.seahorse}/libexec/seahorse/ssh-askpass";
+
+  # Unlock once per login session instead of once per operation: the first
+  # ssh/git command to need the key prompts, and the decrypted key is handed
+  # to the agent started above for the rest of the session.
+  programs.ssh.extraConfig = ''
+    AddKeysToAgent yes
+  '';
+
   # Enable Zsh
   programs.zsh.enable = true;
 
