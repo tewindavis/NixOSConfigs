@@ -38,7 +38,7 @@ All system controls are bound to the **`SUPER`** (Command) key.
 ### Applications & Navigation
 | Key | Action |
 |:--- |:---|
-| `SUPER + T` | Open Ghostty Terminal |
+| `SUPER + T` or `SUPER + Return` | Open Ghostty Terminal |
 | `SUPER + Space` | Launch Application Menu (Wofi) |
 | `SUPER + E` | Open File Manager (Thunar) |
 | `SUPER + X` | Kill Active Window |
@@ -56,12 +56,15 @@ All system controls are bound to the **`SUPER`** (Command) key.
 | Key | Action |
 |:--- |:---|
 | `SUPER + SHIFT + L` | Lock Screen (Heavy Blur) |
-| `SUPER + SHIFT + S` | Screenshot Region (Copy + Save) |
-| `Print` | Screenshot Full Output (Copy + Save) |
+| `SUPER + SHIFT + S` | Screenshot Region → opens `swappy` to annotate (its toolbar does the copy/save) |
+| `Print` | Screenshot Full Output (instant Copy + Save) |
 | `SUPER + ALT + R` | Toggle Screen Recording (mp4, `~/Videos/Recordings`) |
+| `SUPER + C` | Pick Color Under Cursor (`hyprpicker`, copies to clipboard) |
 | `SUPER + V` | Clipboard History |
+| `SUPER + N` | Pop Last Dismissed Notification |
 | `SUPER + SHIFT + P` | Power Menu |
 | `SUPER + W` | Cycle Wallpaper |
+| `SUPER + SHIFT + W` | Toggle Blackout Wallpaper (solid black, for glare relief) |
 | `SUPER + R` | Manual Override: Aggressive Hyprsunset (2500K) |
 | `SUPER + SHIFT + R` | Manual Override: Reset Hyprsunset (Day Mode) |
 | `SUPER + Left Click` | **Drag to Move** Window |

@@ -8,9 +8,8 @@ relevant to the task rather than everything up front.
 `README.md` is the human-facing feature tour (aesthetic rationale,
 fresh-install steps). This file is the technical/agent-facing counterpart:
 where things live, how to change them safely, and the gotchas already paid
-for. Where the two disagree, **the code wins, then these docs** — README's
-keybinding cheat sheet is known to be incomplete (see `docs/desktop.md` for
-the authoritative list).
+for. The two are currently in sync; where any doc disagrees with the code,
+**the code wins** — verify against the source file before trusting a doc.
 
 ## Hosts
 

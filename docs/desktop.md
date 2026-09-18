@@ -8,10 +8,10 @@ packages, waybar/dunst/hyprlock/kanshi config, theming). A single
 behavior lives in `if "@HOSTNAME@" == "..."` branches inside that one file,
 not in separate per-host configs.
 
-`README.md` has a human-facing cheat sheet, but it is **incomplete** — it
-omits `SUPER+Return`, `SUPER+SHIFT+W`, `SUPER+C` and `SUPER+N`. The table
-below is transcribed directly from `hyprland.lua` and is the authoritative
-list; verify against that file (`grep 'hl.bind'`) rather than README.
+`README.md` carries the same cheat sheet for humans and is currently in sync.
+Either can drift, so **`hyprland.lua` is the source of truth** — regenerate
+the table below with `grep 'hl.bind' users/td/hypr/hyprland.lua` rather than
+trusting either doc if they disagree.
 
 ## Keybindings (authoritative — from `hyprland.lua`)
 
