@@ -137,6 +137,12 @@ these from scratch.
   overflow in the NTFS handler, RCE, fixed in 7-Zip 26.01) are never coming
   to it. Compare `avahi`, also pinned at an ancient 0.8 but carrying ~20 CVE
   backports — old version alone isn't the smell, unpatched *and* old is.
+- **`lhasa` is removed from xarchiver's wrapper the same way:**
+  `lhasa = emptyDirectory` in the override. It parses LHA/LZH, a format
+  nobody uses any more, and has no nixpkgs maintainers. xarchiver *also* has
+  no maintainers, but it only runs the backend CLIs and never parses archive
+  bytes itself, so the backends are what to check. Verify with:
+  `strings $(readlink -f $(command -v xarchiver)) | grep -c lhasa` → expect 0.
 
 ## Deploying
 

@@ -36,9 +36,18 @@
   # dropping p7zip from the list below alone would leave p7zip on xarchiver's
   # PATH and still handle every .7z opened from Thunar. xarchiver probes for
   # `7zz` *before* `7z`/`7za`/`7zr` (src/main.c), so _7zz drops straight in.
+  #
+  # `lhasa` is swapped for an empty stand-in the same way: it's the LHA/LZH
+  # parser, has zero nixpkgs maintainers, and nobody sends .lzh files any
+  # more — so it's unmaintained C parsing hostile input for no benefit.
+  # (xarchiver itself also has zero maintainers but doesn't parse archives;
+  # it only drives these CLIs, which is where the untrusted-input risk is.)
   # See docs/gotchas.md.
   environment.systemPackages = with pkgs; [
-    (xarchiver.override { p7zip = _7zz; })
+    (xarchiver.override {
+      p7zip = _7zz;
+      lhasa = emptyDirectory;
+    })
     _7zz
     unrar
     unzip
