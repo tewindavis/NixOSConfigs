@@ -2,14 +2,65 @@
 
 Source files: `users/td/hypr/hyprland.lua` (binds, autostart, window rules,
 per-host monitor config) and `users/td/home.nix` (all custom shell-script
-packages, waybar/dunst/hyprlock/kanshi config, theming). One `hyprland.lua`
-is shared byte-for-byte across all three hosts — `@HOSTNAME@` is
-string-substituted at build time by `home.nix`, so host-specific behavior
-inside it is `if "@HOSTNAME@" == "..."` branches, not separate files.
+packages, waybar/dunst/hyprlock/kanshi config, theming). A single
+`hyprland.lua` source file is shared, unmodified, across all three hosts —
+`home.nix` substitutes `@HOSTNAME@` into it at build time, so host-specific
+behavior lives in `if "@HOSTNAME@" == "..."` branches inside that one file,
+not in separate per-host configs.
 
-For the full keybinding table and feature-tour prose, `README.md` already
-has an accurate, up-to-date cheat sheet — this file adds the *implementation*
-detail an agent needs to change or debug something, not a duplicate table.
+`README.md` has a human-facing cheat sheet, but it is **incomplete** — it
+omits `SUPER+Return`, `SUPER+SHIFT+W`, `SUPER+C` and `SUPER+N`. The table
+below is transcribed directly from `hyprland.lua` and is the authoritative
+list; verify against that file (`grep 'hl.bind'`) rather than README.
+
+## Keybindings (authoritative — from `hyprland.lua`)
+
+`mainMod` = `SUPER`.
+
+| Bind | Action |
+|---|---|
+| `SUPER+T` / `SUPER+Return` | Ghostty terminal (two binds, same command) |
+| `SUPER+E` | Thunar |
+| `SUPER+Space` | `wofi --show drun` |
+| `SUPER+S` | Toggle dropdown scratchpad terminal |
+| `SUPER+X` | Kill active window |
+| `SUPER+F` | Fullscreen |
+| `SUPER+P` | Pseudotile |
+| `SUPER+SHIFT+Space` | Toggle floating |
+| `SUPER+h/j/k/l` | Focus left/down/up/right |
+| `SUPER+1..9` | Switch workspace |
+| `SUPER+SHIFT+1..9` | Move window to workspace |
+| `SUPER+SHIFT+E` | Exit Hyprland |
+| `SUPER+SHIFT+L` | Lock (hyprlock) |
+| `SUPER+SHIFT+P` | Power menu (wlogout) |
+| `SUPER+W` | Cycle wallpaper |
+| `SUPER+SHIFT+W` | Toggle blackout wallpaper |
+| `SUPER+R` | Hyprsunset night override @ 2500K |
+| `SUPER+SHIFT+R` | Hyprsunset day (identity) |
+| `SUPER+SHIFT+S` | Region screenshot → `swappy` for annotation (swappy's own toolbar does the copy/save) |
+| `Print` | Full-output screenshot, instant copy+save, with notification |
+| `SUPER+C` | `hyprpicker -a` color picker |
+| `SUPER+V` | Clipboard history (`cliphist` → wofi) |
+| `SUPER+N` | Pop last notification (`dunstctl history-pop`) |
+| `SUPER+ALT+R` | Toggle screen recording |
+| `SUPER+LMB` / `SUPER+RMB` | Drag to move / resize |
+| Volume/brightness/mute keys | `swayosd-client` (shows OSD + applies change; `locked` so they work on the lock screen) |
+
+## Waybar click actions
+
+Not documented anywhere else — from `waybar/config.jsonc`:
+
+| Module | Click |
+|---|---|
+| `cpu`, `memory` | `ghostty -e btm` |
+| `bluetooth` | `blueman-manager` |
+| `network` | `nm-connection-editor` |
+| `pulseaudio` | `pavucontrol` |
+| `custom/power-profile` | Cycle power profile |
+| `custom/hyprsunset` | Toggle blue-light filter |
+| `custom/power` | `wlogout` |
+| `idle_inhibitor` | Toggle idle inhibit (built-in) |
+| `hyprland/workspaces` | Activate workspace (scroll disabled) |
 
 ## Custom scripts (all defined in `users/td/home.nix` via `writeShellScriptBin`)
 
@@ -21,7 +72,7 @@ detail an agent needs to change or debug something, not a duplicate table.
 | `toggle-scratchpad` | `SUPER+S` | Dropdown terminal. First call spawns a ghostty tagged `--class=com.td.scratchpad` into the `special:scratchpad` workspace (matched by the `scratchpad-term` window rule in `hyprland.lua`); later calls just toggle visibility. |
 | `waybar-weather` | waybar module | wttr.in one-liner as JSON for waybar's `custom` module type; falls back to `"N/A"` on any fetch failure. |
 | `waybar-power-profile` | waybar module (click = cycle) | Reads/cycles `power-profiles-daemon`'s profile. Only meaningful on `framework` (see `docs/hosts.md`) — reports "unavailable" elsewhere. |
-| `waybar-hyprsunset` | waybar module (click = toggle), `SUPER+R`/`SUPER+SHIFT+R` | Blue-light filter widget. See gotcha below — this is the *only* correct way to drive hyprsunset once the daemon is already running. |
+| `waybar-hyprsunset` | waybar module (click = toggle), `SUPER+R`/`SUPER+SHIFT+R` | Blue-light filter widget. Per `docs/gotchas.md`, this is the *only* correct way to drive hyprsunset once the daemon is already running. |
 | `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `/tmp`, saves timestamped mp4 to `~/Videos/Recordings`, dunst toast on start/stop. |
 
 ## hyprsunset day/night schedule
@@ -45,13 +96,25 @@ daemon directly.
 
 ## Theming
 
-Tokyo Night palette: Blue `#7aa2f7` (identity/active), Green `#9ece6a`
-(location/success), Orange `#ff9e64` (status/warning), Red `#f7768e`
-(critical). Applied consistently across `waybar/style.css`,
+Tokyo Night palette, as actually used across `waybar/style.css`,
 `wofi/style.css`, `wlogout/style.css`, `swayosd/style.css`, and the
-`programs.hyprlock`/`services.dunst` settings blocks in `home.nix` — when
-adding a new UI surface, reuse these exact hex values rather than picking new
-ones.
+`programs.hyprlock` / `services.dunst` settings blocks in `home.nix`:
+
+| Hex | Role |
+|---|---|
+| `#c0caf5` | Default foreground/text — the most-used token, on every surface |
+| `#1a1b26` | Module/panel background (usually at `0.9` alpha) |
+| `rgba(10, 11, 16, 0.85)` | Waybar's own bar background (deeper than `#1a1b26`, matches Ghostty) |
+| `#7aa2f7` | Blue — identity, borders, active/accent (every stylesheet) |
+| `#9ece6a` | Green — location, success/low urgency |
+| `#ff9e64` | Orange — status, clock, warning, git branch |
+| `#f7768e` | Red — critical/fail |
+| `#7dcfff` | Cyan — per-module accent: bluetooth, hyprsunset day state |
+| `#bb9af7` | Purple — per-module accent: memory |
+
+Reuse these exact values when adding a UI surface rather than introducing new
+ones. Note the last two are waybar-only per-module accents, not part of the
+core four.
 
 GTK/Qt/dconf theming (`gtk`, `qt`, `dconf.settings` in `home.nix`) is the
 declarative source of truth for dark mode + accent color — don't add

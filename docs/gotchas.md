@@ -58,10 +58,12 @@ these from scratch.
   `false` deliberately — finegrained power management is experimental and
   "can cause sleep/suspend to fail" on this driver stack. Don't flip these on
   without testing suspend/resume specifically.
-- `open = false` — using the proprietary kernel module, not the
-  `nouveau`-adjacent open-source one. Only the newer open module supports
-  Turing+; this stays `false` until/unless that's revisited for the specific
-  GPU in `dl-prototype`.
+- `open = false` — this selects NVIDIA's *proprietary* kernel module over
+  NVIDIA's own **open-source kernel module**, which (as the source comment
+  stresses) is **not** the `nouveau` driver — don't conflate the two. The
+  open module only supports RTX 20-series/Turing and newer, so this stays
+  `false` until it's confirmed appropriate for the actual GPU in
+  `dl-prototype`.
 
 ## RL / binary-analysis Python env (`modules/dev/rl-binary.nix`)
 
@@ -94,6 +96,17 @@ these from scratch.
   get silently dropped (visible only as a "conflicts with recursively
   symlinked file" build warning) — `sideloadInitLua` loads that generated
   content via a wrapper `--cmd` flag instead, so both coexist.
+
+## Deploying
+
+- **The `rebuild` alias breaks on `utm-vm`.** `home.nix` defines
+  `rebuild = "sudo nixos-rebuild switch --flake ."` — with no `#attr`,
+  nixos-rebuild infers `nixosConfigurations.<current hostname>`. That VM's
+  `networking.hostName` is `utm-nixos` while its flake attribute is
+  `utm-vm`, so the bare form can't resolve an attr there. Use
+  `sudo nixos-rebuild switch --flake .#utm-vm` (or `nh os switch .#utm-vm`)
+  on that host. The alias is fine on `framework` and `dl-prototype`, where
+  attr and hostname match.
 
 ## Misc
 

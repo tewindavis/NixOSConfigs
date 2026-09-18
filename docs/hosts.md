@@ -43,9 +43,11 @@ hardware to manage.
   `powerManagement.cpuFreqGovernor = "performance"`.
 - NVIDIA proprietary driver (`modules/hardware/nvidia.nix`): modesetting on,
   `open = false` (proprietary, not the open kernel module),
-  `powerManagement.enable = false` (finegrained NVIDIA power management is
-  experimental and can break suspend — left off deliberately, not an
-  oversight). `nvtop` included for live GPU/VRAM monitoring.
+  and both power-management knobs off deliberately, not by oversight:
+  `powerManagement.enable = false` (experimental; can cause sleep/suspend to
+  fail) and `powerManagement.finegrained = false` (experimental, and only
+  works on Turing-or-newer GPUs). `nvtop` included for live GPU/VRAM
+  monitoring.
 - `modules/dev/rl-binary.nix`: binary-analysis toolkit (ghidra, radare2, gdb,
   gef — not pwndbg, which isn't a real nixpkgs package) plus a CPU-focused RL
   Python env (`stable-baselines3` + `gymnasium`, both patched with
@@ -58,9 +60,11 @@ hardware to manage.
 - `networking.hostName = "utm-nixos"` — note this **does not match** the
   flake attribute name `utm-vm` used in `flake.nix`/`hosts/utm-vm/`. Deploy
   with `nixos-rebuild switch --flake .#utm-vm`; the running system reports
-  itself as `utm-nixos`. This is intentional, left over from setup — don't
-  "fix" the mismatch without checking whether anything depends on the
-  hostname string.
+  itself as `utm-nixos`. Consequence: the bare `rebuild` alias from
+  `home.nix` (`nixos-rebuild switch --flake .`, no attr) **fails on this
+  host**, because it infers the attr from the hostname — see
+  `docs/gotchas.md`. Don't "fix" the mismatch without checking whether
+  anything depends on the hostname string.
 - `modules/hardware/utm.nix`: QEMU guest agent, Spice vdagent (clipboard +
   resolution scaling), `virtio_gpu` forced into the initrd, `virtio` video
   driver.

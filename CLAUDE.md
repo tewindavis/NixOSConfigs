@@ -5,10 +5,11 @@ Personal NixOS flake config for user `td`, managing three hosts via Nix Flakes
 repo; deep-dive references live in `docs/` (linked below) — read the ones
 relevant to the task rather than everything up front.
 
-For the human-facing feature tour (keybindings cheat sheet, aesthetic
-rationale, fresh-install steps), see `README.md`. This file is the
-technical/agent-facing counterpart: where things live, how to change them
-safely, and the gotchas already paid for.
+`README.md` is the human-facing feature tour (aesthetic rationale,
+fresh-install steps). This file is the technical/agent-facing counterpart:
+where things live, how to change them safely, and the gotchas already paid
+for. Where the two disagree, **the code wins, then these docs** — README has
+two known-stale sections, flagged inline below and in `docs/desktop.md`.
 
 ## Hosts
 
@@ -16,7 +17,7 @@ safely, and the gotchas already paid for.
 |---|---|---|
 | `framework` | x86_64 | Primary laptop (Framework 13). Fingerprint auth, HiDPI, fwupd. Only host enrolled for sops secrets. |
 | `dl-prototype` | x86_64 | Threadripper + NVIDIA training rig. RL/binary-analysis toolkit. |
-| `utm-vm` | aarch64 | UTM/QEMU VM on Apple Silicon for sandboxing. hostName is `utm-nixos` (mismatched from the `utm-vm` flake/dir name — intentional, not a bug). |
+| `utm-vm` | aarch64 | UTM/QEMU VM on Apple Silicon for sandboxing. hostName is `utm-nixos`, which does **not** match the `utm-vm` flake/dir name — affects how you deploy it, see below. |
 
 Full hardware/module wiring per host: **`docs/hosts.md`**.
 
@@ -64,7 +65,7 @@ add a `mkHost { hostname = "<name>"; system = "..."; }` entry in `flake.nix`.
 ## Build, check, format
 
 ```bash
-sudo nixos-rebuild switch --flake .#<hostname>   # apply (hostname must match networking.hostName)
+sudo nixos-rebuild switch --flake .#<attr>       # apply; <attr> is the hosts/ dir name (see note below)
 nh os switch                                      # nicer wrapper, diffed switch; reads NH_FLAKE=/etc/nixos
 nix flake check                                   # validates formatting + that all 3 hosts evaluate
 nix fmt                                            # nixfmt + statix + deadnix over the whole tree
@@ -73,9 +74,13 @@ nix fmt                                            # nixfmt + statix + deadnix o
 Always run `nix fmt` before committing — treefmt is the formatting source of
 truth (`treefmt.nix`), not manual style matching.
 
-There is no host named "current machine" — always pass the explicit
-`#hostname` flake attr matching `networking.hostName` in that host's
-`configuration.nix`.
+**Always pass an explicit `#<attr>`.** The flake attribute is the
+`hosts/<name>/` directory name, which is *not* always the machine's
+hostname: `utm-vm`'s `networking.hostName` is `utm-nixos`. A bare
+`nixos-rebuild switch --flake .` infers the attr from the running hostname,
+so it works on `framework`/`dl-prototype` but fails on the VM — as does the
+`rebuild` zsh alias in `home.nix`, which is that bare form. See
+`docs/gotchas.md`.
 
 ## Secrets (sops-nix)
 
@@ -100,9 +105,14 @@ IPC socket vs CLI, etc.) so they don't get re-discovered the hard way.
 
 ## Dev toolkit
 
-Languages, LSPs/formatters (Nix-managed, not Mason), and Neovim (LazyVim) are
-listed in `README.md`'s Developer Toolkit section — that inventory is
-accurate and doesn't need duplicating here. LSP/formatter packages live in
-`users/td/home.nix` near the `Neovim LSP servers` comment; Mason is
-deliberately disabled (`users/td/nvim/lua/plugins/mason.lua`) so editor
-tooling stays Nix-reproducible.
+The package inventory (languages, CLI tools, GUI apps) is listed in
+`README.md`'s Developer Toolkit section and is accurate as a *package list* —
+`users/td/home.nix` is the authoritative source.
+
+**Known-stale exception:** README's **Neovim** subsection claims "LazyVim's Mason
+auto-installs LSPs on first launch." That is stale and wrong. Mason is
+explicitly disabled (`users/td/nvim/lua/plugins/mason.lua` turns off
+`mason.nvim`, `mason-lspconfig`, `mason-tool-installer`, and `mason-nvim-dap`);
+every LSP, formatter and linter is installed via Nix in `home.nix` (grouped by
+the LazyVim language extra that consumes them) and picked up off `PATH`. To add
+language support, add the package to `home.nix` — `:Mason` will not help.
