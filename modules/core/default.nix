@@ -25,7 +25,23 @@
   nixpkgs.config.allowUnfree = true;
 
   # Essential System Services
-  services.openssh.enable = true;
+  # Key-only SSH. A bare `services.openssh.enable = true` leaves
+  # PasswordAuthentication and KbdInteractiveAuthentication at their upstream
+  # default of `true` and opens port 22 on every interface — which on a
+  # laptop that roams onto café/hotel/conference networks means anyone on the
+  # LAN can attempt online password guessing against `td`, and `td` is in
+  # `wheel` with `sudo` gated by that same password. `td`'s public key is
+  # declared in users/td/nixos.nix; keep at least one recipient there before
+  # switching, since with password auth off an empty key list locks out
+  # remote access entirely (console/physical login is unaffected).
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+    };
+  };
   networking.networkmanager.enable = true;
 
   # Keyboard
