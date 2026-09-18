@@ -16,4 +16,8 @@
   # Standard bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  # No kernel-cmdline editor at the boot menu. Unlike framework, this guest's
+  # root filesystem isn't encrypted, so the editor is the whole barrier:
+  # `init=/bin/sh` from the boot menu is root with no passphrase prompt.
+  boot.loader.systemd-boot.editor = false;
 }
