@@ -1,16 +1,16 @@
-{ config, lib, pkgs, ... }:
+{ ... }:
 
 {
-  imports =
-    [ 
-      ./hardware-configuration.nix
-      ../../modules/desktop
-      ../../modules/core
-      ../../modules/hardware/framework.nix
-      ../../modules/hardware/bluetooth.nix
-      ../../modules/services/vpn.nix
-      ../../users/td/nixos.nix
-    ];
+  imports = [
+    ./hardware-configuration.nix
+    ../../modules/desktop
+    ../../modules/core
+    ../../modules/hardware/framework.nix
+    ../../modules/hardware/bluetooth.nix
+    ../../modules/services/vpn.nix
+    ../../modules/services/syncthing.nix
+    ../../users/td/nixos.nix
+  ];
 
   networking.hostName = "framework";
 
@@ -20,6 +20,4 @@
   # Standard bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  system.stateVersion = "25.11";
 }

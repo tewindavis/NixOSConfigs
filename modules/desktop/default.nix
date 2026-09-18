@@ -16,9 +16,20 @@
   # Enable Thunar and related services
   programs.thunar.enable = true;
   programs.thunar.plugins = with pkgs; [
-    xfce.thunar-archive-plugin
-    xfce.thunar-volman
+    thunar-archive-plugin
+    thunar-volman
   ];
   services.gvfs.enable = true; # Mount, trash, and other functionalities
   services.tumbler.enable = true; # Thumbnail support for images
+
+  # Archive support: thunar-archive-plugin (above) only wires the Thunar
+  # context menu up — it still shells out to an actual archive manager (GUI)
+  # and command-line backends for the individual formats.
+  environment.systemPackages = with pkgs; [
+    xarchiver
+    p7zip
+    unrar
+    unzip
+    zip
+  ];
 }

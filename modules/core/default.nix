@@ -1,9 +1,14 @@
 { pkgs, ... }:
 
 {
+  imports = [ ./secrets.nix ];
+
   # Nix Settings
-  nix.settings.experimental-features = [ "nix-command" "flakes"];
-  
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+
   # Optimization and Garbage Collection
   nix.gc = {
     automatic = true;
@@ -15,18 +20,6 @@
   # Time and locale
   time.timeZone = "America/Chicago";
   i18n.defaultLocale = "en_US.UTF-8";
-
-  # System-wide packages
-  environment.systemPackages = with pkgs; [
-    git
-    vim
-    curl
-    wget
-    htop
-    tree
-    tmux
-    pciutils
-  ];
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -50,7 +43,31 @@
     pulse.enable = true;
     jack.enable = true;
   };
-  
+
+  # Printing: CUPS + Avahi for zero-config discovery of network/AirPrint
+  # printers. GTK/Qt print dialogs talk to CUPS automatically once enabled;
+  # system-config-printer below is the GUI for adding/managing printers.
+  services.printing = {
+    enable = true;
+    drivers = with pkgs; [ gutenprint ];
+  };
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
+  environment.systemPackages = with pkgs; [
+    git
+    vim
+    curl
+    wget
+    htop
+    tree
+    tmux
+    pciutils
+    system-config-printer
+  ];
+
   system.stateVersion = "25.11";
 
   # SSH Agent

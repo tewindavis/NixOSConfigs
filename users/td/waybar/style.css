@@ -7,7 +7,8 @@
 window#waybar {
     background: rgba(10, 11, 16, 0.85); /* Deeper black matching Ghostty */
     color: #c0caf5;
-    border-bottom: 2px solid rgba(122, 162, 247, 0.5); /* Blue border accent */
+    border: 2px solid rgba(122, 162, 247, 0.5); /* Blue border accent, matches wofi/hyprlock/dunst */
+    border-radius: 12px; /* Matches wofi/hyprlock/dunst radius */
 }
 
 #workspaces button {
@@ -20,7 +21,7 @@ window#waybar {
     border-bottom: 2px solid #7aa2f7;
 }
 
-#clock, #cpu, #memory, #battery, #bluetooth, #network, #pulseaudio, #tray {
+#clock, #cpu, #memory, #battery, #bluetooth, #network, #pulseaudio, #tray, #idle_inhibitor, #custom-power {
     padding: 0 10px;
     margin: 4px 4px;
     border-radius: 8px;
@@ -29,6 +30,14 @@ window#waybar {
 
 #clock {
     color: #ff9e64; /* Orange */
+}
+
+#custom-weather {
+    color: #ff9e64; /* Orange, pairs with the adjacent clock module */
+    padding: 0 10px;
+    margin: 4px 4px;
+    border-radius: 8px;
+    background: rgba(26, 27, 38, 0.9);
 }
 
 #cpu {
@@ -61,4 +70,24 @@ window#waybar {
 
 #tray {
     color: #c0caf5;
+}
+
+#idle_inhibitor {
+    color: #c0caf5;
+}
+
+#idle_inhibitor.activated {
+    color: #f7768e; /* Red - lock/DPMS suppressed, matches dunst critical */
+}
+
+#custom-hyprsunset {
+    padding: 0 10px;
+    margin: 4px 4px;
+    border-radius: 8px;
+    background: rgba(26, 27, 38, 0.9);
+    color: #7dcfff; /* Cyan/Blue - day/neutral, matches bluetooth's cool tone */
+}
+
+#custom-hyprsunset.night {
+    color: #ff9e64; /* Orange - warm filter active, matches clock/weather */
 }

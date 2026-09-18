@@ -20,11 +20,11 @@
     open = false;
 
     # Enable the Nvidia settings menu,
-	# accessible via `nvidia-settings`.
+    # accessible via `nvidia-settings`.
     nvidiaSettings = true;
 
     # Optionally, you may need to select the appropriate driver version for your specific GPU.
-    # STUB: Revisit if GPU is older than Maxwell (GTX 900 series). 
+    # STUB: Revisit if GPU is older than Maxwell (GTX 900 series).
     # For very old cards, use config.boot.kernelPackages.nvidiaPackages.legacy_XXX
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
@@ -33,4 +33,7 @@
   hardware.graphics = {
     enable = true;
   };
+
+  # Live GPU utilization/VRAM/temp monitoring for the training rig
+  environment.systemPackages = [ pkgs.nvtopPackages.nvidia ];
 }

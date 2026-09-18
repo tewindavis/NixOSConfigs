@@ -2,25 +2,43 @@
     "layer": "top",
     "position": "top",
     "height": 34,
+    "margin-top": 6,
+    "margin-left": 8,
+    "margin-right": 8,
     "spacing": 4,
     "modules-left": ["hyprland/workspaces", "hyprland/window"],
-    "modules-center": ["clock"],
-    "modules-right": ["cpu", "memory", "battery", "bluetooth", "network", "pulseaudio", "tray"],
-    
+    "modules-center": ["clock", "custom/weather"],
+    "modules-right": ["cpu", "memory", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "custom/hyprsunset", "tray", "custom/power"],
+
     "hyprland/workspaces": {
         "disable-scroll": true,
         "all-outputs": true,
+        "persistent-workspaces": {
+            "*": [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        },
         "format": "{name}",
         "on-click": "activate"
     },
 
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "",
+            "deactivated": ""
+        },
+        "tooltip-format-activated": "Idle inhibitor: ON (lock/DPMS suppressed)",
+        "tooltip-format-deactivated": "Idle inhibitor: OFF"
+    },
+
     "cpu": {
         "format": "  {usage}%",
-        "tooltip": false
+        "tooltip": false,
+        "on-click": "ghostty -e btm"
     },
     
     "memory": {
-        "format": "  {}%"
+        "format": "  {}%",
+        "on-click": "ghostty -e btm"
     },
 
     "battery": {
@@ -29,7 +47,7 @@
             "critical": 15
         },
         "format": "{icon}  {capacity}%",
-        "format-charging": " {capacity}%",
+        "format-charging": " {capacity}%",
         "format-plugged": " {capacity}%",
         "format-icons": ["", "", "", "", ""]
     },
@@ -64,5 +82,46 @@
     "clock": {
         "format": "{:%I:%M %p   %b %d}",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+
+    "custom/weather": {
+        "exec": "waybar-weather",
+        "return-type": "json",
+        "interval": 1800,
+        "tooltip": true
+    },
+
+    // Only "framework" runs power-profiles-daemon; on the other hosts this
+    // just reports "unavailable" (same graceful-degradation pattern as the
+    // built-in bluetooth module on utm-vm, which has no bluetooth hardware).
+    "custom/power-profile": {
+        "exec": "waybar-power-profile status",
+        "on-click": "waybar-power-profile cycle",
+        "return-type": "json",
+        "interval": 5,
+        "tooltip": true
+    },
+
+    // No IPC query exists for hyprsunset's current state, so this computes
+    // it from the same schedule as hyprsunset.conf; click toggles a manual
+    // override (see waybar-hyprsunset). interval matches waybar-power-
+    // profile's poll cadence so the icon flips promptly at schedule boundaries.
+    "custom/hyprsunset": {
+        "exec": "waybar-hyprsunset",
+        "on-click": "waybar-hyprsunset toggle",
+        "return-type": "json",
+        "interval": 5,
+        "tooltip": true
+    },
+
+    "custom/power": {
+        "format": "",
+        "tooltip-format": "Power menu",
+        "on-click": "wlogout"
+    },
+
+    "tray": {
+        "icon-size": 18,
+        "spacing": 10
     }
 }

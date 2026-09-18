@@ -14,6 +14,21 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   spec = {
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+    -- Language extras: LSP + formatting + linting + treesitter for
+    -- everything this system has a toolchain for (see the "Languages &
+    -- Toolchains" section of ../../home.nix). Servers/formatters run
+    -- straight off PATH — Mason is disabled in plugins/mason.lua.
+    { import = "lazyvim.plugins.extras.lang.rust" },
+    { import = "lazyvim.plugins.extras.lang.zig" },
+    { import = "lazyvim.plugins.extras.lang.python" },
+    { import = "lazyvim.plugins.extras.lang.clangd" },
+    { import = "lazyvim.plugins.extras.lang.nix" },
+    -- Config-file ecosystem that shows up alongside the above (Cargo.toml,
+    -- pyproject.toml, flake inputs, CI yaml, docs).
+    { import = "lazyvim.plugins.extras.lang.json" },
+    { import = "lazyvim.plugins.extras.lang.toml" },
+    { import = "lazyvim.plugins.extras.lang.yaml" },
+    { import = "lazyvim.plugins.extras.lang.markdown" },
     -- Import your plugins
     { import = "plugins" },
     { "ThePrimeagen/vim-be-good", cmd="VimBeGood" }

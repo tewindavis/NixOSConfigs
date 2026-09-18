@@ -2,7 +2,7 @@
 
 {
   # Mullvad VPN
-  # This enables the daemon and the CLI tool. 
+  # This enables the daemon and the CLI tool.
   # You can also use the Mullvad GUI by adding the package.
   #services.mullvad-vpn.enable = true;
   #services.mullvad-vpn.package = pkgs.mullvad-vpn;
@@ -12,7 +12,7 @@
 
   # Proton VPN & Mullvad GUI
   environment.systemPackages = with pkgs; [
-    protonvpn-gui
+    proton-vpn
     proton-vpn-cli
     #mullvad-vpn # Graphical client
   ];

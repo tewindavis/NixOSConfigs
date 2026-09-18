@@ -1,0 +1,21 @@
+# sops-nix creation rules: which age keys can decrypt which secrets files.
+#
+# Each host's recipient below is its own SSH host key, converted with
+# `ssh-to-age` (from /etc/ssh/ssh_host_ed25519_key.pub) rather than a
+# separately-managed keypair, since NixOS already provisions and protects
+# that key. sops-nix decrypts using it at activation via
+# sops.age.sshKeyPaths (modules/core/secrets.nix).
+#
+# Only "framework" is enrolled so far (that's the machine this was set up
+# from). To add dl-prototype or utm-vm once you're on them:
+#   cat /etc/ssh/ssh_host_ed25519_key.pub | nix run nixpkgs#ssh-to-age
+# then add the result below and re-run `sops updatekeys secrets/secrets.yaml`
+# so the file is re-encrypted for the new recipient too.
+keys:
+  - &framework age1cmnrjfsrrtkcy9l49mh09hpgkcvr9ah3eattfkpml33g5jrs8v5s2fwpva
+
+creation_rules:
+  - path_regex: secrets/.*\.yaml$
+    key_groups:
+      - age:
+          - *framework
