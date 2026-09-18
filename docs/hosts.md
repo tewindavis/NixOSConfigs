@@ -31,7 +31,8 @@ hardware to manage.
 - No inbound ports at all: it also sets `services.syncthing.openDefaultPorts`
   and `services.avahi.openFirewall` to `false` (both `mkDefault true` in their
   modules, so the other hosts keep them), and an `assertions` entry fails
-  evaluation if any port or range is opened. Costs: Syncthing can only dial
+  evaluation if any port or range is opened, any interface besides `lo` is
+  trusted, or raw firewall rules add an accept. Costs: Syncthing can only dial
   out, and mDNS is closed, so `.local` names and CUPS printer auto-discovery
   don't work on this host.
 - `power-profiles-daemon` enabled (balanced/power-saver/performance); waybar's

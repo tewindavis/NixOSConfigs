@@ -41,7 +41,13 @@
   services.avahi.openFirewall = false;
 
   # Enforce the above: any module that later opens a port on this host fails
-  # evaluation (and `nix flake check`) instead of silently widening it.
+  # evaluation (and `nix flake check`) instead of silently widening it. Beyond
+  # the allowed*Ports lists this also covers the other ways in: a trusted
+  # interface (e.g. tailscale0) accepts *everything* on it, and raw
+  # iptables/nftables rules bypass the lists entirely. extraCommands can't be
+  # required empty — nixos/nat always injects its own chain cleanup there —
+  # so it's checked for accept rules instead (any case, which
+  # also catches the idiomatic `-j nixos-fw-accept`).
   assertions =
     let
       fw = config.networking.firewall;
@@ -61,11 +67,16 @@
           && fw.allowedUDPPorts == [ ]
           && fw.allowedTCPPortRanges == [ ]
           && fw.allowedUDPPortRanges == [ ]
-          && !ifaceOpen;
+          && !ifaceOpen
+          && fw.trustedInterfaces == [ "lo" ]
+          && fw.extraInputRules == ""
+          && !lib.hasInfix "accept" (lib.toLower fw.extraCommands);
         message = ''
           framework must expose no inbound ports, but the firewall is
           disabled or opens TCP ${toString fw.allowedTCPPorts} / UDP ${toString fw.allowedUDPPorts}
-          (or port ranges / per-interface rules). Close it in hosts/framework/configuration.nix.
+          (or port ranges / per-interface rules), trusts interfaces
+          ${toString fw.trustedInterfaces}, or adds raw ACCEPT/input rules.
+          Close it in hosts/framework/configuration.nix.
         '';
       }
     ];
