@@ -97,6 +97,27 @@ these from scratch.
   symlinked file" build warning) — `sideloadInitLua` loads that generated
   content via a wrapper `--cmd` flag instead, so both coexist.
 
+## Archives (`modules/desktop/default.nix`)
+
+- **Dropping `p7zip` from `environment.systemPackages` does not remove it
+  from the archive path.** `xarchiver` wraps itself with its own backends via
+  `wrapProgram` at build time (`zip`, `unzip`, `p7zip`, `unar`, `gnutar`,
+  `lhasa`, ...), so its `p7zip` stays on its private PATH regardless of what
+  the system profile contains — and since `xdg.mimeApps` in `home.nix` points
+  every archive MIME type at `xarchiver`, that wrapped copy is what actually
+  opens a `.7z` from Thunar. Swapping the backend needs
+  `xarchiver.override { p7zip = _7zz; }`, not just a list edit. Verify with:
+  `strings $(readlink -f $(command -v xarchiver)) | grep -c p7zip` → expect 0.
+- **`_7zz` drops in cleanly because xarchiver probes for `7zz` first.**
+  `src/main.c` tries `7zz`, then `7z`, `7za`, `7zr` — and `_7zz` ships only a
+  `7zz` binary, so no shim is needed. The reason to prefer it: `p7zip` is the
+  `p7zip-project` fork pinned at 17.06 (upstream's last release; the repo
+  itself last saw a push 2025-05-20) and nixpkgs carries **zero** patches on
+  it, while official 7-Zip is on 26.x. Fixes such as CVE-2026-48095 (heap
+  overflow in the NTFS handler, RCE, fixed in 7-Zip 26.01) are never coming
+  to it. Compare `avahi`, also pinned at an ancient 0.8 but carrying ~20 CVE
+  backports — old version alone isn't the smell, unpatched *and* old is.
+
 ## Deploying
 
 - **The `rebuild` alias breaks on `utm-vm`.** `home.nix` defines
