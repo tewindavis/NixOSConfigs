@@ -86,6 +86,15 @@
       # nixosConfigurations schema check) that all three hosts still evaluate.
       checks = forAllSystems (system: {
         formatting = treefmtEval.${system}.config.build.check self;
+
+        # Docs drift is invisible until someone trusts a stale cheat sheet, so
+        # assert the README's keybind table still matches hyprland.lua. Runs
+        # standalone too: ./scripts/check-keybinds.sh
+        keybindings = nixpkgs.legacyPackages.${system}.runCommand "check-keybindings" { } ''
+          cd ${self}
+          bash ${./scripts/check-keybinds.sh}
+          touch $out
+        '';
       });
     };
 }

@@ -8,10 +8,13 @@ packages, waybar/dunst/hyprlock/kanshi config, theming). A single
 behavior lives in `if "@HOSTNAME@" == "..."` branches inside that one file,
 not in separate per-host configs.
 
-`README.md` carries the same cheat sheet for humans and is currently in sync.
-Either can drift, so **`hyprland.lua` is the source of truth** — regenerate
-the table below with `grep 'hl.bind' users/td/hypr/hyprland.lua` rather than
-trusting either doc if they disagree.
+`README.md` carries the same cheat sheet for humans, and `checks.keybindings`
+(via `scripts/check-keybinds.sh`) fails `nix flake check` if README and
+`hyprland.lua` disagree — so those two cannot silently drift apart.
+
+**This file's table is not machine-checked**, so update it by hand when
+binds change. **`hyprland.lua` is the source of truth**: regenerate from
+`grep 'hl.bind' users/td/hypr/hyprland.lua` if any doc disagrees.
 
 ## Keybindings (authoritative — from `hyprland.lua`)
 

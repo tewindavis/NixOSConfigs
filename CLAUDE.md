@@ -67,9 +67,15 @@ add a `mkHost { hostname = "<name>"; system = "..."; }` entry in `flake.nix`.
 ```bash
 sudo nixos-rebuild switch --flake .#<attr>       # apply; <attr> is the hosts/ dir name (see note below)
 nh os switch                                      # nicer wrapper, diffed switch; reads NH_FLAKE=/etc/nixos
-nix flake check                                   # validates formatting + that all 3 hosts evaluate
+nix flake check                                   # formatting + keybind-doc sync + all 3 hosts evaluate
 nix fmt                                            # nixfmt + statix + deadnix over the whole tree
+./scripts/check-keybinds.sh                       # just the keybind check, standalone
 ```
+
+**Adding or removing a Hyprland keybind?** Update `hyprland.lua` *and*
+README's cheat sheet — `checks.keybindings` diffs the two and fails
+`nix flake check` if they diverge, in either direction. `docs/desktop.md`'s
+table is not machine-checked, so update it by hand in the same change.
 
 Always run `nix fmt` before committing — treefmt is the formatting source of
 truth (`treefmt.nix`), not manual style matching.
