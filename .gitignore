@@ -1,0 +1,20 @@
+# Nix build outputs
+result
+result-*
+
+# direnv
+.direnv/
+
+# Editor/OS cruft
+*.swp
+*~
+.DS_Store
+
+# Accidental plaintext secrets: sops should be the only thing writing to
+# secrets/*.yaml, decrypted in-place via `sops secrets/secrets.yaml`. These
+# patterns catch stray decrypted copies or local env files before they can
+# be committed.
+*.dec.yaml
+*.dec.json
+.env
+.env.*
