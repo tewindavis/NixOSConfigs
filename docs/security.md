@@ -95,9 +95,9 @@ To exclude a service, set its `fprintAuth = false` explicitly.
 
 ## Clipboard
 
-- KeePassXC entries are kept out of `cliphist` history and out of
-  `wl-clip-persist`. The mechanism, and its race caveat, are in
-  `docs/gotchas.md` (Misc). To verify: copy a password from KeePassXC, then
+- KeePassXC entries are kept out of `cliphist` history (by wl-paste's
+  `CLIPBOARD_STATE=sensitive` plus an explicit guard in the watcher) and out
+  of `wl-clip-persist`. The mechanism is in `docs/gotchas.md` (Misc). To verify: copy a password from KeePassXC, then
   run `cliphist list`. The password must not appear, but ordinary copied text
   must.
 - The history db is created `0600` (`umask 077` on every cliphist caller;
@@ -121,9 +121,16 @@ To exclude a service, set its `fprintAuth = false` explicitly.
 - Ghostty comes from nixpkgs, not the upstream `ghostty` flake. That flake
   built unreleased git main from source and brought in its own nixpkgs,
   home-manager, a Zig overlay and `zon2nix`, all of which ran at build time.
-- Neovim plugins are the one runtime fetch: lazy.nvim clones them from GitHub
-  at the commits pinned in `users/td/nvim/lazy-lock.json`, and `:Lazy update`
-  records changes into the repo (see `docs/gotchas.md`).
+- Neovim fetches at runtime, outside Nix, in three ways:
+  - lazy.nvim clones plugins from GitHub at the commits pinned in
+    `users/td/nvim/lazy-lock.json`. `:Lazy update` records changes into the
+    repo.
+  - nvim-treesitter downloads and compiles parser sources.
+  - `blink.cmp` downloads a prebuilt native library from its GitHub release
+    and loads it into nvim. It is checksummed against that same release,
+    not signed.
+
+  Details are in `docs/gotchas.md` (Neovim / LazyVim).
 
 ## Known gaps, not addressed
 

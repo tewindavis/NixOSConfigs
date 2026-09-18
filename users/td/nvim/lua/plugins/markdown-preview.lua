@@ -1,6 +1,7 @@
 -- markdown-preview.nvim is disabled: it arrives via LazyVim's
--- `lang.markdown` extra (see ../config/lazy.lua) and is the one plugin here
--- that reaches around Nix to fetch and execute a binary at install time. Its
+-- `lang.markdown` extra (see ../config/lazy.lua) and reaches around Nix to
+-- fetch and execute a binary at install time. (blink.cmp also downloads a
+-- prebuilt library, but from an active upstream; see docs/gotchas.md.) Its
 -- build step downloads a prebuilt Node/Next.js server from the upstream
 -- GitHub releases API with no checksum and no signature, and upstream has
 -- been dormant since 2023 (last commit 2023-10-17, last release v0.0.10 from

@@ -22,10 +22,10 @@ Hardened by default on every host. The full reference, with the cost of each cho
 
 *   **SSH:** key-only, no root login. `framework`, the roaming laptop, opens no inbound ports at all and binds `sshd` to loopback. If any module later opens a port, the build fails.
 *   **Boot:** the systemd-boot kernel-command-line editor is disabled, so the boot menu can't be used to get a root shell. `framework`'s root is LUKS-encrypted.
-*   **Quiet on the LAN:** systemd-resolved's LLMNR and mDNS are off, and `cups-browsed` no longer auto-adds every printer it sees advertised. Print dialogs still list network printers on hosts where mDNS is open.
+*   **Quiet on the LAN:** systemd-resolved's LLMNR and mDNS are off, and `cups-browsed` is disabled, so printers advertised on the LAN are never added automatically. Print dialogs still list network printers on hosts where mDNS is open.
 *   **Passwords stay out of clipboard history:** entries copied from KeePassXC are never written to `cliphist`, and the history file is private (`0600`).
 *   **Hostile files:** archives go through the official 7-Zip rather than the abandoned `p7zip` fork, and the unmaintained LHA backend is removed.
-*   **Supply chain:** every flake input shares one pinned `nixpkgs`. Neovim plugins are pinned by `lazy-lock.json`, and the one plugin that downloaded an unsigned binary (`markdown-preview.nvim`) is disabled.
+*   **Supply chain:** every flake input shares one pinned `nixpkgs`, and `nix flake check` fails if that changes. Neovim plugins are pinned by `lazy-lock.json`. `markdown-preview.nvim`, which downloaded an unsigned binary from a dormant repo, is disabled. `blink.cmp` still downloads its prebuilt fuzzy-matcher library; see `docs/security.md`.
 
 ---
 
@@ -46,7 +46,7 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 
 ## ⌨️ Hyprland Cheat Sheet
 
-All system controls are bound to the **`SUPER`** (Command) key.
+System controls are bound to the **`SUPER`** (Command) key, apart from `Print` and the media keys.
 
 ### Applications & Navigation
 | Key | Action |
@@ -94,7 +94,7 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 *   **Modern Shell:** Zsh is the default shell, featuring syntax highlighting, auto-suggestions, and the **Starship** Powerline prompt.
 *   **CLI Essentials:** `ripgrep`, `fd`, `bat` (cat), `eza` (ls), `zoxide` (cd), `gh` (GitHub CLI), and `direnv` for automatic flake environment loading.
 *   **Media & Printing:** `mpv` handles video/audio opened from Thunar; CUPS + Avahi provide zero-config discovery and printing to network/AirPrint printers, managed via `system-config-printer` (discovery is off on `framework`, which opens no inbound ports; add printers there by IP).
-*   **Screen Sharing:** `xdg-desktop-portal-hyprland` is wired in alongside the GTK portal, so screen/window capture works in Brave, Discord, OBS, etc.
+*   **Screen Sharing:** `xdg-desktop-portal-hyprland` is wired in alongside the GTK portal, so screen/window capture works in Brave and any other portal-aware app.
 *   **Screen Recording:** `SUPER + ALT + R` toggles `wf-recorder` in the background, saving timestamped mp4s to `~/Videos/Recordings` with a dunst start/stop notification.
 *   **Archives:** `xarchiver` (Thunar's archive-plugin backend) plus `_7zz`/`unrar`/`zip`/`unzip` handle zip/7z/rar/tar/gzip out of the box. `_7zz` is the official 7-Zip CLI rather than the abandoned `p7zip` fork, and `xarchiver` is overridden to use it as its 7z backend too — see `docs/gotchas.md`.
 *   **Password Manager:** `keepassxc` is the default handler for `.kdbx` files. Passwords copied from it are kept out of `SUPER + V` clipboard history.

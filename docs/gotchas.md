@@ -102,6 +102,15 @@ these from scratch.
   covers in-buffer rendering instead. When adding a LazyVim extra, check its
   specs for `build`/`run` keys rather than assuming Mason-disabled means
   nothing is fetched.
+- **A `build` key isn't the only way a plugin fetches a binary.**
+  `blink.cmp` (LazyVim's default completion) has no build step on a release
+  tag. Instead, when it loads, it downloads a prebuilt native library
+  (`target/release/libblink_cmp_fuzzy.so`, ~2 MB) from its GitHub release
+  and loads it into nvim. It checks a sha256 that comes from the same
+  release, which catches corruption but not a compromised release. Unlike
+  markdown-preview, upstream is active, so it is left enabled. Setting
+  `fuzzy.implementation = "lua"` in its opts would avoid the download, at
+  the cost of slower fuzzy matching.
 - `programs.neovim.sideloadInitLua = true` is required because this repo
   hand-manages `xdg.configFile."nvim"` (recursively linked from
   `users/td/nvim/`). Home Manager's `withRuby`/`withPython3` options would
@@ -182,19 +191,26 @@ the kanshi `CHANGE_ME` output placeholder (`docs/desktop.md`).
 - **`utm-vm`'s `networking.hostName` is `"utm-nixos"`**, not `utm-vm` — see
   `docs/hosts.md`. Deploy with the flake attr `utm-vm`; don't expect
   `hostname` on that machine to print `utm-vm`.
-- **`cliphist` has no sensitive-content filter, so the watcher has to do it.**
-  It stores plaintext in `$XDG_CACHE_HOME/cliphist/db` and offers no ignore
-  mechanism of any kind, which means an unguarded `wl-paste --watch cliphist
-  store` records every password copied out of KeePassXC to disk — somewhere
-  KeePassXC's own clear-clipboard timeout cannot reach. KeePassXC advertises
-  the extra MIME type `x-kde-passwordManagerHint` on those selections, so the
-  autostart entries in `hyprland.lua` gate on it: the text watcher checks
-  `wl-paste --list-types` before storing, and `wl-clip-persist` uses its own
-  documented `--all-mime-type-regex '^(?!x-kde-passwordManagerHint).+'`
-  recipe. Caveat on the watcher: it re-queries the current selection rather
-  than inspecting the event that woke it, so copying twice within the same
-  few milliseconds can race. Also note `wl-clip-persist` is deliberately on
-  `--clipboard regular`, not `both` — upstream recommends against operating
+- **Password-manager entries are kept out of clipboard history in two
+  layers.** cliphist stores plaintext in `$XDG_CACHE_HOME/cliphist/db`, out
+  of reach of KeePassXC's clear-clipboard timeout. KeePassXC advertises the
+  extra MIME type `x-kde-passwordManagerHint` on the selections it copies.
+  1. **Built in:** `wl-paste --watch` (wl-clipboard 2.3.0 as pinned) sets
+     `CLIPBOARD_STATE=sensitive` for any offer carrying that type, and
+     `cliphist store` does nothing in that state. This covers both
+     watchers, text and image. Verified in the source of the pinned
+     versions: `src/wl-paste.c` and cliphist 0.7.0's `cliphist.go`.
+  2. **Explicit:** the text watcher in `hyprland.lua` also checks
+     `wl-paste --list-types` for the hint before calling `cliphist store`,
+     so the filter doesn't depend on both tools keeping that behaviour.
+     Caveat: it re-queries the current selection rather than the event that
+     woke it, so two copies within a few milliseconds can race. Layer 1
+     doesn't have that race.
+
+  `wl-clip-persist` is separate: its own documented
+  `--all-mime-type-regex '^(?!x-kde-passwordManagerHint).+'` recipe stops
+  it re-serving a password after KeePassXC lets go. It is deliberately on
+  `--clipboard regular`, not `both`; upstream recommends against operating
   on the primary selection, which breaks text selection in GTK apps.
 - **The cliphist db gets `umask 077` from all three cliphist commands.** cliphist
   creates it `0644`, and whichever command runs first after the file is

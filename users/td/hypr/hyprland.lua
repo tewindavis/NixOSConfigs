@@ -186,15 +186,16 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("hyprpolkitagent")
   hl.exec_cmd("hypridle")
   -- Clipboard history, with password-manager entries filtered out.
-  -- cliphist has no sensitive-content filter of its own and stores plaintext
-  -- in $XDG_CACHE_HOME/cliphist/db, so an unguarded watcher records every
-  -- password copied out of KeePassXC to disk, where KeePassXC's own
-  -- clear-clipboard timeout can't reach it. KeePassXC advertises the extra
-  -- MIME type x-kde-passwordManagerHint on those selections, so both the
-  -- watcher and wl-clip-persist skip any offer carrying it. The regex form
-  -- below is wl-clip-persist's own documented recipe for this; `regular`
-  -- (not `both`) is also its recommendation, since operating on the primary
-  -- selection breaks text selection in GTK apps. See docs/gotchas.md.
+  -- cliphist stores plaintext in $XDG_CACHE_HOME/cliphist/db, where
+  -- KeePassXC's own clear-clipboard timeout can't reach it. KeePassXC
+  -- advertises the extra MIME type x-kde-passwordManagerHint on those
+  -- selections. wl-paste --watch already turns that into
+  -- CLIPBOARD_STATE=sensitive, which `cliphist store` skips; the text
+  -- watcher's grep guard repeats the check so it doesn't depend on both
+  -- tools keeping that behaviour. wl-clip-persist skips the same offers via
+  -- its own documented regex recipe; `regular` (not `both`) is also its
+  -- recommendation, since operating on the primary selection breaks text
+  -- selection in GTK apps. See docs/gotchas.md.
   -- `umask 077` on every cliphist caller (these two and the SUPER+V bind):
   -- cliphist creates the db 0644, and whichever runs first after it's
   -- deleted is the one that creates it.
@@ -204,9 +205,10 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("umask 077; wl-paste --type image --watch cliphist store")
   hl.exec_cmd("wl-clip-persist --clipboard regular --all-mime-type-regex '^(?!x-kde-passwordManagerHint).+'")
   hl.exec_cmd("swayosd-server")
-  -- kanshi and syncthingtray are launched here for the same reason as
-  -- swayosd-server: their HM/systemd-user units hang off
-  -- graphical-session.target, which this non-UWSM session never reaches.
+  -- kanshi and syncthingtray are launched here, like swayosd-server,
+  -- because nothing else would: kanshi's HM unit hangs off
+  -- graphical-session.target, which this non-UWSM session never reaches,
+  -- and syncthingtray has no unit at all (only a .desktop file).
   -- kanshi reads the profiles services.kanshi generates in home.nix; its
   -- "laptop" profile sets no mode/scale, so framework's monitor block above
   -- still wins. --wait holds syncthingtray until waybar's tray exists.

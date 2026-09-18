@@ -52,7 +52,7 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 
 ## Waybar click actions
 
-Not documented anywhere else — from `waybar/config.jsonc`:
+From `waybar/config.jsonc`, which is the source of truth:
 
 | Module | Click |
 |---|---|
@@ -118,8 +118,9 @@ Tokyo Night palette, as actually used across `waybar/style.css`,
 | `#bb9af7` | Purple — per-module accent: memory |
 
 Reuse these exact values when adding a UI surface rather than introducing new
-ones. Note the last two are waybar-only per-module accents, not part of the
-core four.
+ones. Of the stylesheets above, the last two appear only in waybar's, as
+per-module accents, and aren't part of the core four. Ghostty's ANSI palette
+(`ghostty/config`) also uses the cyan.
 
 GTK/Qt/dconf theming (`gtk`, `qt`, `dconf.settings` in `home.nix`) is the
 declarative source of truth for dark mode + accent color — don't add
@@ -137,8 +138,20 @@ output name from `hyprctl monitors` once a monitor is actually plugged in.
 Home Manager's `kanshi.service` is `WantedBy`/`PartOf`
 `graphical-session.target`, which this session never reaches (that's a UWSM
 thing; this config launches Hyprland directly), so the unit stays inactive
-and `services.kanshi` only generates `~/.config/kanshi/config`. The same
-applies to `swayosd-server` and `syncthingtray`, also started from autostart.
-Check the real process with `pgrep -a kanshi`, not `systemctl --user`. The
+and `services.kanshi` only generates `~/.config/kanshi/config`. The
 `"laptop"` profile sets no mode or scale, so it leaves framework's
 `hyprland.lua` monitor settings alone.
+
+The same target problem affects every graphical user service here:
+
+- **`hypridle`, `awww`:** their HM units are also wanted by
+  `graphical-session.target` and stay inactive. `hyprland.lua` starts both
+  directly (`hypridle`, `awww-daemon`).
+- **`dunst`:** its unit is `Type=dbus`, so D-Bus activates it on the first
+  notification. It works without the target.
+- **`swayosd-server`, `syncthingtray`:** no unit at all (no HM service is
+  enabled for either, and syncthingtray only ships a `.desktop` file, which
+  nothing here processes). Autostart is the only thing that launches them.
+
+Check with `pgrep -a <name>`, not `systemctl --user`, which reports the
+unused units as inactive even while the processes run.
