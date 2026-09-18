@@ -156,6 +156,20 @@ commented-out `nixos-hardware` import for Framework (`docs/hosts.md`).
 - **`utm-vm`'s `networking.hostName` is `"utm-nixos"`**, not `utm-vm` — see
   `docs/hosts.md`. Deploy with the flake attr `utm-vm`; don't expect
   `hostname` on that machine to print `utm-vm`.
+- **`cliphist` has no sensitive-content filter, so the watcher has to do it.**
+  It stores plaintext in `$XDG_CACHE_HOME/cliphist/db` and offers no ignore
+  mechanism of any kind, which means an unguarded `wl-paste --watch cliphist
+  store` records every password copied out of KeePassXC to disk — somewhere
+  KeePassXC's own clear-clipboard timeout cannot reach. KeePassXC advertises
+  the extra MIME type `x-kde-passwordManagerHint` on those selections, so the
+  autostart entries in `hyprland.lua` gate on it: the text watcher checks
+  `wl-paste --list-types` before storing, and `wl-clip-persist` uses its own
+  documented `--all-mime-type-regex '^(?!x-kde-passwordManagerHint).+'`
+  recipe. Caveat on the watcher: it re-queries the current selection rather
+  than inspecting the event that woke it, so copying twice within the same
+  few milliseconds can race. Also note `wl-clip-persist` is deliberately on
+  `--clipboard regular`, not `both` — upstream recommends against operating
+  on the primary selection, which breaks text selection in GTK apps.
 - **wttr.in TLS cert has been observed expired** — `waybar-weather` treats
   any fetch failure (cert or otherwise) as non-fatal and renders `"N/A"`
   rather than erroring the whole bar. If weather silently stops working,

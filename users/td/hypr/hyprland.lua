@@ -185,9 +185,21 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("nm-applet --indicator")
   hl.exec_cmd("hyprpolkitagent")
   hl.exec_cmd("hypridle")
-  hl.exec_cmd("wl-paste --type text --watch cliphist store")
+  -- Clipboard history, with password-manager entries filtered out.
+  -- cliphist has no sensitive-content filter of its own and stores plaintext
+  -- in $XDG_CACHE_HOME/cliphist/db, so an unguarded watcher records every
+  -- password copied out of KeePassXC to disk, where KeePassXC's own
+  -- clear-clipboard timeout can't reach it. KeePassXC advertises the extra
+  -- MIME type x-kde-passwordManagerHint on those selections, so both the
+  -- watcher and wl-clip-persist skip any offer carrying it. The regex form
+  -- below is wl-clip-persist's own documented recipe for this; `regular`
+  -- (not `both`) is also its recommendation, since operating on the primary
+  -- selection breaks text selection in GTK apps. See docs/gotchas.md.
+  hl.exec_cmd(
+    "wl-paste --type text --watch sh -c 'wl-paste --list-types | grep -q x-kde-passwordManagerHint || cliphist store'"
+  )
   hl.exec_cmd("wl-paste --type image --watch cliphist store")
-  hl.exec_cmd("wl-clip-persist --clipboard both")
+  hl.exec_cmd("wl-clip-persist --clipboard regular --all-mime-type-regex '^(?!x-kde-passwordManagerHint).+'")
   hl.exec_cmd("swayosd-server")
   hl.exec_cmd("waybar")
   hl.exec_cmd("awww-daemon")
