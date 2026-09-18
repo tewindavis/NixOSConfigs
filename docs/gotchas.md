@@ -89,6 +89,18 @@ these from scratch.
   whatever Mason downloaded at runtime. When adding language support, add
   the LSP/formatter package to `home.nix`, don't rely on `:Mason` to install
   it.
+- **A LazyVim language extra can still reach around Nix.** Disabling Mason
+  stops Mason from fetching things; it does not stop a *plugin* from doing
+  its own download in a `build` step. `lazyvim.plugins.extras.lang.markdown`
+  pulls in `iamcco/markdown-preview.nvim`, whose build step calls the GitHub
+  releases API and downloads a ~45 MB prebuilt Node server into `app/bin/`
+  with no checksum and no signature — and upstream has been dormant since
+  2023 (last commit 2023-10-17, last release 2022-05-13), so that binary is a
+  2022 runtime from an unmaintained repo. It is disabled in
+  `users/td/nvim/lua/plugins/markdown-preview.lua`; `render-markdown.nvim`
+  covers in-buffer rendering instead. When adding a LazyVim extra, check its
+  specs for `build`/`run` keys rather than assuming Mason-disabled means
+  nothing is fetched.
 - `programs.neovim.sideloadInitLua = true` is required because this repo
   hand-manages `xdg.configFile."nvim"` (recursively linked from
   `users/td/nvim/`). Home Manager's `withRuby`/`withPython3` options would
