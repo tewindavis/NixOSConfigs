@@ -108,6 +108,14 @@ these from scratch.
   get silently dropped (visible only as a "conflicts with recursively
   symlinked file" build warning) — `sideloadInitLua` loads that generated
   content via a wrapper `--cmd` flag instead, so both coexist.
+- **lazy.nvim writes its lockfile to the repo, not `~/.config`.**
+  `~/.config/nvim/lazy-lock.json` is a read-only store symlink, so a stock
+  `:Lazy update` moves the installed plugins but cannot record them — this
+  host drifts ahead of the lock the other hosts install from, invisibly.
+  `users/td/nvim/lua/config/lazy.lua` sets `lockfile` to
+  `/etc/nixos/users/td/nvim/lazy-lock.json` when that path is writable, so
+  an update appears in `git status`: commit it, or `git checkout` the file
+  and run `:Lazy restore` to roll the plugins back to it.
 
 ## Archives (`modules/desktop/default.nix`)
 
