@@ -25,6 +25,9 @@ hardware to manage.
   a sops-nix age recipient (see `docs/secrets.md`).
 - Fingerprint auth (`fprintd`) wired into login, sudo, and hyprlock via
   `security.pam.services.*.fprintAuth`.
+- Inbound SSH closed: `services.openssh.openFirewall = false` in its
+  `configuration.nix`. sshd still runs (key-only, from `modules/core`), so
+  only port 22 on the network is affected; the other two hosts keep it open.
 - `power-profiles-daemon` enabled (balanced/power-saver/performance); waybar's
   power-profile widget only does something useful here — on the other two
   hosts it reports "unavailable" and degrades gracefully.

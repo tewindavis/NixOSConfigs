@@ -33,7 +33,8 @@
   # `wheel` with `sudo` gated by that same password. `td`'s public key is
   # declared in users/td/nixos.nix; keep at least one recipient there before
   # switching, since with password auth off an empty key list locks out
-  # remote access entirely (console/physical login is unaffected).
+  # remote access entirely (console/physical login is unaffected). framework
+  # additionally closes port 22 in its own configuration.nix.
   services.openssh = {
     enable = true;
     settings = {

@@ -24,4 +24,11 @@
   # physical access boot `init=/bin/sh`. LUKS (see hardware-configuration.nix)
   # still guards the data here, but this closes the tamper path itself.
   boot.loader.systemd-boot.editor = false;
+
+  # Nothing SSHes into the laptop (the only accepted login in the 30 days
+  # before this change was a localhost test), and it is the host that roams
+  # onto untrusted LANs. sshd keeps running key-only from modules/core, so
+  # `ssh localhost` and outbound ssh are unaffected; only port 22 closes.
+  # dl-prototype and utm-vm keep it open for remote access.
+  services.openssh.openFirewall = false;
 }
