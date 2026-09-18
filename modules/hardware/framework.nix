@@ -1,10 +1,13 @@
-{ ... }:
+{ inputs, ... }:
 
 {
   imports = [
-    # inputs.nixos-hardware.nixosModules.framework-13-7040-amd
-    # ^ Commented out to ensure build success on unknown Framework generation.
-    # Re-enable this once the basic build succeeds.
+    # Confirmed generation: Framework Laptop 13 (AMD Ryzen 7040Series), Ryzen 7
+    # 7840U. Brings AMD pstate/GPU/microcode setup, the amdgpu PSR-hang
+    # workaround kernel param, the framework-laptop-kmod EC module (battery
+    # charge limit/LEDs via sysfs) and framework-tool. TLP stays off because
+    # power-profiles-daemon is enabled below.
+    inputs.nixos-hardware.nixosModules.framework-13-7040-amd
   ];
 
   # Additional framework-specific tweaks can go here

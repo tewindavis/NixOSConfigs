@@ -11,7 +11,7 @@ assuming a module applies everywhere.
 | `modules/services/vpn.nix` | ✓ | ✓ | ✓ |
 | `modules/services/syncthing.nix` | ✓ | ✓ | ✓ |
 | `modules/hardware/bluetooth.nix` | ✓ | ✓ | — |
-| `modules/hardware/framework.nix` (fprintd, fwupd, power-profiles) | ✓ | — | — |
+| `modules/hardware/framework.nix` (nixos-hardware 7040-amd, fprintd, fwupd, power-profiles) | ✓ | — | — |
 | `modules/hardware/nvidia.nix` | — | ✓ | — |
 | `modules/hardware/utm.nix` (QEMU/Spice guest) | — | — | ✓ |
 | `modules/dev/rl-binary.nix` (ghidra/radare2/gdb + RL Python) | — | ✓ | — |
@@ -32,10 +32,13 @@ hardware to manage.
   `mode = "2256x1504@60"`, `scale = 1.175` (the exact divisor for a clean
   1920x1280 logical resolution). Every other host falls back to
   `mode = "preferred"`, `scale = "auto"`.
-- `nixos-hardware`'s `framework-13-7040-amd` module is deliberately commented
-  out in `modules/hardware/framework.nix` ("ensure build success on unknown
-  Framework generation") — re-enable once confirmed safe for the actual
-  generation in use.
+- `modules/hardware/framework.nix` imports `nixos-hardware`'s
+  `framework-13-7040-amd` module (the machine is a Ryzen 7 7840U, confirmed
+  via `/sys/class/dmi/id/product_name`). Beyond pstate/amdgpu/microcode it
+  adds the `amdgpu.dcdebugmask=0x10` kernel param (disables panel
+  self-refresh, a known hang source), the out-of-tree `framework-laptop-kmod`
+  EC module and `framework-tool`. The `nixos-hardware` input follows our
+  `nixpkgs`, so it adds no third nixpkgs to the lock.
 
 ## dl-prototype
 

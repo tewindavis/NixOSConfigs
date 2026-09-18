@@ -153,9 +153,8 @@ these from scratch.
   management is Hyprland's job, not tmux's. A consistency pass over the rice
   will flag this — leave it.
 
-Other things that look unfinished but aren't, documented where they live:
-the kanshi `CHANGE_ME` output placeholder (`docs/desktop.md`) and the
-commented-out `nixos-hardware` import for Framework (`docs/hosts.md`).
+Another thing that looks unfinished but isn't, documented where it lives:
+the kanshi `CHANGE_ME` output placeholder (`docs/desktop.md`).
 
 ## Misc
 
