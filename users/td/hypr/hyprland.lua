@@ -9,11 +9,38 @@
 -- auto-detection rather than inheriting Framework's HiDPI panel mode, which
 -- wouldn't exist on them.
 if "@HOSTNAME@" == "framework" then
+  -- Scoped to eDP-1: output = "" would also force the panel's mode/scale onto
+  -- anything plugged into the dock.
+  hl.monitor({
+    output = "eDP-1",
+    mode = "2256x1504@60",
+    position = "0x0",
+    scale = 1.175, -- 2256x1504 panel; 1.175 is the exact divisor Hyprland wants (-> 1920x1280 logical)
+  })
+  -- CalDigit TS4 desk setup: laptop | Dell landscape | Dell portrait. Matched
+  -- by serial (desc:), not DP-N, since the connector names depend on which
+  -- dock port each cable is in. Positions are in logical pixels: 4K / 1.5 =
+  -- 2560x1440, so the landscape Dell starts at the laptop's 1920 logical width
+  -- and the portrait one at 1920 + 2560. transform = 3 is 270°.
+  hl.monitor({
+    output = "desc:Dell Inc. DELL S2725QC 10VD464",
+    mode = "3840x2160@120",
+    position = "1920x0",
+    scale = 1.5,
+  })
+  hl.monitor({
+    output = "desc:Dell Inc. DELL S2725QC 83VD464",
+    mode = "3840x2160@120",
+    position = "4480x0",
+    scale = 1.5,
+    transform = 3,
+  })
+  -- Any other display (projector, hotel TV): Hyprland's own guess.
   hl.monitor({
     output = "",
-    mode = "2256x1504@60",
+    mode = "preferred",
     position = "auto",
-    scale = 1.175, -- 2256x1504 panel; 1.175 is the exact divisor Hyprland wants (-> 1920x1280 logical)
+    scale = "auto",
   })
 else
   hl.monitor({
@@ -205,14 +232,9 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("umask 077; wl-paste --type image --watch cliphist store")
   hl.exec_cmd("wl-clip-persist --clipboard regular --all-mime-type-regex '^(?!x-kde-passwordManagerHint).+'")
   hl.exec_cmd("swayosd-server")
-  -- kanshi and syncthingtray are launched here, like swayosd-server,
-  -- because nothing else would: kanshi's HM unit hangs off
-  -- graphical-session.target, which this non-UWSM session never reaches,
-  -- and syncthingtray has no unit at all (only a .desktop file).
-  -- kanshi reads the profiles services.kanshi generates in home.nix; its
-  -- "laptop" profile sets no mode/scale, so framework's monitor block above
-  -- still wins. --wait holds syncthingtray until waybar's tray exists.
-  hl.exec_cmd("kanshi")
+  -- syncthingtray is launched here, like swayosd-server, because nothing
+  -- else would: it has no unit at all (only a .desktop file). --wait holds
+  -- it until waybar's tray exists.
   hl.exec_cmd("syncthingtray --wait")
   hl.exec_cmd("waybar")
   hl.exec_cmd("awww-daemon")

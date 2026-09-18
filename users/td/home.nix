@@ -512,35 +512,6 @@ in
   # awww Config (wallpaper daemon; see cycle-wallpaper above for transitions)
   services.awww.enable = true;
 
-  # Kanshi: auto-switches monitor layout when the Framework docks/undocks.
-  # This block only generates ~/.config/kanshi/config: the HM service it also
-  # creates is gated on graphical-session.target, which this non-UWSM session
-  # never reaches, so kanshi itself is launched from hyprland.lua's autostart
-  # (like swayosd-server). "laptop" (just the internal panel) always matches;
-  # "docked" is a
-  # template — kanshi simply won't match it until CHANGE_ME below is replaced
-  # with the real external display's name from `hyprctl monitors` once one is
-  # actually plugged in (can't be known ahead of time from here).
-  services.kanshi = {
-    enable = true;
-    settings = [
-      {
-        profile.name = "laptop";
-        profile.outputs = [ { criteria = "eDP-1"; } ];
-      }
-      {
-        profile.name = "docked";
-        profile.outputs = [
-          { criteria = "eDP-1"; }
-          {
-            criteria = "CHANGE_ME"; # e.g. "Dell Inc. DELL U2718Q ABC123"
-            mode = "preferred";
-          }
-        ];
-      }
-    ];
-  };
-
   # Power menu (SUPER+SHIFT+P)
   programs.wlogout = {
     enable = true;

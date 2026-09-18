@@ -2,7 +2,7 @@
 
 Source files: `users/td/hypr/hyprland.lua` (binds, autostart, window rules,
 per-host monitor config), `users/td/home.nix` (all custom shell-script
-packages, dunst/hyprlock/hypridle/kanshi config, theming), and
+packages, dunst/hyprlock/hypridle config, theming), and
 `users/td/waybar/` (bar config + stylesheet, linked in by `home.nix`). A
 single `hyprland.lua` source file is shared, unmodified, across all three
 hosts — `home.nix` substitutes `@HOSTNAME@` into it at build time, so
@@ -127,22 +127,21 @@ declarative source of truth for dark mode + accent color — don't add
 `gsettings` calls to Hyprland autostart to set these; they'd just fight the
 declarative config on every rebuild.
 
-## Kanshi (monitor layout)
+## Monitor layout
 
-`services.kanshi.settings` in `home.nix` has a `"docked"` profile with a
-literal `CHANGE_ME` placeholder for the external display's identifier —
-it intentionally never matches until someone replaces it with the real
-output name from `hyprctl monitors` once a monitor is actually plugged in.
+`hl.monitor` rules at the top of `hyprland.lua` are the only thing that sets
+monitor mode, scale, position and rotation. There is no kanshi. Rules
+that match a specific output win over the `output = ""` catch-all, and
+Hyprland re-applies them when a monitor is plugged in, so docking needs no
+separate profile switcher. On framework, the docked Dells are matched by
+serial (`desc:`); see the rules for the current layout.
 
-**kanshi is launched from `hyprland.lua`'s autostart, not by its service.**
-Home Manager's `kanshi.service` is `WantedBy`/`PartOf`
+## Autostart instead of systemd user units
+
+Home Manager's graphical user services are `WantedBy`/`PartOf`
 `graphical-session.target`, which this session never reaches (that's a UWSM
-thing; this config launches Hyprland directly), so the unit stays inactive
-and `services.kanshi` only generates `~/.config/kanshi/config`. The
-`"laptop"` profile sets no mode or scale, so it leaves framework's
-`hyprland.lua` monitor settings alone.
-
-The same target problem affects every graphical user service here:
+thing; this config launches Hyprland directly), so their units stay
+inactive and `hyprland.lua`'s autostart launches the processes instead:
 
 - **`hypridle`, `awww`:** their HM units are also wanted by
   `graphical-session.target` and stay inactive. `hyprland.lua` starts both

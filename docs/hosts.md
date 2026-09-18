@@ -11,7 +11,7 @@ assuming a module applies everywhere.
 | `modules/services/vpn.nix` | ✓ | ✓ | ✓ |
 | `modules/services/syncthing.nix` | ✓ | ✓ | ✓ |
 | `modules/hardware/bluetooth.nix` | ✓ | ✓ | — |
-| `modules/hardware/framework.nix` (nixos-hardware 7040-amd, fprintd, fwupd, power-profiles) | ✓ | — | — |
+| `modules/hardware/framework.nix` (nixos-hardware 7040-amd, fprintd, fwupd, power-profiles, bolt) | ✓ | — | — |
 | `modules/hardware/nvidia.nix` | — | ✓ | — |
 | `modules/hardware/utm.nix` (QEMU/Spice guest) | — | — | ✓ |
 | `modules/dev/rl-binary.nix` (ghidra/radare2/gdb + RL Python) | — | ✓ | — |
@@ -37,8 +37,15 @@ hardware to manage.
   hosts it reports "unavailable" and degrades gracefully.
 - HiDPI: `hyprland.lua` special-cases this hostname to force
   `mode = "2256x1504@60"`, `scale = 1.175` (the exact divisor for a clean
-  1920x1280 logical resolution). Every other host falls back to
-  `mode = "preferred"`, `scale = "auto"`.
+  1920x1280 logical resolution) on `eDP-1` only. The same branch pins the two
+  docked Dell S2725QCs by serial (`desc:`), with mode, position, scale and the
+  portrait one's `transform`, and gives any other display
+  `mode = "preferred"`, `scale = "auto"`. Every other host uses that
+  preferred/auto rule for all outputs.
+- `services.hardware.bolt` (in `modules/hardware/framework.nix`): the
+  Thunderbolt controller's security level is `user`, so docks stay
+  unauthorized until bolt approves them. Enroll a new dock once with
+  `boltctl enroll --policy auto <uuid>` (`boltctl list` shows the uuid).
 - `modules/hardware/framework.nix` imports `nixos-hardware`'s
   `framework-13-7040-amd` module (`/sys/class/dmi/id/product_name` reads
   "Laptop 13 (AMD Ryzen 7040Series)"; `/proc/cpuinfo` gives the Ryzen 7

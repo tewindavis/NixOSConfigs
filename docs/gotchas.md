@@ -33,6 +33,17 @@ these from scratch.
   live window with zero visible change. To force a window fully opaque
   regardless of global settings, use `"1.0 override 1.0 override"` (see the
   `brave-opaque` window rule).
+- **`hl.monitor({ output = "" })` matches every output, docked ones
+  included.** framework's panel rule used to be that catch-all, so both 4K
+  Dells came up at 2256x1504 with 1.175 scale. Scope panel rules to `eDP-1`
+  and match externals by `desc:<make model serial>` from `hyprctl monitors`.
+  `DP-N` names follow the dock port and swap if the cables do. Rules can be
+  trialled live with `hyprctl eval 'hl.monitor({ ... })'` before editing.
+  `transform = 1` vs `3` (90° vs 270°) is easiest to settle by trying one.
+- **A Thunderbolt dock that enumerates but does nothing** (no displays, no USB):
+  check `/sys/bus/thunderbolt/devices/*/authorized`. At security level `user`
+  it stays `0` until bolt approves the dock, which is why framework enables
+  `services.hardware.bolt`.
 
 ## hyprsunset
 
@@ -176,9 +187,6 @@ these from scratch.
   muscle memory breaks the moment it's used off this machine. Local window
   management is Hyprland's job, not tmux's. A consistency pass over the rice
   will flag this — leave it.
-
-Another thing that looks unfinished but isn't, documented where it lives:
-the kanshi `CHANGE_ME` output placeholder (`docs/desktop.md`).
 
 ## Misc
 
