@@ -11,7 +11,7 @@ This repository contains a professional-grade, highly modular NixOS configuratio
 The system uses a modular extraction pattern (`modules/hardware/`) to isolate host-specific logic, ensuring that software configurations remain pure and portable.
 
 *   **`utm-vm`:** Aarch64 sandbox optimized for MacOS/Apple Silicon. Features VirtIO graphics and Spice guest integration.
-*   **`framework`:** Primary x86_64 portable workstation. Optimized for Framework 13 hardware, including HiDPI scaling (1.17), fingerprint authentication (`fprintd`, wired into login/sudo/hyprlock), and automatic firmware updates (`fwupd`).
+*   **`framework`:** Primary x86_64 portable workstation. Optimized for Framework 13 hardware, including HiDPI scaling (1.175), fingerprint authentication (`fprintd`, wired into login/sudo/hyprlock), and automatic firmware updates (`fwupd`).
 *   **`dl-prototype`:** High-performance x86_64 training rig. Configured for AMD Threadripper CPU optimization and NVIDIA proprietary driver support.
 
 ---
@@ -27,7 +27,7 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 *   **Idle Inhibitor:** A clickable Waybar toggle (right of the volume module) suspends `hypridle`'s auto-lock/DPMS while active — turns red when suppressing.
 *   **Persistent Workspaces:** Waybar always shows workspaces 1-9, even when empty, so the active one is never ambiguous.
 *   **Weather:** A Waybar module next to the clock shows current conditions via `wttr.in`, with a graceful "N/A" fallback if the network or upstream service is unavailable.
-*   **Auto Blue-Light Filter:** `hyprsunset` runs as a daemon on login and switches itself between neutral (7:30am) and warm 3500K (8:00pm) — f.lux/redshift-style — per the schedule in `hyprsunset.conf`. A Waybar toggle (sun/moon icon, next to the idle inhibitor) shows and flips the current state; `SUPER + R`/`SUPER + SHIFT + R` do the same from the keyboard. Any of the three count as a manual override until the next scheduled switch.
+*   **Auto Blue-Light Filter:** `hyprsunset` runs as a daemon on login and switches itself between neutral (7:30am) and warm 2450K (8:00pm) — f.lux/redshift-style — per the schedule in `hyprsunset.conf`. A Waybar toggle (sun/moon icon, next to the idle inhibitor) shows and flips the current state; `SUPER + R`/`SUPER + SHIFT + R` do the same from the keyboard. Any of the three count as a manual override until the next scheduled switch.
 
 ---
 
@@ -89,9 +89,9 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 
 ### Neovim (LazyVim IDE)
 Neovim is configured as a full IDE using the **LazyVim** framework, featuring:
-*   **Telescope:** `Leader + Space` for instant fuzzy finding.
-*   **Neo-tree:** `Leader + e` for an integrated file explorer.
-*   **Language Servers:** LazyVim's Mason auto-installs LSPs on first launch for your installed languages (Rust, Zig, Python, Nix, etc.) — requires internet access the first time it runs.
+*   **Fuzzy Finder:** `Leader + Space` for instant file finding (LazyVim's current default picker is `snacks.picker`, not Telescope — Telescope is not installed).
+*   **File Explorer:** `Leader + e` for an integrated file tree (`snacks.explorer`; Neo-tree is not installed).
+*   **Language Servers:** All LSPs, formatters, and linters (Rust, Zig, Python, Nix, Lua, etc.) are installed declaratively via Nix in `home.nix` and picked up straight off `PATH`. Mason is deliberately disabled, so editor tooling stays reproducible with `nixos-rebuild` instead of drifting from whatever Mason downloaded at runtime — nothing is fetched on first launch. To add language support, add the package in `home.nix`.
 *   **Treesitter:** Automated syntax highlighting and structural editing.
 
 ---

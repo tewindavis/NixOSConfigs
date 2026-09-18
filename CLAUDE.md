@@ -8,8 +8,9 @@ relevant to the task rather than everything up front.
 `README.md` is the human-facing feature tour (aesthetic rationale,
 fresh-install steps). This file is the technical/agent-facing counterpart:
 where things live, how to change them safely, and the gotchas already paid
-for. Where the two disagree, **the code wins, then these docs** — README has
-two known-stale sections, flagged inline below and in `docs/desktop.md`.
+for. Where the two disagree, **the code wins, then these docs** — README's
+keybinding cheat sheet is known to be incomplete (see `docs/desktop.md` for
+the authoritative list).
 
 ## Hosts
 
@@ -105,14 +106,14 @@ IPC socket vs CLI, etc.) so they don't get re-discovered the hard way.
 
 ## Dev toolkit
 
-The package inventory (languages, CLI tools, GUI apps) is listed in
-`README.md`'s Developer Toolkit section and is accurate as a *package list* —
-`users/td/home.nix` is the authoritative source.
+The package inventory (languages, CLI tools, GUI apps) is summarized in
+`README.md`'s Developer Toolkit section; `users/td/home.nix` is the
+authoritative source.
 
-**Known-stale exception:** README's **Neovim** subsection claims "LazyVim's Mason
-auto-installs LSPs on first launch." That is stale and wrong. Mason is
-explicitly disabled (`users/td/nvim/lua/plugins/mason.lua` turns off
-`mason.nvim`, `mason-lspconfig`, `mason-tool-installer`, and `mason-nvim-dap`);
-every LSP, formatter and linter is installed via Nix in `home.nix` (grouped by
-the LazyVim language extra that consumes them) and picked up off `PATH`. To add
-language support, add the package to `home.nix` — `:Mason` will not help.
+**Editor tooling is Nix-managed, not Mason-managed.** Every LSP, formatter and
+linter is installed via Nix in `home.nix` (grouped in comments by the LazyVim
+language extra that consumes them) and picked up off `PATH`. Mason is
+explicitly disabled — `users/td/nvim/lua/plugins/mason.lua` turns off
+`mason.nvim`, `mason-lspconfig`, `mason-tool-installer` and `mason-nvim-dap`.
+To add language support, add the package to `home.nix`; `:Mason` will not
+help, and nothing is fetched at first launch.
