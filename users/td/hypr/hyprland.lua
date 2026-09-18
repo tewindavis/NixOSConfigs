@@ -204,6 +204,14 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("umask 077; wl-paste --type image --watch cliphist store")
   hl.exec_cmd("wl-clip-persist --clipboard regular --all-mime-type-regex '^(?!x-kde-passwordManagerHint).+'")
   hl.exec_cmd("swayosd-server")
+  -- kanshi and syncthingtray are launched here for the same reason as
+  -- swayosd-server: their HM/systemd-user units hang off
+  -- graphical-session.target, which this non-UWSM session never reaches.
+  -- kanshi reads the profiles services.kanshi generates in home.nix; its
+  -- "laptop" profile sets no mode/scale, so framework's monitor block above
+  -- still wins. --wait holds syncthingtray until waybar's tray exists.
+  hl.exec_cmd("kanshi")
+  hl.exec_cmd("syncthingtray --wait")
   hl.exec_cmd("waybar")
   hl.exec_cmd("awww-daemon")
   -- Bare invocation starts the daemon and loads the auto day/night schedule

@@ -512,9 +512,12 @@ in
   # awww Config (wallpaper daemon; see cycle-wallpaper above for transitions)
   services.awww.enable = true;
 
-  # Kanshi: auto-switches monitor layout when the Framework docks/undocks,
-  # instead of re-running `hyprctl monitors` by hand. "laptop" (just the
-  # internal panel) always matches and works out of the box; "docked" is a
+  # Kanshi: auto-switches monitor layout when the Framework docks/undocks.
+  # This block only generates ~/.config/kanshi/config: the HM service it also
+  # creates is gated on graphical-session.target, which this non-UWSM session
+  # never reaches, so kanshi itself is launched from hyprland.lua's autostart
+  # (like swayosd-server). "laptop" (just the internal panel) always matches;
+  # "docked" is a
   # template — kanshi simply won't match it until CHANGE_ME below is replaced
   # with the real external display's name from `hyprctl monitors` once one is
   # actually plugged in (can't be known ahead of time from here).
@@ -551,7 +554,9 @@ in
       }
       {
         label = "logout";
-        action = "hyprctl dispatch exit";
+        # Lua-expression dispatch: the classic `hyprctl dispatch exit` form
+        # errors on Hyprland 0.56+ (see docs/gotchas.md).
+        action = "hyprctl dispatch 'hl.dsp.exit()'";
         text = "Logout";
         keybind = "e";
       }

@@ -2,8 +2,8 @@
 
 {
   # LAN/P2P file sync (Syncthing). Web GUI on localhost:8384; syncthingtray
-  # (users/td/home.nix) gives a waybar tray icon so it doesn't require
-  # opening a browser for status/control.
+  # (users/td/home.nix, autostarted from hyprland.lua) puts a status/control
+  # icon in waybar's tray so it doesn't require opening a browser.
   services.syncthing = {
     enable = true;
     user = "td";

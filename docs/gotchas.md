@@ -9,15 +9,15 @@ these from scratch.
 - **Config format:** 0.56+ treats the old `.conf`/hyprlang syntax as
   *legacy* and looks for `hyprland.lua` first. This repo already migrated
   (2026-09-15) — don't add a `hyprland.conf`.
-- **Dispatch args are Lua expressions, not strings.** Plain
-  `hyprctl dispatch <dispatcher> <args>` no longer works on this version.
-  Correct form, confirmed live:
-  `hyprctl dispatch 'hl.dsp.window.float()'`,
-  `hyprctl dispatch 'hl.dsp.dpms(false)'`,
-  `hyprctl dispatch 'hl.dsp.workspace.toggle_special("scratchpad")'`. All the
-  custom scripts in `home.nix` (`toggle-scratchpad`, hypridle DPMS listeners)
-  already use this form — copy their pattern for new dispatch calls rather
-  than the classic `hyprctl dispatch <name> <arg>` syntax from older docs.
+- **Dispatch args are Lua expressions, not strings.** Plain `hyprctl dispatch
+  <dispatcher> <args>` no longer works on this version. Correct form,
+  confirmed live: `hyprctl dispatch 'hl.dsp.window.float()'`, `hyprctl
+  dispatch 'hl.dsp.dpms(false)'`, `hyprctl dispatch
+  'hl.dsp.workspace.toggle_special("scratchpad")'`. All the custom scripts in
+  `home.nix` (`toggle-scratchpad`, hypridle DPMS listeners, wlogout's Logout
+  action) already use this form — copy their pattern for new dispatch calls
+  rather than the classic `hyprctl dispatch <name> <arg>` syntax from older
+  docs.
 - **App-id vs class name:** Wayland apps' real app-id can differ from their
   package name — e.g. ghostty is `com.mitchellh.ghostty`, not `ghostty`.
   Confirm via `hyprctl activewindow` before writing a window rule's `match`,

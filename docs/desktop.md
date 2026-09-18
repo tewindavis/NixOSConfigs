@@ -130,4 +130,13 @@ declarative config on every rebuild.
 literal `CHANGE_ME` placeholder for the external display's identifier —
 it intentionally never matches until someone replaces it with the real
 output name from `hyprctl monitors` once a monitor is actually plugged in.
-Don't remove it thinking it's dead code.
+
+**kanshi is launched from `hyprland.lua`'s autostart, not by its service.**
+Home Manager's `kanshi.service` is `WantedBy`/`PartOf`
+`graphical-session.target`, which this session never reaches (that's a UWSM
+thing; this config launches Hyprland directly), so the unit stays inactive
+and `services.kanshi` only generates `~/.config/kanshi/config`. The same
+applies to `swayosd-server` and `syncthingtray`, also started from autostart.
+Check the real process with `pgrep -a kanshi`, not `systemctl --user`. The
+`"laptop"` profile sets no mode or scale, so it leaves framework's
+`hyprland.lua` monitor settings alone.
