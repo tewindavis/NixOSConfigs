@@ -23,20 +23,15 @@ hardware to manage.
 
 - `networking.hostName = "framework"` — the only host currently enrolled as
   a sops-nix age recipient (see `docs/secrets.md`).
-- Fingerprint auth (`fprintd`) wired into login, sudo, and hyprlock via
-  `security.pam.services.*.fprintAuth`.
-- Inbound SSH closed: `services.openssh.openFirewall = false` in its
-  `configuration.nix`, and `listenAddresses` binds sshd to `127.0.0.1`/`::1`
-  only. sshd still runs (key-only, from `modules/core`) because sops-nix
-  decrypts with its host key, so `ssh localhost` works; the other two hosts
-  keep port 22 open.
-- No inbound ports at all: it also sets `services.syncthing.openDefaultPorts`
-  and `services.avahi.openFirewall` to `false` (both `mkDefault true` in their
-  modules, so the other hosts keep them), and an `assertions` entry fails
-  evaluation if any port or range is opened, any interface besides `lo` is
-  trusted, or raw firewall rules add an accept. Costs: Syncthing can only dial
-  out, and mDNS is closed, so `.local` names and CUPS printer auto-discovery
-  don't work on this host.
+- Fingerprint auth (`fprintd`). Enabling it turns on `pam_fprintd` for
+  *every* PAM service, sudo and polkit included, not only the three
+  `fprintAuth` lines in `modules/hardware/framework.nix`. See
+  `docs/security.md`.
+- No inbound ports, sshd bound to loopback, and an `assertions` entry in its
+  `configuration.nix` that fails evaluation if anything opens a port. Details
+  and costs (Syncthing dials out only; no `.local` names or printer
+  discovery) are in `docs/security.md`.
+- LUKS-encrypted root (`hardware-configuration.nix`), the only host with one.
 - `power-profiles-daemon` enabled (balanced/power-saver/performance); waybar's
   power-profile widget only does something useful here — on the other two
   hosts it reports "unavailable" and degrades gracefully.
@@ -70,6 +65,8 @@ hardware to manage.
   `doCheck = false` — see `docs/gotchas.md`).
 - Not yet sops-enrolled — see `docs/secrets.md` before declaring any
   `sops.secrets.*` here.
+- Root filesystem is not encrypted. Port 22 (key-only), Syncthing and mDNS
+  are open; see `docs/security.md`.
 
 ## utm-vm
 
@@ -86,3 +83,5 @@ hardware to manage.
   driver.
 - No bluetooth, no fingerprint, no NVIDIA — smallest hardware surface of the
   three.
+- Root filesystem is not encrypted. Port 22 (key-only), Syncthing and mDNS
+  are open; see `docs/security.md`.

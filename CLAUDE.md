@@ -39,11 +39,11 @@ modules/
   dev/           rl-binary.nix   # ghidra/radare2/gdb + RL Python env, dl-prototype only
 users/td/
   home.nix       # Home Manager: packages, dotfiles, Hyprland/waybar/dunst/etc config, shell scripts
-  nixos.nix      # the `td` user account definition (groups, shell)
+  nixos.nix      # the `td` user account definition (groups, shell, authorized SSH key)
   hypr/hyprland.lua, waybar/, wofi/, wlogout/, swayosd/, ghostty/, nvim/   # linked dotfiles
 docs/
   CLAUDE.md      # rules for editing docs — read before changing any of them
-  hosts.md, desktop.md, secrets.md, gotchas.md   # deep-dive references
+  hosts.md, desktop.md, secrets.md, security.md, gotchas.md   # deep-dive references
 scripts/
   check-keybinds.sh   # README-vs-hyprland.lua bind diff; wired into `nix flake check`
 secrets/secrets.yaml        # sops-encrypted; edit only via `sops secrets/secrets.yaml`
@@ -100,6 +100,14 @@ Encrypted at rest in `secrets/secrets.yaml`, decrypted at activation using
 each host's own SSH host key. Only `framework` is enrolled as a recipient
 today. Full workflow (enrolling a new host, adding a secret, referencing its
 decrypted path): **`docs/secrets.md`**.
+
+## Security
+
+SSH is key-only everywhere, and `framework` opens **no** inbound ports. Its
+`assertions` fail evaluation if any module opens one (or trusts an
+interface, or adds a raw accept rule), so a new service that needs a port on
+framework has to be a deliberate edit there. Per-host exposure, what each
+hardening choice costs, and known gaps: **`docs/security.md`**.
 
 ## Desktop (Hyprland / Tokyo Night rice)
 

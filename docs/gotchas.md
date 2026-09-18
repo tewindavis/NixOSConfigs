@@ -201,6 +201,15 @@ the kanshi `CHANGE_ME` output placeholder (`docs/desktop.md`).
   deleted creates it. That's the two `wl-paste` watchers and the `SUPER+V`
   bind, so all three set `umask 077`. This only keeps other *users* out:
   anything running as `td` can still read it.
+- **Syncthing's `overrideDevices`/`overrideFolders` are pinned `false`**
+  (`modules/services/syncthing.nix`). Devices and folders are managed in the
+  GUI. Both options default to `true`, which means "delete anything not
+  declared in `services.syncthing.settings`". That is harmless only while
+  nothing is declared, because the module skips its config push when
+  `settings` is empty. Without the pin, adding the first
+  `services.syncthing.settings.*` would silently wipe every GUI-added folder
+  and device. Keep them `false` unless you move *all* devices and folders
+  into Nix.
 - **wttr.in TLS cert has been observed expired** — `waybar-weather` treats
   any fetch failure (cert or otherwise) as non-fatal and renders `"N/A"`
   rather than erroring the whole bar. If weather silently stops working,

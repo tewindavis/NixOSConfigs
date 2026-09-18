@@ -11,8 +11,21 @@ This repository contains a professional-grade, highly modular NixOS configuratio
 The system uses a modular extraction pattern (`modules/hardware/`) to isolate host-specific logic, ensuring that software configurations remain pure and portable.
 
 *   **`utm-vm`:** Aarch64 sandbox optimized for MacOS/Apple Silicon. Features VirtIO graphics and Spice guest integration.
-*   **`framework`:** Primary x86_64 portable workstation. Optimized for Framework 13 hardware, including HiDPI scaling (1.175), fingerprint authentication (`fprintd`, wired into login/sudo/hyprlock), and firmware updates via `fwupd`.
+*   **`framework`:** Primary x86_64 portable workstation. Optimized for Framework 13 hardware, including HiDPI scaling (1.175), fingerprint authentication (`fprintd`, accepted at every PAM prompt: login, lock screen, `sudo`, polkit), and firmware updates via `fwupd`.
 *   **`dl-prototype`:** High-performance x86_64 training rig. Configured for AMD Threadripper CPU optimization and NVIDIA proprietary driver support.
+
+---
+
+## 🔒 Security Baseline
+
+Hardened by default on every host. The full reference, with the cost of each choice, is `docs/security.md`.
+
+*   **SSH:** key-only, no root login. `framework`, the roaming laptop, opens no inbound ports at all and binds `sshd` to loopback. If any module later opens a port, the build fails.
+*   **Boot:** the systemd-boot kernel-command-line editor is disabled, so the boot menu can't be used to get a root shell. `framework`'s root is LUKS-encrypted.
+*   **Quiet on the LAN:** systemd-resolved's LLMNR and mDNS are off, and `cups-browsed` no longer auto-adds every printer it sees advertised. Print dialogs still list network printers on hosts where mDNS is open.
+*   **Passwords stay out of clipboard history:** entries copied from KeePassXC are never written to `cliphist`, and the history file is private (`0600`).
+*   **Hostile files:** archives go through the official 7-Zip rather than the abandoned `p7zip` fork, and the unmaintained LHA backend is removed.
+*   **Supply chain:** every flake input shares one pinned `nixpkgs`. Neovim plugins are pinned by `lazy-lock.json`, and the one plugin that downloaded an unsigned binary (`markdown-preview.nvim`) is disabled.
 
 ---
 
@@ -84,7 +97,7 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 *   **Screen Sharing:** `xdg-desktop-portal-hyprland` is wired in alongside the GTK portal, so screen/window capture works in Brave, Discord, OBS, etc.
 *   **Screen Recording:** `SUPER + ALT + R` toggles `wf-recorder` in the background, saving timestamped mp4s to `~/Videos/Recordings` with a dunst start/stop notification.
 *   **Archives:** `xarchiver` (Thunar's archive-plugin backend) plus `_7zz`/`unrar`/`zip`/`unzip` handle zip/7z/rar/tar/gzip out of the box. `_7zz` is the official 7-Zip CLI rather than the abandoned `p7zip` fork, and `xarchiver` is overridden to use it as its 7z backend too — see `docs/gotchas.md`.
-*   **Password Manager:** `keepassxc` is the default handler for `.kdbx` files.
+*   **Password Manager:** `keepassxc` is the default handler for `.kdbx` files. Passwords copied from it are kept out of `SUPER + V` clipboard history.
 *   **File Sync:** `syncthing` runs as a system service (LAN/P2P sync), with `syncthingtray` in the waybar tray for status/control; `rclone` is available for cloud-storage remotes.
 *   **System Monitor:** `resources`, a GTK4/libadwaita system monitor, complements the CLI `htop`/`bottom`.
 *   **Firmware:** `gnome-firmware` gives a GUI alongside `fwupdmgr` for firmware updates (the `fwupd` daemon only runs on `framework`).
@@ -94,8 +107,9 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 Neovim is configured as a full IDE using the **LazyVim** framework, featuring:
 *   **Fuzzy Finder:** `Leader + Space` for instant file finding (LazyVim's current default picker is `snacks.picker`, not Telescope — Telescope is not installed).
 *   **File Explorer:** `Leader + e` for an integrated file tree (`snacks.explorer`; Neo-tree is not installed).
-*   **Language Servers:** All LSPs, formatters, and linters (Rust, Zig, Python, Nix, Lua, etc.) are installed declaratively via Nix in `home.nix` and picked up straight off `PATH`. Mason is deliberately disabled, so editor tooling stays reproducible with `nixos-rebuild` instead of drifting from whatever Mason downloaded at runtime. To add language support, add the package in `home.nix`. The plugins themselves are *not* Nix-managed: first launch clones lazy.nvim and every plugin pinned in `lazy-lock.json` from GitHub, and nvim-treesitter downloads and compiles its parsers.
+*   **Language Servers:** All LSPs, formatters, and linters (Rust, Zig, Python, Nix, Lua, etc.) are installed declaratively via Nix in `home.nix` and picked up straight off `PATH`. Mason is deliberately disabled, so editor tooling stays reproducible with `nixos-rebuild` instead of drifting from whatever Mason downloaded at runtime. To add language support, add the package in `home.nix`. The plugins themselves are *not* Nix-managed: first launch clones lazy.nvim and every plugin pinned in `lazy-lock.json` from GitHub, and nvim-treesitter downloads and compiles its parsers. `:Lazy update` writes the new pins straight into this repo's `lazy-lock.json`, so updates show up in `git status` to commit or revert.
 *   **Treesitter:** Automated syntax highlighting and structural editing.
+*   **Markdown:** rendered in the buffer by `render-markdown.nvim`. The browser-preview plugin from LazyVim's markdown extra is disabled (see `docs/gotchas.md`).
 
 ---
 

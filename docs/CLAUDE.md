@@ -20,6 +20,7 @@ bend the code to match it.
 | Which modules a host gets | `hosts/<name>/configuration.nix` |
 | Which Neovim plugins are installed | `users/td/nvim/lazy-lock.json` |
 | Which hosts can decrypt secrets | `.sops.yaml` |
+| Which ports each host opens | evaluated `networking.firewall` (command in `docs/security.md`) |
 | Formatting/lint rules | `treefmt.nix` |
 | Waybar modules and click actions | `users/td/waybar/config.jsonc` |
 
@@ -85,6 +86,7 @@ class of drift that is automated.
 | Add a package, script, or LSP | `users/td/home.nix` is authoritative; touch docs only if they enumerate it |
 | Hit a non-obvious bug/constraint | `docs/gotchas.md`, and leave a comment at the code site |
 | Enroll a sops recipient | `docs/secrets.md` |
+| Open/close a port, or change SSH, PAM, boot or resolver hardening | `docs/security.md` |
 
 Prefer recording hard-won knowledge as a comment at the code site *and* a
 line in `docs/gotchas.md`: the comment survives refactors, the doc is
