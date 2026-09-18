@@ -25,8 +25,9 @@ require("lazy").setup({
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
     -- Language extras: LSP + formatting + linting + treesitter for
     -- everything this system has a toolchain for (see the "Languages &
-    -- Toolchains" section of ../../home.nix). Servers/formatters run
-    -- straight off PATH — Mason is disabled in plugins/mason.lua.
+    -- Toolchains" and "Neovim LSP servers" sections of ../../../home.nix).
+    -- Servers/formatters run straight off PATH — Mason is disabled in
+    -- plugins/mason.lua.
     { import = "lazyvim.plugins.extras.lang.rust" },
     { import = "lazyvim.plugins.extras.lang.zig" },
     { import = "lazyvim.plugins.extras.lang.python" },

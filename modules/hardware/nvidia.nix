@@ -16,7 +16,7 @@
 
     # Use the NVidia open source kernel module (not to be confused with the
     # nouveau open source driver).
-    # This is available on RTX 20 series and newer CPUs.
+    # This is available on RTX 20 series and newer GPUs.
     open = false;
 
     # Enable the Nvidia settings menu,

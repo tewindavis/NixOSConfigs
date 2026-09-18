@@ -55,9 +55,10 @@ these from scratch.
 ## NVIDIA (`modules/hardware/nvidia.nix`)
 
 - `hardware.nvidia.powerManagement.enable` and `.finegrained` are both left
-  `false` deliberately — finegrained power management is experimental and
-  "can cause sleep/suspend to fail" on this driver stack. Don't flip these on
-  without testing suspend/resume specifically.
+  `false` deliberately. Per the source comments, `powerManagement.enable` is
+  experimental and "can cause sleep/suspend to fail"; `.finegrained` (turn the
+  GPU off when idle) is experimental too and only works on Turing or newer.
+  Don't flip either on without testing suspend/resume specifically.
 - `open = false` — this selects NVIDIA's *proprietary* kernel module over
   NVIDIA's own **open-source kernel module**, which (as the source comment
   stresses) is **not** the `nouveau` driver — don't conflate the two. The
@@ -71,14 +72,14 @@ these from scratch.
   `setup.sh`/venv installer upstream) — `gef` is the nixpkgs-packaged
   equivalent used instead for the same GDB-enhancement use case. Don't add a
   `pwndbg` package reference expecting it to resolve.
-- Both `gymnasium` and `stable-baselines3` are overridden with
-  `doCheck = false`. Reason: their `nativeCheckInputs` transitively pull in
-  `tensorflow` (via flax → keras → tf-keras), and tensorflow is marked
-  broken in this nixpkgs pin. `gymnasium` is patched *before* being passed
-  into `stable-baselines3.override { gymnasium = ...; }` — patching it as a
-  sibling package instead would not retroactively fix
-  `stable-baselines3`'s own `propagatedBuildInputs` reference to the
-  unpatched version.
+- Both `gymnasium` and `stable-baselines3` are overridden with `doCheck =
+  false`. Reason: their `nativeCheckInputs` transitively pull in `tensorflow`
+  — gymnasium's via flax → keras → tf-keras, stable-baselines3's via
+  tensorboard — and tensorflow is marked broken in this nixpkgs pin.
+  `gymnasium` is patched *before* being passed into
+  `stable-baselines3.override { gymnasium = ...; }` — patching it as a sibling
+  package instead would not retroactively fix `stable-baselines3`'s own
+  `propagatedBuildInputs` reference to the unpatched version.
 
 ## Neovim / LazyVim
 

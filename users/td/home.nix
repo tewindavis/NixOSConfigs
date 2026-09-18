@@ -427,7 +427,7 @@ in
 
   # XDG Desktop Portal Color Scheme
   # Declarative source of truth for GTK/libadwaita theming — no need to
-  # re-run gsettings at every Hyprland startup (see hyprland.nix autostart).
+  # re-run gsettings at every Hyprland startup (see hyprland.lua autostart).
   dconf.settings = {
     "org/gnome/desktop/interface" = {
       color-scheme = "prefer-dark";

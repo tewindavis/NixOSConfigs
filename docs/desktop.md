@@ -1,12 +1,13 @@
 # Desktop reference (Hyprland / Tokyo Night)
 
 Source files: `users/td/hypr/hyprland.lua` (binds, autostart, window rules,
-per-host monitor config) and `users/td/home.nix` (all custom shell-script
-packages, waybar/dunst/hyprlock/kanshi config, theming). A single
-`hyprland.lua` source file is shared, unmodified, across all three hosts —
-`home.nix` substitutes `@HOSTNAME@` into it at build time, so host-specific
-behavior lives in `if "@HOSTNAME@" == "..."` branches inside that one file,
-not in separate per-host configs.
+per-host monitor config), `users/td/home.nix` (all custom shell-script
+packages, dunst/hyprlock/hypridle/kanshi config, theming), and
+`users/td/waybar/` (bar config + stylesheet, linked in by `home.nix`). A
+single `hyprland.lua` source file is shared, unmodified, across all three
+hosts — `home.nix` substitutes `@HOSTNAME@` into it at build time, so
+host-specific behavior lives in `if "@HOSTNAME@" == "..."` branches inside
+that one file, not in separate per-host configs.
 
 `README.md` carries the same cheat sheet for humans, and `checks.keybindings`
 (via `scripts/check-keybinds.sh`) fails `nix flake check` if README and
@@ -90,12 +91,13 @@ daemon directly.
 
 ## Window rules (`hyprland.lua`)
 
-- `ghostty-rice` — opacity `0.95 0.85` on ghostty windows. Matches by
-  `com.mitchellh.ghostty` (ghostty's real Wayland app-id, not `ghostty`).
+- `ghostty-rice` — opacity `0.95 0.85` on ghostty windows (a multiplier on the
+  global `0.9`/`0.8`, not an absolute value — see `docs/gotchas.md`). Matches
+  by `com.mitchellh.ghostty` (ghostty's real Wayland app-id, not `ghostty`).
 - `brave-opaque` — forces Brave fully opaque via `override`. See
   `docs/gotchas.md` for why plain `"1.0 1.0"` doesn't work here.
-- `scratchpad-term` — floats/sizes/pins the scratchpad terminal to
-  `special:scratchpad`.
+- `scratchpad-term` — floats the scratchpad terminal, sizes it `1400 900`,
+  and puts it on `special:scratchpad`.
 
 ## Theming
 
@@ -107,7 +109,7 @@ Tokyo Night palette, as actually used across `waybar/style.css`,
 |---|---|
 | `#c0caf5` | Default foreground/text — the most-used token, on every surface |
 | `#1a1b26` | Module/panel background (usually at `0.9` alpha) |
-| `rgba(10, 11, 16, 0.85)` | Waybar's own bar background (deeper than `#1a1b26`, matches Ghostty) |
+| `rgba(10, 11, 16, 0.85)` | Waybar's bar background and wlogout's backdrop (deeper than `#1a1b26`; same RGB as Ghostty's `background`) |
 | `#7aa2f7` | Blue — identity, borders, active/accent (every stylesheet) |
 | `#9ece6a` | Green — location, success/low urgency |
 | `#ff9e64` | Orange — status, clock, warning, git branch |

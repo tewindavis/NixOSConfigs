@@ -11,7 +11,7 @@ This repository contains a professional-grade, highly modular NixOS configuratio
 The system uses a modular extraction pattern (`modules/hardware/`) to isolate host-specific logic, ensuring that software configurations remain pure and portable.
 
 *   **`utm-vm`:** Aarch64 sandbox optimized for MacOS/Apple Silicon. Features VirtIO graphics and Spice guest integration.
-*   **`framework`:** Primary x86_64 portable workstation. Optimized for Framework 13 hardware, including HiDPI scaling (1.175), fingerprint authentication (`fprintd`, wired into login/sudo/hyprlock), and automatic firmware updates (`fwupd`).
+*   **`framework`:** Primary x86_64 portable workstation. Optimized for Framework 13 hardware, including HiDPI scaling (1.175), fingerprint authentication (`fprintd`, wired into login/sudo/hyprlock), and firmware updates via `fwupd`.
 *   **`dl-prototype`:** High-performance x86_64 training rig. Configured for AMD Threadripper CPU optimization and NVIDIA proprietary driver support.
 
 ---
@@ -20,9 +20,9 @@ The system uses a modular extraction pattern (`modules/hardware/`) to isolate ho
 
 The desktop environment is built on the **Tokyo Night (Night)** color palette, optimized for high contrast and vibrant visual energy without pastel washout.
 
-*   **Vibrant Glass:** All windows feature a "True Glass" aesthetic (90% active / 80% inactive opacity) with absolute minimum blur (1/1) for maximum clarity.
+*   **Vibrant Glass:** Windows default to a "True Glass" aesthetic (90% active / 80% inactive opacity) with absolute minimum blur (1/1) for maximum clarity. Two exceptions: Ghostty is a touch more translucent (its window rule multiplies on top of that, plus its own background opacity), and Brave is forced fully opaque.
 *   **Complementary Spectrum:** Status modules and UI accents use a bold spectrum: **Blue** (#7aa2f7) for identity, **Green** (#9ece6a) for location, and **Orange** (#ff9e64) for status.
-*   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first boot; drop in more images and `cycle-wallpaper` (`SUPER + W`) will pick a random one from the folder each time.
+*   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first login (it runs at every Hyprland start but skips a file that's already there); drop in more images and `cycle-wallpaper` (`SUPER + W`) will pick a random one from the folder each time.
 *   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, and Fingerprint-or-Password prompt), `dunst`, the `swayosd` volume/brightness OSD, and the `wlogout` power menu are all styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors, including a recolored `wlogout` icon set (blue lock/logout, green suspend/hibernate, orange reboot, red shutdown).
 *   **Idle Inhibitor:** A clickable Waybar toggle (right of the volume module) suspends `hypridle`'s auto-lock/DPMS while active — turns red when suppressing.
 *   **Persistent Workspaces:** Waybar always shows workspaces 1-9, even when empty, so the active one is never ambiguous.
@@ -87,14 +87,14 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 *   **Password Manager:** `keepassxc` is the default handler for `.kdbx` files.
 *   **File Sync:** `syncthing` runs as a system service (LAN/P2P sync), with `syncthingtray` in the waybar tray for status/control; `rclone` is available for cloud-storage remotes.
 *   **System Monitor:** `resources`, a GTK4/libadwaita system monitor, complements the CLI `htop`/`bottom`.
-*   **Firmware:** `gnome-firmware` gives a GUI alongside `fwupdmgr` for firmware updates.
+*   **Firmware:** `gnome-firmware` gives a GUI alongside `fwupdmgr` for firmware updates (the `fwupd` daemon only runs on `framework`).
 *   **AI Integration:** `claude-code` and `antigravity-cli` are pre-installed for agentic development and interactive codebase analysis.
 
 ### Neovim (LazyVim IDE)
 Neovim is configured as a full IDE using the **LazyVim** framework, featuring:
 *   **Fuzzy Finder:** `Leader + Space` for instant file finding (LazyVim's current default picker is `snacks.picker`, not Telescope — Telescope is not installed).
 *   **File Explorer:** `Leader + e` for an integrated file tree (`snacks.explorer`; Neo-tree is not installed).
-*   **Language Servers:** All LSPs, formatters, and linters (Rust, Zig, Python, Nix, Lua, etc.) are installed declaratively via Nix in `home.nix` and picked up straight off `PATH`. Mason is deliberately disabled, so editor tooling stays reproducible with `nixos-rebuild` instead of drifting from whatever Mason downloaded at runtime — nothing is fetched on first launch. To add language support, add the package in `home.nix`.
+*   **Language Servers:** All LSPs, formatters, and linters (Rust, Zig, Python, Nix, Lua, etc.) are installed declaratively via Nix in `home.nix` and picked up straight off `PATH`. Mason is deliberately disabled, so editor tooling stays reproducible with `nixos-rebuild` instead of drifting from whatever Mason downloaded at runtime. To add language support, add the package in `home.nix`. The plugins themselves are *not* Nix-managed: first launch clones lazy.nvim and every plugin pinned in `lazy-lock.json` from GitHub, and nvim-treesitter downloads and compiles its parsers.
 *   **Treesitter:** Automated syntax highlighting and structural editing.
 
 ---
@@ -103,24 +103,28 @@ Neovim is configured as a full IDE using the **LazyVim** framework, featuring:
 
 To deploy this configuration to a brand-new machine:
 
+`<host>` below is the `hosts/` directory name, i.e. the flake attribute — not necessarily the machine's hostname (`utm-vm`'s hostname is `utm-nixos`). A machine with no `hosts/` entry yet needs one first: see "Add a new host" in `CLAUDE.md`.
+
 1.  **WiFi Setup:**
     ```bash
     nmcli device wifi connect "SSID" password "PASS"
     ```
-2.  **Clone & Prepare:**
+2.  **Clone & Prepare:** the installer leaves its own generated config in `/etc/nixos`, and `git clone` refuses a non-empty target, so move it aside first. git isn't installed until the first switch, so borrow it from a `nix-shell`.
     ```bash
-    sudo chown -R $USER:users /etc/nixos
-    git clone git@github.com:tewindavis/NixOSConfigs.git /etc/nixos
+    sudo mv /etc/nixos /etc/nixos.installer
+    sudo mkdir /etc/nixos && sudo chown $USER:users /etc/nixos
+    nix-shell -p git
+    git clone https://github.com/tewindavis/NixOSConfigs.git /etc/nixos
     cd /etc/nixos
     ```
-3.  **Hardware Config:**
+3.  **Hardware Config:** (still inside the `nix-shell`; the flake only sees files git tracks, hence the `git add`)
     ```bash
-    sudo nixos-generate-config --show-hardware-config > hosts/<hostname>/hardware-configuration.nix
+    sudo nixos-generate-config --show-hardware-config > hosts/<host>/hardware-configuration.nix
     git add .
     ```
-4.  **Install:**
+4.  **Install:** flakes aren't enabled on a fresh install until this config is applied (`modules/core` turns them on), so enable them for this one command.
     ```bash
-    sudo nixos-rebuild switch --flake .#<hostname>
+    sudo nixos-rebuild switch --flake .#<host> --option experimental-features 'nix-command flakes'
     ```
 
-*Note: All personal dotfiles and "rice" settings are managed via Home Manager and will activate automatically upon login.*
+*Note: Home Manager runs as a NixOS module, so all personal dotfiles and "rice" settings are applied by that same switch.*

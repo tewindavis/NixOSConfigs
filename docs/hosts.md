@@ -42,12 +42,13 @@ hardware to manage.
   1920x1280 logical resolution). Every other host falls back to
   `mode = "preferred"`, `scale = "auto"`.
 - `modules/hardware/framework.nix` imports `nixos-hardware`'s
-  `framework-13-7040-amd` module (the machine is a Ryzen 7 7840U, confirmed
-  via `/sys/class/dmi/id/product_name`). Beyond pstate/amdgpu/microcode it
-  adds the `amdgpu.dcdebugmask=0x10` kernel param (disables panel
-  self-refresh, a known hang source), the out-of-tree `framework-laptop-kmod`
-  EC module and `framework-tool`. The `nixos-hardware` input follows our
-  `nixpkgs`, so it adds no third nixpkgs to the lock.
+  `framework-13-7040-amd` module (`/sys/class/dmi/id/product_name` reads
+  "Laptop 13 (AMD Ryzen 7040Series)"; `/proc/cpuinfo` gives the Ryzen 7
+  7840U). Beyond pstate/amdgpu/microcode it adds the `amdgpu.dcdebugmask=0x10`
+  kernel param (disables panel self-refresh, a known hang source), the
+  out-of-tree `framework-laptop-kmod` EC module and `framework-tool`. The
+  `nixos-hardware` input follows our `nixpkgs`, so it adds no third nixpkgs to
+  the lock.
 
 ## dl-prototype
 

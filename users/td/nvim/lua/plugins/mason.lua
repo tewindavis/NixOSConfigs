@@ -1,5 +1,5 @@
 -- LSP servers, formatters and linters are installed declaratively via Nix
--- (see the "Languages & Toolchains" section of ../../../home.nix) instead of
+-- (see the "Neovim LSP servers" section of ../../../home.nix) instead of
 -- by Mason, so editor tooling stays reproducible with nixos-rebuild rather
 -- than drifting from whatever Mason downloaded into ~/.local/share/nvim at
 -- runtime. Disabling these just turns off the auto-installer: nvim-lspconfig,
