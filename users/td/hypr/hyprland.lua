@@ -145,7 +145,7 @@ hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("sh -c 'grimblast save area -
 hl.bind("Print", hl.dsp.exec_cmd("grimblast --notify copysave output"))
 hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind(mainMod .. " + ALT + R", hl.dsp.exec_cmd("toggle-recording"))
-hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("sh -c 'cliphist list | wofi --dmenu | cliphist decode | wl-copy'"))
+hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("sh -c 'umask 077; cliphist list | wofi --dmenu | cliphist decode | wl-copy'"))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("wlogout"))
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("toggle-scratchpad"))
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("dunstctl history-pop"))
@@ -195,10 +195,13 @@ hl.on("hyprland.start", function()
   -- below is wl-clip-persist's own documented recipe for this; `regular`
   -- (not `both`) is also its recommendation, since operating on the primary
   -- selection breaks text selection in GTK apps. See docs/gotchas.md.
+  -- `umask 077` on every cliphist caller (these two and the SUPER+V bind):
+  -- cliphist creates the db 0644, and whichever runs first after it's
+  -- deleted is the one that creates it.
   hl.exec_cmd(
-    "wl-paste --type text --watch sh -c 'wl-paste --list-types | grep -q x-kde-passwordManagerHint || cliphist store'"
+    "umask 077; wl-paste --type text --watch sh -c 'wl-paste --list-types | grep -q x-kde-passwordManagerHint || cliphist store'"
   )
-  hl.exec_cmd("wl-paste --type image --watch cliphist store")
+  hl.exec_cmd("umask 077; wl-paste --type image --watch cliphist store")
   hl.exec_cmd("wl-clip-persist --clipboard regular --all-mime-type-regex '^(?!x-kde-passwordManagerHint).+'")
   hl.exec_cmd("swayosd-server")
   hl.exec_cmd("waybar")

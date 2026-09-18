@@ -189,6 +189,11 @@ the kanshi `CHANGE_ME` output placeholder (`docs/desktop.md`).
   few milliseconds can race. Also note `wl-clip-persist` is deliberately on
   `--clipboard regular`, not `both` — upstream recommends against operating
   on the primary selection, which breaks text selection in GTK apps.
+- **The cliphist db gets `umask 077` from all three cliphist commands.** cliphist
+  creates it `0644`, and whichever command runs first after the file is
+  deleted creates it. That's the two `wl-paste` watchers and the `SUPER+V`
+  bind, so all three set `umask 077`. This only keeps other *users* out:
+  anything running as `td` can still read it.
 - **wttr.in TLS cert has been observed expired** — `waybar-weather` treats
   any fetch failure (cert or otherwise) as non-fatal and renders `"N/A"`
   rather than erroring the whole bar. If weather silently stops working,
