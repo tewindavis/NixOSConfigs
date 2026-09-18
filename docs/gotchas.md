@@ -108,6 +108,22 @@ these from scratch.
   on that host. The alias is fine on `framework` and `dl-prototype`, where
   attr and hostname match.
 
+## Deliberately left alone
+
+- **tmux is intentionally unconfigured — do not theme it.** It's installed
+  bare in `modules/core/default.nix` with no `programs.tmux` block, no
+  `tmux.conf`, and no Tokyo Night styling, which makes it the only tool in
+  this config running stock. That is the point: tmux gets used on machines
+  where the config *can't* be edited (servers, other people's boxes), so the
+  default `Ctrl+B` prefix and default status bar have to stay put or the
+  muscle memory breaks the moment it's used off this machine. Local window
+  management is Hyprland's job, not tmux's. A consistency pass over the rice
+  will flag this — leave it.
+
+Other things that look unfinished but aren't, documented where they live:
+the kanshi `CHANGE_ME` output placeholder (`docs/desktop.md`) and the
+commented-out `nixos-hardware` import for Framework (`docs/hosts.md`).
+
 ## Misc
 
 - **`gnome-keyring` vs `programs.ssh.startAgent`:** only one SSH agent can be
