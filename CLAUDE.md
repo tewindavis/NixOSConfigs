@@ -8,8 +8,9 @@ relevant to the task rather than everything up front.
 `README.md` is the human-facing feature tour (aesthetic rationale,
 fresh-install steps). This file is the technical/agent-facing counterpart:
 where things live, how to change them safely, and the gotchas already paid
-for. The two are currently in sync; where any doc disagrees with the code,
-**the code wins** — verify against the source file before trusting a doc.
+for. Where any doc disagrees with the code, **the code wins** — verify
+against the source before trusting a doc. Read `docs/CLAUDE.md` before
+editing any documentation.
 
 ## Hosts
 
@@ -40,6 +41,11 @@ users/td/
   home.nix       # Home Manager: packages, dotfiles, Hyprland/waybar/dunst/etc config, shell scripts
   nixos.nix      # the `td` user account definition (groups, shell)
   hypr/hyprland.lua, waybar/, wofi/, wlogout/, swayosd/, ghostty/, nvim/   # linked dotfiles
+docs/
+  CLAUDE.md      # rules for editing docs — read before changing any of them
+  hosts.md, desktop.md, secrets.md, gotchas.md   # deep-dive references
+scripts/
+  check-keybinds.sh   # README-vs-hyprland.lua bind diff; wired into `nix flake check`
 secrets/secrets.yaml        # sops-encrypted; edit only via `sops secrets/secrets.yaml`
 .sops.yaml                  # sops age-key recipients per host
 treefmt.nix                 # nixfmt + statix + deadnix, run via `nix fmt`
@@ -101,6 +107,13 @@ Keybindings, waybar custom-module scripts, and the wallpaper/screenshot/
 recording tooling are all defined in `users/td/home.nix` (shell scripts) and
 `users/td/hypr/hyprland.lua` (binds/autostart). Reference + what each script
 actually does: **`docs/desktop.md`**.
+
+## Changing documentation
+
+Before editing `README.md`, this file, or anything in `docs/`, read
+**`docs/CLAUDE.md`** — the source-of-truth map and the rules for not
+introducing drift (verify claims against code; never assert another doc's
+state; prefer a `checks` entry over a written reminder).
 
 ## Known gotchas / tribal knowledge
 
