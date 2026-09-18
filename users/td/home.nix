@@ -1,6 +1,5 @@
 {
   config,
-  inputs,
   lib,
   pkgs,
   # Provided by home-manager's NixOS module integration: the underlying
@@ -10,9 +9,11 @@
 }:
 
 let
-  # Extract the ghostty binary path for convenience
-  ghosttyPkg = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  ghosttyBin = "${ghosttyPkg}/bin/ghostty";
+  # Absolute path to the same nixpkgs ghostty the SUPER+T/Return binds launch
+  # off PATH. Not the ghostty flake input: that built unreleased git main from
+  # source and dragged in its own nixpkgs, home-manager, zig overlay and
+  # zon2nix, all of which ran at build time.
+  ghosttyBin = "${pkgs.ghostty}/bin/ghostty";
 
   # hyprsunset day/night schedule, shared between hyprsunset.conf (the
   # daemon's own schedule) and waybar-hyprsunset below (so the widget's
