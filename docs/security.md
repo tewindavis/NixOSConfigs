@@ -115,8 +115,9 @@ To exclude a service, set its `fprintAuth = false` explicitly.
 ## Supply chain
 
 - Every flake input follows the root `nixpkgs`, so `flake.lock` holds a
-  single nixpkgs. Check with `jq -r '.nodes | keys[]' flake.lock`. A second
-  `nixpkgs_*` node means an input stopped following.
+  single nixpkgs. `checks.single-nixpkgs` (`scripts/check-single-nixpkgs.sh`)
+  fails `nix flake check` if a second copy appears, and names the input that
+  pulled it in.
 - Ghostty comes from nixpkgs, not the upstream `ghostty` flake. That flake
   built unreleased git main from source and brought in its own nixpkgs,
   home-manager, a Zig overlay and `zon2nix`, all of which ran at build time.

@@ -97,6 +97,17 @@
           bash ${./scripts/check-keybinds.sh}
           touch $out
         '';
+
+        # Every input must follow our nixpkgs; a second copy in the lock is
+        # another, usually staler, package set running at build time.
+        # Standalone: ./scripts/check-single-nixpkgs.sh
+        single-nixpkgs =
+          nixpkgs.legacyPackages.${system}.runCommand "check-single-nixpkgs"
+            { nativeBuildInputs = [ nixpkgs.legacyPackages.${system}.jq ]; }
+            ''
+              bash ${./scripts/check-single-nixpkgs.sh} ${./flake.lock}
+              touch $out
+            '';
       });
     };
 }

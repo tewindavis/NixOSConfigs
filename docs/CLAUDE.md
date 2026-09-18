@@ -70,12 +70,14 @@ because a check enforces it.
 
 - **Checked:** README's keybind cheat sheet vs. `hyprland.lua`, via
   `checks.keybindings` / `scripts/check-keybinds.sh`, in both directions.
+- **Checked:** `docs/security.md`'s "single nixpkgs" claim, via
+  `checks.single-nixpkgs` / `scripts/check-single-nixpkgs.sh`.
 - **Not checked:** everything else — `docs/desktop.md`'s own keybind table,
   the host/module table in `docs/hosts.md`, package lists, palette values.
   These are hand-maintained; verify them by reading the source.
 
-Run `nix flake check` after doc changes. It is cheap and catches the one
-class of drift that is automated.
+Run `nix flake check` after doc changes. It is cheap and catches the drift
+that is automated (the checks listed above).
 
 ## When you change code, update docs in the same commit
 

@@ -46,6 +46,7 @@ docs/
   hosts.md, desktop.md, secrets.md, security.md, gotchas.md   # deep-dive references
 scripts/
   check-keybinds.sh   # README-vs-hyprland.lua bind diff; wired into `nix flake check`
+  check-single-nixpkgs.sh   # fails if flake.lock pins >1 nixpkgs; wired into `nix flake check`
 secrets/secrets.yaml        # sops-encrypted; edit only via `sops secrets/secrets.yaml`
 .sops.yaml                  # sops age-key recipients per host
 treefmt.nix                 # nixfmt + statix + deadnix, run via `nix fmt`
@@ -73,7 +74,7 @@ add a `mkHost { hostname = "<name>"; system = "..."; }` entry in `flake.nix`.
 ```bash
 sudo nixos-rebuild switch --flake .#<attr>       # apply; <attr> is the hosts/ dir name (see note below)
 nh os switch                                      # nicer wrapper, diffed switch; reads NH_FLAKE=/etc/nixos
-nix flake check                                   # formatting + keybind-doc sync + all 3 hosts evaluate
+nix flake check                                   # formatting + keybind-doc sync + single nixpkgs + all 3 hosts evaluate
 nix fmt                                            # nixfmt + statix + deadnix over the whole tree
 ./scripts/check-keybinds.sh                       # just the keybind check, standalone
 ```
