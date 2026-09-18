@@ -95,13 +95,20 @@ hl.window_rule({
   opacity = "0.95 0.85",
 })
 
--- Brave doesn't paint a fully opaque backing surface the way native GTK/Qt
--- apps do, so the global active/inactive_opacity + blur above let the
--- wallpaper show through it (but not other apps). Force it fully opaque.
+-- Brave showed the desktop wallpaper straight through its entire window,
+-- with zero blending — not just the "0.9 active/0.8 inactive" rice from the
+-- decoration block above. Root cause: Hyprland's per-window `opacity` value
+-- is a MULTIPLIER on top of decoration:active_opacity/inactive_opacity, not
+-- an absolute value, unless the `override` keyword follows each number.
+-- "1.0 1.0" alone is therefore a no-op (1.0 * 0.9/0.8 == the same 0.9/0.8
+-- rice everyone else gets) — confirmed by applying it live via `hyprctl
+-- eval` against an already-open window with zero visible change. "1.0
+-- override 1.0 override" actually pins it to fully opaque regardless of the
+-- global rice values.
 hl.window_rule({
   name = "brave-opaque",
   match = { class = "^(brave-browser)$" },
-  opacity = "1.0 1.0",
+  opacity = "1.0 override 1.0 override",
 })
 
 -- Dropdown scratchpad terminal (SUPER + S), spawned/toggled by toggle-scratchpad.
