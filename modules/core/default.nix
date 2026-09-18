@@ -68,6 +68,13 @@
   services.printing = {
     enable = true;
     drivers = with pkgs; [ gutenprint ];
+    # cups-browsed (on by default whenever avahi is) auto-creates a local
+    # queue for every printer advertised on the LAN — the entry point of the
+    # 2024 cups-browsed/foomatic-rip RCE chain, where a rogue "printer"
+    # supplies the PPD. Not needed for discovery: CUPS itself is built with
+    # DNS-SD and shows AirPrint/IPP Everywhere printers in print dialogs as
+    # temporary queues, and system-config-printer can still add them.
+    browsed.enable = false;
   };
   services.avahi = {
     enable = true;
