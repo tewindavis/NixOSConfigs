@@ -31,6 +31,19 @@
   # `ssh localhost` and outbound ssh are unaffected; only port 22 closes.
   # dl-prototype and utm-vm keep it open for remote access.
   services.openssh.openFirewall = false;
+  # And don't listen off-host at all, so the firewall isn't the only layer.
+  # Not `openssh.enable = false`: sops-nix decrypts with sshd's host key
+  # (modules/core/secrets.nix), whose generation is tied to the service.
+  services.openssh.listenAddresses = [
+    {
+      addr = "127.0.0.1";
+      port = 22;
+    }
+    {
+      addr = "[::1]";
+      port = 22;
+    }
+  ];
 
   # No inbound ports at all on the roaming laptop. Syncthing still syncs by
   # dialing out to the other hosts (which keep 22000 open) and via relays; it

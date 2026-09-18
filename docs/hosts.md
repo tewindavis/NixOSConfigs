@@ -26,8 +26,10 @@ hardware to manage.
 - Fingerprint auth (`fprintd`) wired into login, sudo, and hyprlock via
   `security.pam.services.*.fprintAuth`.
 - Inbound SSH closed: `services.openssh.openFirewall = false` in its
-  `configuration.nix`. sshd still runs (key-only, from `modules/core`), so
-  only port 22 on the network is affected; the other two hosts keep it open.
+  `configuration.nix`, and `listenAddresses` binds sshd to `127.0.0.1`/`::1`
+  only. sshd still runs (key-only, from `modules/core`) because sops-nix
+  decrypts with its host key, so `ssh localhost` works; the other two hosts
+  keep port 22 open.
 - No inbound ports at all: it also sets `services.syncthing.openDefaultPorts`
   and `services.avahi.openFirewall` to `false` (both `mkDefault true` in their
   modules, so the other hosts keep them), and an `assertions` entry fails
