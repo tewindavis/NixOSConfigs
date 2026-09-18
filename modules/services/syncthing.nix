@@ -1,4 +1,4 @@
-_:
+{ lib, ... }:
 
 {
   # LAN/P2P file sync (Syncthing). Web GUI on localhost:8384; syncthingtray
@@ -8,7 +8,9 @@ _:
     enable = true;
     user = "td";
     dataDir = "/home/td"; # configDir defaults to dataDir + "/.config/syncthing"
-    openDefaultPorts = true;
+    # TCP/UDP 22000 (sync) and UDP 21027 (local discovery). mkDefault so a
+    # host can close them: framework does, and still syncs by dialing out.
+    openDefaultPorts = lib.mkDefault true;
     # Devices and folders are managed in the GUI, not declared here. Both
     # options default to true, meaning "delete anything not declared in
     # settings.*" — inert only while nothing is declared (the module skips

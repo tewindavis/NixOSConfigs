@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
   imports = [ ./secrets.nix ];
@@ -71,7 +71,8 @@
   services.avahi = {
     enable = true;
     nssmdns4 = true;
-    openFirewall = true;
+    # UDP 5353. mkDefault so a host can close it (framework does).
+    openFirewall = lib.mkDefault true;
   };
   environment.systemPackages = with pkgs; [
     git
