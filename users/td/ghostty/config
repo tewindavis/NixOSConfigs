@@ -34,3 +34,12 @@ palette = 6=#7dcfff
 palette = 14=#7dcfff
 palette = 7=#a9b1d6
 palette = 15=#c0caf5
+
+# Cursor trail (shaders/cursor_trail.glsl): a fading smear when the cursor
+# jumps two or more cells. Path is ~/-based because this config file is a
+# symlink into the Nix store, and relative paths resolve against it.
+# Shaders run an animation loop while a Ghostty window is focused
+# (custom-shader-animation defaults to true; Ghostty documents it as
+# generally under 10% CPU). Setting it to false would stop the trail
+# animating at all.
+custom-shader = ~/.config/ghostty/shaders/cursor_trail.glsl

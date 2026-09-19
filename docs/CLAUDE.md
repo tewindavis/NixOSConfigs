@@ -74,6 +74,8 @@ because a check enforces it.
   `checks.keybindings` / `scripts/check-keybinds.sh`, in both directions.
 - **Checked:** `users/td/hyprshell/config.json` parses with hyprshell's own
   `config check`, via `checks.hyprshell-config`.
+- **Checked:** every `users/td/ghostty/shaders/*.glsl` compiles against
+  Ghostty's shadertoy prefix, via `checks.ghostty-shaders`.
 - **Checked:** `docs/security.md`'s "single nixpkgs" claim, via
   `checks.single-nixpkgs` / `scripts/check-single-nixpkgs.sh`.
 - **Not checked:** everything else — `docs/desktop.md`'s own keybind table,

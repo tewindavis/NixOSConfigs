@@ -15,6 +15,67 @@ let
   # zon2nix, all of which ran at build time.
   ghosttyBin = "${pkgs.ghostty}/bin/ghostty";
 
+  # Tokyo Night for GTK3 (adw-gtk3) and GTK4/libadwaita apps: Thunar,
+  # pavucontrol, blueman, nm-connection-editor, Resources, ... Both read
+  # these named colors from gtk.css. Laid out like tokyonight itself: darker
+  # header bars and sidebars around #1a1b26 content, all palette values.
+  gtkNamedColors = ''
+    @define-color window_bg_color #1a1b26;
+    @define-color window_fg_color #c0caf5;
+    @define-color view_bg_color #1a1b26;
+    @define-color view_fg_color #c0caf5;
+    @define-color headerbar_bg_color #15161e;
+    @define-color headerbar_fg_color #c0caf5;
+    @define-color headerbar_backdrop_color #15161e;
+    @define-color sidebar_bg_color #15161e;
+    @define-color sidebar_fg_color #c0caf5;
+    @define-color sidebar_backdrop_color #15161e;
+    @define-color popover_bg_color #1a1b26;
+    @define-color popover_fg_color #c0caf5;
+    @define-color dialog_bg_color #1a1b26;
+    @define-color dialog_fg_color #c0caf5;
+    @define-color card_fg_color #c0caf5;
+    @define-color accent_color #7aa2f7;
+    @define-color accent_bg_color #7aa2f7;
+    @define-color accent_fg_color #15161e;
+    @define-color destructive_color #f7768e;
+    @define-color destructive_bg_color #f7768e;
+    @define-color destructive_fg_color #15161e;
+    @define-color success_color #9ece6a;
+    @define-color warning_color #e0af68;
+    @define-color error_color #f7768e;
+  '';
+  # Newer libadwaita reads CSS variables instead of @define-color; setting
+  # both covers either version.
+  gtkCssVariables = ''
+    :root {
+      --window-bg-color: #1a1b26;
+      --window-fg-color: #c0caf5;
+      --view-bg-color: #1a1b26;
+      --view-fg-color: #c0caf5;
+      --headerbar-bg-color: #15161e;
+      --headerbar-fg-color: #c0caf5;
+      --headerbar-backdrop-color: #15161e;
+      --sidebar-bg-color: #15161e;
+      --sidebar-fg-color: #c0caf5;
+      --sidebar-backdrop-color: #15161e;
+      --popover-bg-color: #1a1b26;
+      --popover-fg-color: #c0caf5;
+      --dialog-bg-color: #1a1b26;
+      --dialog-fg-color: #c0caf5;
+      --card-fg-color: #c0caf5;
+      --accent-color: #7aa2f7;
+      --accent-bg-color: #7aa2f7;
+      --accent-fg-color: #15161e;
+      --destructive-color: #f7768e;
+      --destructive-bg-color: #f7768e;
+      --destructive-fg-color: #15161e;
+      --success-color: #9ece6a;
+      --warning-color: #e0af68;
+      --error-color: #f7768e;
+    }
+  '';
+
   # hyprsunset day/night schedule, shared between hyprsunset.conf (the
   # daemon's own schedule) and waybar-hyprsunset below (so the widget's
   # "what should be active right now" math can't drift from the config
@@ -47,32 +108,40 @@ let
     download_wall "https://hypr.land/imgs/blog/contestWinners/Kath.png" "hyprchan-kath.png"
   '';
 
-  # Wallpaper Cycling Script. The new image grows out from the cursor: awww
-  # has no "cursor" alias for --transition-pos, but takes fractional
-  # positions (measured from the bottom-left), so this converts Hyprland's
-  # global logical cursor position into a fraction of the monitor under it.
-  # Every output gets the same fraction; on the cursor's own monitor that is
-  # exactly the cursor. Falls back to center if the lookup fails. 120fps to
-  # match the docked Dells' refresh rate.
+  # Wallpaper Cycling Script: each monitor gets its own random image (all
+  # different while there are enough), growing out from the cursor on the
+  # monitor it's on and from the center elsewhere. awww has no "cursor" alias
+  # for --transition-pos, but takes fractional positions (measured from the
+  # bottom-left), so the cursor's global logical position is converted into
+  # a fraction of the monitor under it. 120fps to match the docked Dells.
   cycle-wallpaper = pkgs.writeShellScriptBin "cycle-wallpaper" ''
     WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
-    RANDOM_WALL=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \) | ${pkgs.coreutils}/bin/shuf -n 1)
-    if [ -n "$RANDOM_WALL" ]; then
-      POS=$(${pkgs.hyprland}/bin/hyprctl monitors -j 2>/dev/null | ${pkgs.jq}/bin/jq -r \
-        --argjson c "$(${pkgs.hyprland}/bin/hyprctl cursorpos -j 2>/dev/null)" '
-        def frac: [., 0.001] | max | [., 0.999] | min | tostring;
-        [ .[]
-          # width/height are physical pixels; x/y and the cursor are logical,
-          # and transforms 1/3 (90/270 degrees) swap the axes.
-          | . as $m
-          | (if .transform % 2 == 1 then [.height, .width] else [.width, .height] end
-             | map(. / $m.scale)) as [$w, $h]
-          | select($c.x >= .x and $c.x < .x + $w and $c.y >= .y and $c.y < .y + $h)
-          | "\(($c.x - .x) / $w | frac),\(1 - ($c.y - .y) / $h | frac)"
-        ] | first // empty' 2>/dev/null)
-      ${pkgs.awww}/bin/awww img "$RANDOM_WALL" --transition-type grow \
-        --transition-pos "''${POS:-center}" --transition-fps 120
-    fi
+    mapfile -t WALLS < <(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \) | ${pkgs.coreutils}/bin/shuf)
+    [ "''${#WALLS[@]}" -gt 0 ] || exit 0
+
+    # One "<output> <transition-pos>" line per monitor.
+    mapfile -t OUTPUTS < <(${pkgs.hyprland}/bin/hyprctl monitors -j 2>/dev/null | ${pkgs.jq}/bin/jq -r \
+      --argjson c "$(${pkgs.hyprland}/bin/hyprctl cursorpos -j 2>/dev/null || echo '{"x":-1,"y":-1}')" '
+      def frac: [., 0.001] | max | [., 0.999] | min | tostring;
+      .[]
+      # width/height are physical pixels; x/y and the cursor are logical,
+      # and transforms 1/3 (90/270 degrees) swap the axes.
+      | . as $m
+      | (if .transform % 2 == 1 then [.height, .width] else [.width, .height] end
+         | map(. / $m.scale)) as [$w, $h]
+      | if $c.x >= .x and $c.x < .x + $w and $c.y >= .y and $c.y < .y + $h
+        then "\(.name) \(($c.x - .x) / $w | frac),\(1 - ($c.y - .y) / $h | frac)"
+        else "\(.name) center"
+        end')
+
+    i=0
+    for line in "''${OUTPUTS[@]}"; do
+      read -r output pos <<< "$line"
+      ${pkgs.awww}/bin/awww img -o "$output" "''${WALLS[i % ''${#WALLS[@]}]}" \
+        --transition-type grow --transition-pos "''${pos:-center}" --transition-fps 120 &
+      i=$((i + 1))
+    done
+    wait
   '';
 
   # High-Contrast Blackout Toggle (SUPER+SHIFT+W): swaps to a solid black
@@ -579,6 +648,7 @@ in
     pkgs.mpv # Video/audio player, for media opened from Thunar
     pkgs.wf-recorder # Screen recording backend for toggle-recording (SUPER+ALT+R)
     pkgs.wofi-emoji # Emoji picker (SUPER+period); types the pick via wtype and copies it
+    pkgs.playerctl # Media keys (Play/Next/Prev in hyprland.lua)
     pkgs.hyprshell # SUPER+Tab overview + launcher, ALT+Tab switcher (autostarted in hyprland.lua)
     pkgs.keepassxc # Password manager
     pkgs.resources # GTK4/libadwaita system monitor (GUI complement to bottom/htop)
@@ -630,6 +700,8 @@ in
     # GTK4/libadwaita apps theme natively off color-scheme + accent-color
     # (set via dconf below) rather than the GTK3 adw-gtk3-dark theme.
     gtk4.theme = null;
+    gtk3.extraCss = gtkNamedColors;
+    gtk4.extraCss = gtkNamedColors + gtkCssVariables;
   };
 
   # Qt Theming
@@ -711,6 +783,10 @@ in
     recursive = true;
   };
   xdg.configFile."ghostty/config".source = ./ghostty/config;
+  xdg.configFile."ghostty/shaders" = {
+    source = ./ghostty/shaders;
+    recursive = true;
+  };
   # hyprshell probes config.ron, .toml, .json, .json5 in that order, so this
   # is picked up as long as no config.ron exists. Strict JSON (valid JSON5)
   # so scripts/check-keybinds.sh can read its binds with jq.
@@ -1066,6 +1142,22 @@ in
       git_status = {
         style = "bold #ff9e64";
         format = "([\\[$all_status$ahead_behind\\]]($style))";
+      };
+
+      # Right side: how long the last command took (only when over 2s) and
+      # the time, 12-hour like the waybar clock. Shown on the prompt's last
+      # line, next to the ❯.
+      right_format = "$cmd_duration$time";
+      cmd_duration = {
+        min_time = 2000;
+        format = "[ $duration]($style) ";
+        style = "#ff9e64";
+      };
+      time = {
+        disabled = false;
+        format = "[$time]($style)";
+        time_format = "%I:%M %p";
+        style = "#a9b1d6";
       };
 
       character = {

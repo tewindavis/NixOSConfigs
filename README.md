@@ -35,18 +35,19 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 
 *   **Vibrant Glass:** Windows default to a frosted-glass aesthetic (90% active / 80% inactive opacity over a 6-size, 3-pass blur with a touch of vibrancy and noise), with soft shadows. Waybar, wofi, dunst and the swayosd OSD are blurred too, via layer rules. Two exceptions: Ghostty is a touch more translucent (its window rule multiplies on top of that, plus its own background opacity), and Brave is forced fully opaque.
 *   **Complementary Spectrum:** Status modules and UI accents use a bold spectrum: **Blue** (#7aa2f7) for identity, **Green** (#9ece6a) for location, and **Orange** (#ff9e64) for status.
-*   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first login (it runs at every Hyprland start but skips a file that's already there); drop in more images and `cycle-wallpaper` (`SUPER + W`) will pick a random one from the folder each time.
+*   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first login (it runs at every Hyprland start but skips a file that's already there); drop in more images and `cycle-wallpaper` (`SUPER + W`) gives each monitor its own random pick from the folder, growing out from the cursor.
 *   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, weather, battery, now-playing track, and Fingerprint-or-Password prompt), `dunst`, the `swayosd` volume/brightness OSD, and the `wlogout` power menu are all styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors, including a recolored `wlogout` icon set (blue lock/logout, green suspend/hibernate, orange reboot, red shutdown).
 *   **Idle Inhibitor:** A clickable Waybar toggle (right of the volume module) suspends `hypridle`'s auto-lock/DPMS while active — turns red when suppressing.
 *   **Idle Warning:** The laptop panel dims to 10% at 4:30 idle, 30 seconds before the 5-minute lock; any input restores the brightness.
-*   **Persistent Workspaces:** Waybar always shows workspaces 1-9, even when empty, so the active one is never ambiguous.
+*   **Workspace Buttons:** Each bar shows only its own monitor's workspaces that have windows in them, each with icons of the apps it holds.
 *   **A Bar Per Monitor:** Every bar except the portrait Dell's shows now-playing media and an inline `cava` audio visualizer (click it to turn it off; a dim note icon stays to turn it back on). The laptop panel leaves out CPU/memory to save battery, the portrait Dell gets a slim bar (workspaces + clock), and everything else gets the full bar.
 *   **Privacy & Do Not Disturb:** A red Waybar indicator appears while the screen is being shared or the mic is recording. A bell toggle pauses notifications and shows how many are queued.
 *   **Motion:** Workspaces slide-and-fade, the scratchpad drops down from the top (dimming what's behind it), and the active border's blue→green gradient slowly rotates. Notifications slide in from the right and the launcher pops in. `SUPER + W` wallpapers grow outward from the cursor.
 *   **Overview & Switcher:** `SUPER + Tab` opens a `hyprshell` overview of every workspace and its windows with a built-in launcher (apps by usage, calculator, web search, power actions). `ALT + Tab` is a Windows-style switcher: most recently used first, hold Alt and tap Tab, release to switch. Both are themed and blurred to match.
 *   **Shape & Layout:** Windows use the same 12px corner radius as the bar, launcher and notifications. Pop-up utilities (volume, Bluetooth, network, image viewer) float centered instead of squashing the tiled layout, and `SUPER + G` turns windows into tabbed groups with a palette-colored tab bar.
 *   **Boot to Desktop:** A Plymouth splash (Catppuccin Mocha) with silent boot, including the LUKS prompt on framework, then a Tokyo Night–themed `tuigreet`. The TTY palette matches Ghostty's.
-*   **Themed CLI:** `bat`, `fzf`, `bottom`, `zathura`, `eza` (via `vivid`) and zsh's syntax highlighting and autosuggestions all use the same palette.
+*   **Themed CLI:** `bat`, `fzf`, `bottom`, `zathura`, `eza` (via `vivid`) and zsh's syntax highlighting and autosuggestions all use the same palette. Starship's right side shows how long slow (2s+) commands took and the time, and Ghostty draws a short fading trail when the cursor jumps.
+*   **Themed GTK Apps:** Thunar, pavucontrol, Bluetooth and network settings and other GTK3/GTK4 apps use the palette too (darker header bars and sidebars, blue accents).
 *   **Weather:** A Waybar module next to the clock shows current conditions via `wttr.in`, with a graceful "N/A" fallback if the network or upstream service is unavailable.
 *   **Auto Blue-Light Filter:** `hyprsunset` runs as a daemon on login and switches itself between neutral (7:30am) and warm 2450K (8:00pm) — f.lux/redshift-style — per the schedule in `hyprsunset.conf`. A Waybar toggle (sun/moon icon, next to the idle inhibitor) shows and flips the current state; `SUPER + R`/`SUPER + SHIFT + R` do the same from the keyboard. Any of the three count as a manual override until the next scheduled switch.
 
@@ -96,7 +97,7 @@ System controls are bound to the **`SUPER`** (Command) key, apart from `Print` a
 | `SUPER + SHIFT + R` | Manual Override: Reset Hyprsunset (Day Mode) |
 | `SUPER + Left Click` | **Drag to Move** Window |
 | `SUPER + Right Click`| **Drag to Resize** Window |
-| `Media Keys` | Volume, Mic, and Brightness Control (with on-screen display) |
+| `Media Keys` | Volume, Mic, and Brightness Control (with on-screen display); Play/Pause, Next, Previous (`playerctl`) |
 
 ---
 

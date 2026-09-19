@@ -18,8 +18,8 @@
         "include": "~/.config/waybar/modules.jsonc",
         "output": "eDP-1",
         "modules-left": ["hyprland/workspaces", "hyprland/window"],
-        "modules-center": ["clock", "custom/weather", "mpris"],
-        "modules-right": ["custom/cava", "privacy", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "custom/hyprsunset", "custom/dnd", "tray", "custom/power"]
+        "modules-center": ["clock", "custom/weather"],
+        "modules-right": ["mpris", "custom/cava", "privacy", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "custom/hyprsunset", "custom/dnd", "tray", "custom/power"]
     },
 
     // Portrait Dell: only 1440 logical px wide, so just workspaces and the clock.
@@ -51,7 +51,7 @@
         "include": "~/.config/waybar/modules.jsonc",
         "output": ["!eDP-1", "!Dell Inc. DELL S2725QC 83VD464", "*"],
         "modules-left": ["hyprland/workspaces", "hyprland/window"],
-        "modules-center": ["clock", "custom/weather", "mpris"],
-        "modules-right": ["custom/cava", "privacy", "cpu", "memory", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "custom/hyprsunset", "custom/dnd", "tray", "custom/power"]
+        "modules-center": ["clock", "custom/weather"],
+        "modules-right": ["mpris", "custom/cava", "privacy", "cpu", "memory", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "custom/hyprsunset", "custom/dnd", "tray", "custom/power"]
     }
 ]

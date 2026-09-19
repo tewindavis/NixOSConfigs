@@ -56,6 +56,7 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 | `SUPER+ALT+R` | Toggle screen recording |
 | `SUPER+LMB` / `SUPER+RMB` | Drag to move / resize |
 | Volume/brightness/mute keys | `swayosd-client` (shows OSD + applies change; `locked` so they work on the lock screen) |
+| Play/Pause, Next, Previous keys | `playerctl play-pause` / `next` / `previous` on the most recently active player; also `locked` |
 
 ## Waybar bars (one per output)
 
@@ -91,14 +92,14 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `custom/cava` | Turn the audio visualizer off/on |
 | `mpris` | Built-in defaults: play/pause, middle = previous, right = next |
 | `idle_inhibitor` | Toggle idle inhibit (built-in) |
-| `hyprland/workspaces` | Activate workspace (scroll disabled) |
+| `hyprland/workspaces` | Activate workspace (scroll disabled). Per-monitor (`all-outputs: false`), no persistent workspaces, and `workspace-taskbar` draws app icons (Papirus-Dark) after each number |
 
 ## Custom scripts (all defined in `users/td/home.nix` via `writeShellScriptBin`)
 
 | Script | Bound to | What it does |
 |---|---|---|
 | `setup-wallpapers` | autostart | Downloads a starter wallpaper into `~/Pictures/Wallpapers` on first run (idempotent — skips if already present). |
-| `cycle-wallpaper` | `SUPER+W`, autostart | Picks a random image from `~/Pictures/Wallpapers` via `awww img`, with a `grow` transition at 120fps centered on the cursor. awww has no cursor alias, so the script converts `hyprctl cursorpos` into a fraction of the monitor under it; falls back to `center`. |
+| `cycle-wallpaper` | `SUPER+W`, autostart | Gives each monitor its own random image from `~/Pictures/Wallpapers` (`awww img -o <output>`; images repeat only when there are fewer than monitors), with a `grow` transition at 120fps. On the monitor under the cursor it grows from the cursor: awww has no cursor alias, so the script converts `hyprctl cursorpos` into a fraction of that monitor. Other monitors grow from `center`. |
 | `toggle-blackout` | `SUPER+SHIFT+W` | Solid-black background toggle for glare relief; uses `awww clear`/`awww restore`, state tracked by a `/tmp` sentinel file (no wallpaper path bookkeeping needed). |
 | `toggle-scratchpad` | `SUPER+S` | Dropdown terminal. First call spawns a ghostty tagged `--class=com.td.scratchpad` into the `special:scratchpad` workspace (matched by the `scratchpad-term` window rule in `hyprland.lua`); later calls just toggle visibility. |
 | `waybar-weather` | waybar module | wttr.in one-liner as JSON for waybar's `custom` module type; falls back to `"N/A"` on any fetch failure. |
@@ -190,6 +191,16 @@ The lock screen's weather, battery and now-playing labels come from
 `hyprlock-nowplaying`); each prints nothing when there's nothing to show.
 hypridle dims the backlight to 10% at 270s idle (`brightnessctl -s`) and
 restores it on input (`-r`), 30s before the 300s lock.
+
+GTK apps' colors come from `gtk.gtk3.extraCss` / `gtk.gtk4.extraCss`
+(`gtkNamedColors`, plus `gtkCssVariables` for newer libadwaita): the
+named colors adw-gtk3 and libadwaita read, set from the palette, with
+header bars and sidebars in `#15161e` around `#1a1b26` content.
+
+Starship's `right_format` shows `cmd_duration` (commands over 2s) and the
+time. Ghostty's `custom-shader` is `ghostty/shaders/cursor_trail.glsl`, a
+fading trail when the cursor moves two or more cells; shaders keep an
+animation loop running while a Ghostty window is focused.
 
 GTK/Qt/dconf theming (`gtk`, `qt`, `dconf.settings` in `home.nix`) is the
 declarative source of truth for dark mode + accent color — don't add

@@ -1,14 +1,22 @@
 // Module definitions shared by every bar in config.jsonc (pulled in via
 // "include"). Which modules each bar shows is set in config.jsonc.
 {
+    // Each bar shows only its own monitor's workspaces, and only ones that
+    // exist (no persistent 1-9), each with icons of the apps in it (taskbar
+    // mode draws real icons from the icon theme, so there's no per-app map
+    // to maintain).
     "hyprland/workspaces": {
         "disable-scroll": true,
-        "all-outputs": true,
-        "persistent-workspaces": {
-            "*": [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        },
-        "format": "{name}",
-        "on-click": "activate"
+        "all-outputs": false,
+        // {windows} is required: waybar only reads workspace-taskbar when
+        // the format contains it, and the icons are drawn in its place.
+        "format": "{name} {windows}",
+        "on-click": "activate",
+        "workspace-taskbar": {
+            "enable": true,
+            "icon-size": 14,
+            "icon-theme": "Papirus-Dark"
+        }
     },
 
     "idle_inhibitor": {

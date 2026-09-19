@@ -115,6 +115,21 @@
               touch $out
             '';
 
+        # Ghostty compiles custom shaders at runtime and only logs failures,
+        # so a broken one silently does nothing. Compile each against
+        # Ghostty's own shadertoy prefix (from the ghostty source in use).
+        ghostty-shaders =
+          let
+            pkgs = nixpkgs.legacyPackages.${system};
+          in
+          pkgs.runCommand "check-ghostty-shaders" { nativeBuildInputs = [ pkgs.glslang ]; } ''
+            for f in ${./users/td/ghostty/shaders}/*.glsl; do
+              cat ${pkgs.ghostty.src}/src/renderer/shaders/shadertoy_prefix.glsl "$f" > shader.frag
+              glslangValidator -V -S frag shader.frag -o /dev/null
+            done
+            touch $out
+          '';
+
         # Every input must follow our nixpkgs; a second copy in the lock is
         # another, usually staler, package set running at build time.
         # Standalone: ./scripts/check-single-nixpkgs.sh

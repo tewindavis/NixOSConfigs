@@ -74,7 +74,7 @@ add a `mkHost { hostname = "<name>"; system = "..."; }` entry in `flake.nix`.
 ```bash
 sudo nixos-rebuild switch --flake .#<attr>       # apply; <attr> is the hosts/ dir name (see note below)
 nh os switch                                      # nicer wrapper, diffed switch; reads NH_FLAKE=/etc/nixos
-nix flake check                                   # formatting + keybind-doc sync + single nixpkgs + hyprshell config + all 3 hosts evaluate
+nix flake check                                   # formatting + keybind-doc sync + single nixpkgs + hyprshell config + ghostty shaders + all 3 hosts evaluate
 nix fmt                                            # nixfmt + statix + deadnix over the whole tree
 ./scripts/check-keybinds.sh                       # just the keybind check, standalone
 ```

@@ -73,7 +73,8 @@ expand_shorthand() {
 		"Media Keys") printf '%s\n' \
 			XF86AudioRaiseVolume XF86AudioLowerVolume \
 			XF86AudioMute XF86AudioMicMute \
-			XF86MonBrightnessUp XF86MonBrightnessDown ;;
+			XF86MonBrightnessUp XF86MonBrightnessDown \
+			XF86AudioPlay XF86AudioPause XF86AudioNext XF86AudioPrev ;;
 		*"Left Click") echo "SUPER+mouse:272" ;;
 		*"Right Click") echo "SUPER+mouse:273" ;;
 		"3-Finger Swipe") ;; # hl.gesture, not a keybind

@@ -90,6 +90,12 @@ these from scratch.
   `"BOE 0x0BCA "` with a trailing space, and `"BOE 0x0BCA"` silently fails
   to match (the bar just falls through to the catch-all). The Dells report
   serials, so their descriptions have no trailing space.
+- **`workspace-taskbar` needs `{windows}` in the workspace `format`.**
+  Waybar only reads the `workspace-taskbar` settings when the format
+  string contains `{windows}` (`parseConfig` in
+  `src/modules/hyprland/workspaces.cpp`); without it `enable: true` is
+  silently ignored and no icons appear. The icons are drawn where
+  `{windows}` sits.
 - **The privacy module sees cava as a microphone user.** cava captures
   audio through a PipeWire stream with `node.name = cava` (both waybar's
   built-in module and the CLI that `waybar-cava` runs), so `privacy`
