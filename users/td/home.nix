@@ -730,19 +730,26 @@ let
   # ones check it here; critical ones sound regardless, since their popups
   # bypass DND too. Always exits 0: swaync posts a "script failed"
   # notification otherwise, which would run this again and loop.
+  #
+  # KDE's ocean theme rather than freedesktop's: its tones sit around
+  # 350-500Hz where freedesktop's message-new-instant is centred near 900Hz
+  # and peaks at 466Hz, loud enough to distort the Framework's speakers with
+  # the sink up. Volume is a stream gain on top of the sink volume, so this
+  # is quiet at any sink setting; raise it here rather than swapping files.
+  notifySoundVolume = "0.25";
   notify-sound = pkgs.writeShellScript "notify-sound" ''
-    sounds=${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo
+    sounds=${pkgs.kdePackages.ocean-sound-theme}/share/sounds/ocean/stereo
     case "$1" in
-      critical) sound=dialog-warning ;;
+      critical) sound=dialog-warning-auth ;;
       normal)
         if [ "$(${pkgs.swaynotificationcenter}/bin/swaync-client -D -sw 2>/dev/null)" = true ]; then
           exit 0
         fi
-        sound=message-new-instant
+        sound=message-new-email
         ;;
       *) exit 0 ;;
     esac
-    ${pkgs.pipewire}/bin/pw-play "$sounds/$sound.oga" || true
+    ${pkgs.pipewire}/bin/pw-play --volume ${notifySoundVolume} "$sounds/$sound.oga" || true
     exit 0
   '';
 
