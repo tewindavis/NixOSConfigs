@@ -283,6 +283,124 @@ let
     echo "export LS_COLORS='$(${pkgs.vivid}/bin/vivid generate tokyonight-night)'" > $out
   '';
 
+  # Waybar audio visualizer with a click on/off toggle. Replaces waybar's
+  # built-in cava module, whose only click action pauses it: paused bars
+  # freeze on the last frame, and with hide_on_silence there's nothing to
+  # click while no audio plays. This runs the cava CLI in raw mode instead,
+  # turning each frame of 0-7 levels into block characters.
+  #   on:  bars while audio plays, hidden during silence
+  #   off: cava isn't running at all (no capture); a dim note icon stays so
+  #        it can be clicked back on
+  # Every bar runs its own `waybar-cava run`, and each registers its PID in
+  # $XDG_RUNTIME_DIR/waybar-cava/. `waybar-cava toggle` flips the shared
+  # state file and sends SIGUSR1 to exactly those PIDs (not a pkill pattern,
+  # which would also hit any shell whose command line mentions the script).
+  # On USR1 a runner kills its current job (cava pipeline or idle sleep) and
+  # re-reads the state.
+  waybarCavaConf = pkgs.writeText "waybar-cava.conf" ''
+    [general]
+    framerate = 30
+    bars = 12
+    autosens = 1
+    lower_cutoff_freq = 50
+    higher_cutoff_freq = 10000
+    sleep_timer = 5
+
+    [input]
+    method = pipewire
+    source = auto
+
+    [output]
+    method = raw
+    raw_target = /dev/stdout
+    data_format = ascii
+    ascii_max_range = 7
+    bar_delimiter = 59
+    channels = stereo
+
+    [smoothing]
+    noise_reduction = 77
+  '';
+  waybar-cava = pkgs.writeShellScriptBin "waybar-cava" ''
+    OFF="''${XDG_STATE_HOME:-$HOME/.local/state}/waybar-cava-off"
+    RUNDIR="''${XDG_RUNTIME_DIR:-/tmp}/waybar-cava"
+    PKILL="${pkgs.procps}/bin/pkill"
+
+    if [ "$1" = "toggle" ]; then
+      if [ -f "$OFF" ]; then
+        rm -f "$OFF"
+      else
+        mkdir -p "$(dirname "$OFF")"
+        touch "$OFF"
+      fi
+      # A runner killed with SIGKILL leaves its PID file behind, and USR1's
+      # default action terminates, so only signal PIDs that are still a
+      # waybar-cava process.
+      for f in "$RUNDIR"/*; do
+        [ -e "$f" ] || continue
+        pid="''${f##*/}"
+        if ${pkgs.gnugrep}/bin/grep -qa waybar-cava "/proc/$pid/cmdline" 2>/dev/null; then
+          kill -USR1 "$pid"
+        else
+          rm -f "$f"
+        fi
+      done
+      exit 0
+    fi
+
+    # `run` (the waybar exec): one JSON object per line until killed.
+    OFF_JSON=$(${pkgs.jq}/bin/jq -nc \
+      '{text: "\uf001", class: "off", tooltip: "Visualizer off (click to turn on)"}')
+    mkdir -p "$RUNDIR"
+    touch "$RUNDIR/$$"
+
+    # The cava pipeline runs in a background subshell so `wait` (unlike a
+    # foreground pipeline) is interrupted by USR1 straight away. Killing the
+    # subshell's children as well stops cava itself, even while it's in its
+    # silent sleep and not writing (so SIGPIPE would never reach it).
+    JOB=""
+    stop_job() {
+      if [ -n "$JOB" ]; then
+        $PKILL -P "$JOB" 2>/dev/null
+        kill "$JOB" 2>/dev/null
+      fi
+    }
+    trap stop_job USR1
+    trap 'stop_job; rm -f "$RUNDIR/$$"; exit 0' TERM INT HUP
+    trap 'rm -f "$RUNDIR/$$"' EXIT
+
+    while true; do
+      if [ -f "$OFF" ]; then
+        STATE=off
+        echo "$OFF_JSON"
+        sleep infinity &
+        JOB=$!
+      else
+        STATE=on
+        # All-zero frames (silence) print empty text, which hides the module.
+        # Anything that isn't a frame is dropped: when cava fails (e.g. it
+        # can't reach PipeWire) it still writes a terminal-title escape.
+        (
+          ${pkgs.cava}/bin/cava -p ${waybarCavaConf} 2>/dev/null | ${pkgs.gnused}/bin/sed -u '
+            /^[0-9;]*$/!d
+            s/;//g
+            /^0*$/ { s/.*/{"text": ""}/; b }
+            s/0/▁/g; s/1/▂/g; s/2/▃/g; s/3/▄/g; s/4/▅/g; s/5/▆/g; s/6/▇/g; s/7/█/g
+            s/.*/{"text": "&", "class": "on", "tooltip": "Visualizer on (click to turn off)"}/
+          '
+        ) &
+        JOB=$!
+      fi
+      wait "$JOB"
+      stop_job
+      JOB=""
+      # The job ended without a toggle (e.g. cava failed): don't spin.
+      if { [ "$STATE" = on ] && [ ! -f "$OFF" ]; } || { [ "$STATE" = off ] && [ -f "$OFF" ]; }; then
+        sleep 2
+      fi
+    done
+  '';
+
   # Screen recording toggle (SUPER+ALT+R): mirrors the grimblast/swappy
   # screenshot pattern above, but for video. First call starts wf-recorder
   # in the background against the whole output and stashes its PID; second
@@ -323,6 +441,7 @@ in
     waybar-power-profile
     waybar-hyprsunset
     waybar-dnd
+    waybar-cava
     pkgs.power-profiles-daemon # powerprofilesctl CLI, used by waybar-power-profile above
     # Modern CLI
     pkgs.ripgrep

@@ -22,7 +22,7 @@ window#waybar {
 }
 
 #clock, #cpu, #memory, #battery, #bluetooth, #network, #pulseaudio, #tray, #idle_inhibitor, #custom-power,
-#privacy, #mpris, #cava, #custom-dnd {
+#privacy, #mpris, #custom-cava, #custom-dnd {
     padding: 0 10px;
     margin: 4px 4px;
     border-radius: 8px;
@@ -106,8 +106,12 @@ window#waybar {
     color: #c0caf5;
 }
 
-#cava {
+#custom-cava {
     color: #7aa2f7; /* Blue */
+}
+
+#custom-cava.off {
+    color: #414868; /* Dim - visualizer turned off */
 }
 
 #custom-dnd {

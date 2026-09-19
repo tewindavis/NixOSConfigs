@@ -68,9 +68,18 @@ these from scratch.
   `"BOE 0x0BCA "` with a trailing space, and `"BOE 0x0BCA"` silently fails
   to match (the bar just falls through to the catch-all). The Dells report
   serials, so their descriptions have no trailing space.
-- **The privacy module sees cava as a microphone user.** Waybar's `cava`
-  module captures audio through a PipeWire stream with `node.name = cava`,
-  so `privacy` ignores that name for `audio-in` (`modules.jsonc`).
+- **The privacy module sees cava as a microphone user.** cava captures
+  audio through a PipeWire stream with `node.name = cava` (both waybar's
+  built-in module and the CLI that `waybar-cava` runs), so `privacy`
+  ignores that name for `audio-in` (`modules.jsonc`).
+- **Don't signal `waybar-cava` runners with `pkill -f`.** A pattern like
+  `pkill -f "bin/waybar-cava run"` also matches any shell whose command
+  line contains that text, and USR1's default action kills it. This
+  happened twice while testing. Runners register their PIDs in
+  `$XDG_RUNTIME_DIR/waybar-cava/` instead, and the toggle checks
+  `/proc/<pid>/cmdline` before signaling. Test it with the real
+  `XDG_RUNTIME_DIR`: cava finds PipeWire's socket there and exits at once
+  without it.
 
 ## hyprsunset
 

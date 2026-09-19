@@ -82,6 +82,7 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `custom/hyprsunset` | Toggle blue-light filter |
 | `custom/power` | `wlogout` |
 | `custom/dnd` | Pause/resume dunst (do not disturb) |
+| `custom/cava` | Turn the audio visualizer off/on |
 | `mpris` | Built-in defaults: play/pause, middle = previous, right = next |
 | `idle_inhibitor` | Toggle idle inhibit (built-in) |
 | `hyprland/workspaces` | Activate workspace (scroll disabled) |
@@ -98,6 +99,7 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `waybar-power-profile` | waybar module (click = cycle) | Reads/cycles `power-profiles-daemon`'s profile. Only meaningful on `framework` (see `docs/hosts.md`) — reports "unavailable" elsewhere. |
 | `waybar-hyprsunset` | waybar module (click = toggle), `SUPER+R`/`SUPER+SHIFT+R` | Blue-light filter widget. Per `docs/gotchas.md`, this is the *only* correct way to drive hyprsunset once the daemon is already running. |
 | `waybar-dnd` | waybar module (click = toggle) | Do not disturb: `dunstctl set-paused toggle`. While paused dunst queues notifications rather than dropping them, and the module shows the queued count. |
+| `waybar-cava` | waybar module (click = toggle) | Audio visualizer: runs the `cava` CLI in raw mode and maps each frame to block characters; hidden during silence. Off means cava isn't running and a dim note icon remains. Used instead of waybar's built-in `cava` module, whose only click action freezes the bars. Toggling signals the runners listed in `$XDG_RUNTIME_DIR/waybar-cava/`. |
 | `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `/tmp`, saves timestamped mp4 to `~/Videos/Recordings`, dunst toast on start/stop. |
 
 ## hyprsunset day/night schedule
