@@ -354,6 +354,38 @@ let
     PERF=${perf-mode}/bin/perf-mode
     profile() { ${pkgs.power-profiles-daemon}/bin/powerprofilesctl get 2>/dev/null || echo none; }
 
+    # Battery warnings, since nothing else watches the charge: one normal
+    # notification at 20% and one critical at 10% (critical bypasses DND and
+    # sounds even then). Each fires once per discharge and rearms when the
+    # charger goes back in. Hosts with no battery never match the glob, so
+    # this is inert on dl-prototype and the VM.
+    warned=""
+    battery() { # "<capacity> <status>" for the first real battery
+      local b
+      for b in /sys/class/power_supply/BAT*; do
+        [ -r "$b/capacity" ] || continue
+        echo "$(cat "$b/capacity") $(cat "$b/status" 2>/dev/null)"
+        return
+      done
+    }
+    check_battery() {
+      local cap status
+      set -- $(battery)
+      cap="''${1:-}"
+      status="''${2:-}"
+      [ -n "$cap" ] || return
+      if [ "$status" != Discharging ]; then
+        warned=""
+      elif [ "$cap" -le 10 ] && [ "$warned" != critical ]; then
+        ${pkgs.libnotify}/bin/notify-send -u critical -a Battery \
+          "Battery at $cap%" "Plug in now."
+        warned=critical
+      elif [ "$cap" -le 20 ] && [ -z "$warned" ]; then
+        ${pkgs.libnotify}/bin/notify-send -u normal -a Battery "Battery at $cap%"
+        warned=low
+      fi
+    }
+
     last_profile=$(profile)
     [ "$last_profile" = power-saver ] && $PERF on
     last_play=$($WV should-play)
@@ -372,6 +404,7 @@ let
         $WV sync
       fi
       last_play=$play
+      check_battery
     done
   '';
 
