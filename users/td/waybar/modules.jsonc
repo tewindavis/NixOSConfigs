@@ -1,0 +1,173 @@
+// Module definitions shared by every bar in config.jsonc (pulled in via
+// "include"). Which modules each bar shows is set in config.jsonc.
+{
+    "hyprland/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": true,
+        "persistent-workspaces": {
+            "*": [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        },
+        "format": "{name}",
+        "on-click": "activate"
+    },
+
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "",
+            "deactivated": ""
+        },
+        "tooltip-format-activated": "Idle inhibitor: ON (lock/DPMS suppressed)",
+        "tooltip-format-deactivated": "Idle inhibitor: OFF"
+    },
+
+    "cpu": {
+        "format": "  {usage}%",
+        "tooltip": false,
+        "on-click": "ghostty -e btm"
+    },
+    
+    "memory": {
+        "format": "  {}%",
+        "on-click": "ghostty -e btm"
+    },
+
+    "battery": {
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{icon}  {capacity}%",
+        "format-charging": " {capacity}%",
+        "format-plugged": " {capacity}%",
+        "format-icons": ["", "", "", "", ""]
+    },
+
+    "bluetooth": {
+        "format": " {status}",
+        "format-connected": " {device_alias}",
+        "format-connected-battery": " {device_alias} {device_battery_percentage}%",
+        "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+        "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+        "on-click": "blueman-manager"
+    },
+
+    "network": {
+        "format-wifi": "  {essid}",
+        "format-ethernet": " {ifname}",
+        "format-disconnected": "⚠ Disconnected",
+        "on-click": "nm-connection-editor"
+    },
+
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-muted": "",
+        "format-icons": {
+            "default": ["", "", ""]
+        },
+        "on-click": "pavucontrol"
+    },
+
+    "clock": {
+        "format": "{:%I:%M %p   %b %d}",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+
+    "custom/weather": {
+        "exec": "waybar-weather",
+        "return-type": "json",
+        "interval": 1800,
+        "tooltip": true
+    },
+
+    // Only "framework" runs power-profiles-daemon; on the other hosts this
+    // just reports "unavailable" (same graceful-degradation pattern as the
+    // built-in bluetooth module on utm-vm, which has no bluetooth hardware).
+    "custom/power-profile": {
+        "exec": "waybar-power-profile status",
+        "on-click": "waybar-power-profile cycle",
+        "return-type": "json",
+        "interval": 5,
+        "tooltip": true
+    },
+
+    // No IPC query exists for hyprsunset's current state, so this computes
+    // it from the same schedule as hyprsunset.conf; click toggles a manual
+    // override (see waybar-hyprsunset). interval matches waybar-power-
+    // profile's poll cadence so the icon flips promptly at schedule boundaries.
+    "custom/hyprsunset": {
+        "exec": "waybar-hyprsunset",
+        "on-click": "waybar-hyprsunset toggle",
+        "return-type": "json",
+        "interval": 5,
+        "tooltip": true
+    },
+
+    "custom/power": {
+        "format": "",
+        "tooltip-format": "Power menu",
+        "on-click": "wlogout"
+    },
+
+    "tray": {
+        "icon-size": 18,
+        "spacing": 10
+    },
+
+    // Hidden while nothing is sharing the screen or recording the mic. cava
+    // (below) captures audio too, so it's ignored or it would light this up
+    // permanently.
+    "privacy": {
+        "icon-size": 14,
+        "icon-spacing": 4,
+        "transition-duration": 250,
+        "modules": [
+            { "type": "screenshare", "tooltip": true, "tooltip-icon-size": 24 },
+            { "type": "audio-in", "tooltip": true, "tooltip-icon-size": 24 }
+        ],
+        "ignore": [
+            { "type": "audio-in", "name": "cava" }
+        ]
+    },
+
+    "mpris": {
+        "format": "{status_icon}  {dynamic}",
+        "format-paused": "{status_icon}  <i>{dynamic}</i>",
+        "dynamic-order": ["title", "artist"],
+        "dynamic-len": 40,
+        "status-icons": {
+            "playing": "",
+            "paused": ""
+        },
+        "tooltip-format": "{player}: {title} - {artist}"
+    },
+
+    "cava": {
+        "framerate": 30,
+        "autosens": 1,
+        "bars": 12,
+        "lower_cutoff_freq": 50,
+        "higher_cutoff_freq": 10000,
+        "method": "pipewire",
+        "source": "auto",
+        "stereo": true,
+        "bar_delimiter": 0,
+        "noise_reduction": 0.77,
+        "input_delay": 2,
+        "hide_on_silence": true,
+        "format-icons": ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]
+    },
+
+    // Do-not-disturb: click pauses/resumes dunst. Paused notifications are
+    // queued, not dropped, and the count shows while paused. The interval
+    // catches pauses made outside the bar (e.g. `dunstctl set-paused`).
+    "custom/dnd": {
+        "exec": "waybar-dnd",
+        "on-click": "waybar-dnd toggle",
+        "return-type": "json",
+        "interval": 5,
+        "tooltip": true
+    }
+}

@@ -10,11 +10,12 @@ confirm-close-surface = false
 cursor-style = block
 cursor-style-blink = true
 
-# Tokyo Night Night Palette (Bold & High Contrast)
+# Tokyo Night Night palette; mirrored in the TTY's console.colors
+# (modules/core/default.nix)
 background = 0a0b10
-foreground = ffffff
+foreground = c0caf5
 selection-background = 3b3d4d
-selection-foreground = ffffff
+selection-foreground = c0caf5
 cursor-color = 7aa2f7
 
 palette = 0=#15161e
@@ -23,12 +24,12 @@ palette = 1=#f7768e
 palette = 9=#f7768e
 palette = 2=#9ece6a
 palette = 10=#9ece6a
-palette = 3=#9ece6a
-palette = 11=#9ece6a
+palette = 3=#e0af68
+palette = 11=#e0af68
 palette = 4=#7aa2f7
 palette = 12=#7aa2f7
-palette = 5=#ff9e64
-palette = 13=#ff9e64
+palette = 5=#bb9af7
+palette = 13=#bb9af7
 palette = 6=#7dcfff
 palette = 14=#7dcfff
 palette = 7=#a9b1d6

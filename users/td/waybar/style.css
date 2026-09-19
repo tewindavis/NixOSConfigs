@@ -21,7 +21,8 @@ window#waybar {
     border-bottom: 2px solid #7aa2f7;
 }
 
-#clock, #cpu, #memory, #battery, #bluetooth, #network, #pulseaudio, #tray, #idle_inhibitor, #custom-power {
+#clock, #cpu, #memory, #battery, #bluetooth, #network, #pulseaudio, #tray, #idle_inhibitor, #custom-power,
+#privacy, #mpris, #cava, #custom-dnd {
     padding: 0 10px;
     margin: 4px 4px;
     border-radius: 8px;
@@ -90,4 +91,29 @@ window#waybar {
 
 #custom-hyprsunset.night {
     color: #ff9e64; /* Orange - warm filter active, matches clock/weather */
+}
+
+/* Only visible while the screen or mic is in use, so it should grab attention */
+#privacy {
+    background: rgba(247, 118, 142, 0.9); /* Red, matches dunst critical */
+}
+
+#mpris {
+    color: #9ece6a; /* Green */
+}
+
+#mpris.paused {
+    color: #c0caf5;
+}
+
+#cava {
+    color: #7aa2f7; /* Blue */
+}
+
+#custom-dnd {
+    color: #c0caf5;
+}
+
+#custom-dnd.paused {
+    color: #f7768e; /* Red - notifications held back, matches idle_inhibitor.activated */
 }

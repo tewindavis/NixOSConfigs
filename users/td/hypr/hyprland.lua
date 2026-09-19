@@ -84,10 +84,21 @@ hl.config({
     rounding = 6,
     active_opacity = 0.9,
     inactive_opacity = 0.8,
+    -- Strong enough that the 0.9/0.8 opacity above reads as frosted glass
+    -- rather than the wallpaper showing through sharp.
     blur = {
       enabled = true,
-      size = 1,
-      passes = 1,
+      size = 6,
+      passes = 3,
+      vibrancy = 0.17,
+      noise = 0.02,
+    },
+    -- Same near-black as waybar's bar background and Ghostty's background.
+    shadow = {
+      enabled = true,
+      range = 20,
+      render_power = 3,
+      color = "rgba(0a0b10cc)",
     },
   },
 
@@ -108,10 +119,30 @@ hl.animation({ leaf = "windows", enabled = true, speed = 7, bezier = "myBezier" 
 hl.animation({ leaf = "windowsOut", enabled = true, speed = 7, bezier = "default", style = "popin 80%" })
 hl.animation({ leaf = "border", enabled = true, speed = 10, bezier = "default" })
 hl.animation({ leaf = "fade", enabled = true, speed = 7, bezier = "default" })
-hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "default" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "default", style = "slidefade 20%" })
+-- The scratchpad (SUPER+S) lives on a special workspace; slidevert makes it
+-- drop in from the top like a Quake console.
+hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "myBezier", style = "slidevert" })
+-- Slowly spins the active border's blue->green gradient. Keeps the compositor
+-- redrawing the focused border continuously, so it costs some battery.
+hl.animation({ leaf = "borderangle", enabled = true, speed = 100, bezier = "linear", style = "loop" })
 
 -- Gestures
 hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
+
+-- Layer rules: window blur doesn't reach layer-shell surfaces, so the bar,
+-- launcher, notifications and OSD each need their own. Namespaces confirmed
+-- via `hyprctl layers` with each one open. ignore_alpha skips fully
+-- transparent pixels (bar margins, rounded corners) so only the visible
+-- panel gets blurred.
+for _, ns in ipairs({ "waybar", "wofi", "notifications", "swayosd" }) do
+  hl.layer_rule({
+    name = "blur-" .. ns,
+    match = { namespace = "^(" .. ns .. ")$" },
+    blur = true,
+    ignore_alpha = 0.1,
+  })
+end
 
 -- Window Rules
 hl.window_rule({

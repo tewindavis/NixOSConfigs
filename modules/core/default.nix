@@ -50,6 +50,49 @@
   services.xserver.xkb.options = "ctrl:nocaps";
   console.useXkbConfig = true;
 
+  # TTY palette: Ghostty's Tokyo Night ANSI colors (users/td/ghostty/config),
+  # in the same 0-15 order. tuigreet's --theme color names resolve through
+  # this too.
+  console.colors = [
+    "15161e"
+    "f7768e"
+    "9ece6a"
+    "e0af68"
+    "7aa2f7"
+    "bb9af7"
+    "7dcfff"
+    "a9b1d6"
+    "414868"
+    "f7768e"
+    "9ece6a"
+    "e0af68"
+    "7aa2f7"
+    "bb9af7"
+    "7dcfff"
+    "c0caf5"
+  ];
+
+  # Boot splash + silent boot. Catppuccin Mocha is the closest packaged
+  # theme to Tokyo Night, and matches the catppuccin cursor in home.nix.
+  # The systemd initrd is what lets plymouth draw the LUKS passphrase prompt
+  # on framework instead of dropping back to text for it; its emergency
+  # shell stays off (boot.initrd.systemd.emergencyAccess defaults to false).
+  boot.plymouth = {
+    enable = true;
+    theme = "catppuccin-mocha";
+    themePackages = [ (pkgs.catppuccin-plymouth.override { variant = "mocha"; }) ];
+  };
+  boot.initrd.systemd.enable = true;
+  boot.consoleLogLevel = 3;
+  boot.initrd.verbose = false;
+  boot.kernelParams = [
+    "quiet"
+    "splash"
+    "udev.log_level=3"
+    "rd.udev.log_level=3"
+    "systemd.show_status=auto"
+  ];
+
   # Hardware/Firmware
   hardware.enableRedistributableFirmware = true;
 

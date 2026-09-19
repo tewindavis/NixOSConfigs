@@ -33,12 +33,17 @@ Hardened by default on every host. The full reference, with the cost of each cho
 
 The desktop environment is built on the **Tokyo Night (Night)** color palette, optimized for high contrast and vibrant visual energy without pastel washout.
 
-*   **Vibrant Glass:** Windows default to a "True Glass" aesthetic (90% active / 80% inactive opacity) with absolute minimum blur (1/1) for maximum clarity. Two exceptions: Ghostty is a touch more translucent (its window rule multiplies on top of that, plus its own background opacity), and Brave is forced fully opaque.
+*   **Vibrant Glass:** Windows default to a frosted-glass aesthetic (90% active / 80% inactive opacity over a 6-size, 3-pass blur with a touch of vibrancy and noise), with soft shadows. Waybar, wofi, dunst and the swayosd OSD are blurred too, via layer rules. Two exceptions: Ghostty is a touch more translucent (its window rule multiplies on top of that, plus its own background opacity), and Brave is forced fully opaque.
 *   **Complementary Spectrum:** Status modules and UI accents use a bold spectrum: **Blue** (#7aa2f7) for identity, **Green** (#9ece6a) for location, and **Orange** (#ff9e64) for status.
 *   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first login (it runs at every Hyprland start but skips a file that's already there); drop in more images and `cycle-wallpaper` (`SUPER + W`) will pick a random one from the folder each time.
 *   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, and Fingerprint-or-Password prompt), `dunst`, the `swayosd` volume/brightness OSD, and the `wlogout` power menu are all styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors, including a recolored `wlogout` icon set (blue lock/logout, green suspend/hibernate, orange reboot, red shutdown).
 *   **Idle Inhibitor:** A clickable Waybar toggle (right of the volume module) suspends `hypridle`'s auto-lock/DPMS while active — turns red when suppressing.
 *   **Persistent Workspaces:** Waybar always shows workspaces 1-9, even when empty, so the active one is never ambiguous.
+*   **A Bar Per Monitor:** The laptop panel gets a battery-focused bar, the portrait Dell a slim one (workspaces + clock), and everything else the full bar, which adds CPU/memory, now-playing media and an inline `cava` audio visualizer.
+*   **Privacy & Do Not Disturb:** A red Waybar indicator appears while the screen is being shared or the mic is recording. A bell toggle pauses notifications and shows how many are queued.
+*   **Motion:** Workspaces slide-and-fade, the scratchpad drops down from the top, and the active border's blue→green gradient slowly rotates. `SUPER + W` wallpapers grow outward from the cursor.
+*   **Boot to Desktop:** A Plymouth splash (Catppuccin Mocha) with silent boot, including the LUKS prompt on framework, then a Tokyo Night–themed `tuigreet`. The TTY palette matches Ghostty's.
+*   **Themed CLI:** `bat`, `fzf`, `bottom`, `zathura`, `eza` (via `vivid`) and the `fastfetch` splash all use the same palette.
 *   **Weather:** A Waybar module next to the clock shows current conditions via `wttr.in`, with a graceful "N/A" fallback if the network or upstream service is unavailable.
 *   **Auto Blue-Light Filter:** `hyprsunset` runs as a daemon on login and switches itself between neutral (7:30am) and warm 2450K (8:00pm) — f.lux/redshift-style — per the schedule in `hyprsunset.conf`. A Waybar toggle (sun/moon icon, next to the idle inhibitor) shows and flips the current state; `SUPER + R`/`SUPER + SHIFT + R` do the same from the keyboard. Any of the three count as a manual override until the next scheduled switch.
 

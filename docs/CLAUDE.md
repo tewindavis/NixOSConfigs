@@ -22,7 +22,8 @@ bend the code to match it.
 | Which hosts can decrypt secrets | `.sops.yaml` |
 | Which ports each host opens | evaluated `networking.firewall` (command in `docs/security.md`) |
 | Formatting/lint rules | `treefmt.nix` |
-| Waybar modules and click actions | `users/td/waybar/config.jsonc` |
+| Waybar module definitions and click actions | `users/td/waybar/modules.jsonc` |
+| Which waybar modules appear on which output | `users/td/waybar/config.jsonc` |
 
 ## Rules
 

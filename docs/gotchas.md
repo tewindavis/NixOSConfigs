@@ -45,6 +45,33 @@ these from scratch.
   it stays `0` until bolt approves the dock, which is why framework enables
   `services.hardware.bolt`.
 
+- **There is no workspace-overview plugin for 0.56.** hyprexpo was
+  dropped from `hyprwm/hyprland-plugins` by its `v0.56.0` tag (the README's
+  Nix example still names it), and nixpkgs' `hyprlandPlugins.hyprspace`
+  fails to compile against 0.56 (`AnimationManager.hpp` moved). Plugins
+  are built against Hyprland's internal headers, so check that one builds
+  (`nix build .#nixosConfigurations.framework.pkgs.hyprlandPlugins.<name>`)
+  before wiring it in.
+- **Layer-shell surfaces need their own blur.** `decoration.blur` only
+  covers windows; waybar, wofi, dunst and swayosd are blurred by the
+  `hl.layer_rule` loop in `hyprland.lua`. Namespaces aren't the binary
+  names (dunst's is `notifications`); read them from `hyprctl layers` with
+  the surface open. `hl.layer_rule`/`hl.animation` reject unknown fields,
+  leaves, styles and bezier names with an error, so `hyprctl eval` is a
+  cheap way to validate one before editing.
+
+## Waybar
+
+- **Match the laptop panel by connector name, not description.** waybar
+  compares `output` against the xdg-output description, which is
+  `make model serial`. The Framework panel has no serial, so it comes out
+  `"BOE 0x0BCA "` with a trailing space, and `"BOE 0x0BCA"` silently fails
+  to match (the bar just falls through to the catch-all). The Dells report
+  serials, so their descriptions have no trailing space.
+- **The privacy module sees cava as a microphone user.** Waybar's `cava`
+  module captures audio through a PipeWire stream with `node.name = cava`,
+  so `privacy` ignores that name for `audio-in` (`modules.jsonc`).
+
 ## hyprsunset
 
 - **No IPC query for current state.** There's no way to ask the daemon

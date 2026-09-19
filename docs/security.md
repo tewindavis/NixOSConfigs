@@ -76,6 +76,11 @@ What closing everything costs on framework:
   the editor was a tampering path. dl-prototype's and utm-vm's roots are not
   encrypted, so on those hosts the disabled editor is the only barrier
   between the boot menu and a root shell.
+- All hosts use the systemd initrd (`boot.initrd.systemd.enable`, for the
+  plymouth splash in `modules/core/default.nix`). Its emergency shell stays
+  off: `boot.initrd.systemd.emergencyAccess` is left at its default,
+  `false`, so a failed boot doesn't drop to a root shell in the initrd. Setting
+  it to `true` would make that another path to root on the unencrypted hosts.
 
 ## Local authentication (framework)
 

@@ -3,7 +3,8 @@
 Source files: `users/td/hypr/hyprland.lua` (binds, autostart, window rules,
 per-host monitor config), `users/td/home.nix` (all custom shell-script
 packages, dunst/hyprlock/hypridle config, theming), and
-`users/td/waybar/` (bar config + stylesheet, linked in by `home.nix`). A
+`users/td/waybar/` (per-output bar layout in `config.jsonc`, shared module
+definitions in `modules.jsonc`, stylesheet; all linked in by `home.nix`). A
 single `hyprland.lua` source file is shared, unmodified, across all three
 hosts — `home.nix` substitutes `@HOSTNAME@` into it at build time, so
 host-specific behavior lives in `if "@HOSTNAME@" == "..."` branches inside
@@ -50,9 +51,26 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 | `SUPER+LMB` / `SUPER+RMB` | Drag to move / resize |
 | Volume/brightness/mute keys | `swayosd-client` (shows OSD + applies change; `locked` so they work on the lock screen) |
 
+## Waybar bars (one per output)
+
+`waybar/config.jsonc` is an array of bars, each with its own `output` and
+module lists. All of them `include` `waybar/modules.jsonc`, where every
+module is defined once. Read `config.jsonc` for which bar shows what. How
+outputs are matched:
+
+- **Laptop panel:** by connector name, `eDP-1`. Its description can't be
+  used because the panel reports no serial, so waybar sees it as
+  `"BOE 0x0BCA "` with a trailing space.
+- **Dells:** by description (`make model serial`), like the `desc:` monitor
+  rules in `hyprland.lua`, because `DP-N` names follow the dock port.
+- **The last bar:** excludes the named outputs and ends with `"*"`, so it
+  covers the landscape Dell, dl-prototype, utm-vm and any unknown display.
+  In waybar's `output` arrays, entries are checked in order, and a list of
+  nothing but `!` exclusions matches nothing.
+
 ## Waybar click actions
 
-From `waybar/config.jsonc`, which is the source of truth:
+From `waybar/modules.jsonc`, which is the source of truth:
 
 | Module | Click |
 |---|---|
@@ -63,6 +81,8 @@ From `waybar/config.jsonc`, which is the source of truth:
 | `custom/power-profile` | Cycle power profile |
 | `custom/hyprsunset` | Toggle blue-light filter |
 | `custom/power` | `wlogout` |
+| `custom/dnd` | Pause/resume dunst (do not disturb) |
+| `mpris` | Built-in defaults: play/pause, middle = previous, right = next |
 | `idle_inhibitor` | Toggle idle inhibit (built-in) |
 | `hyprland/workspaces` | Activate workspace (scroll disabled) |
 
@@ -71,12 +91,13 @@ From `waybar/config.jsonc`, which is the source of truth:
 | Script | Bound to | What it does |
 |---|---|---|
 | `setup-wallpapers` | autostart | Downloads a starter wallpaper into `~/Pictures/Wallpapers` on first run (idempotent — skips if already present). |
-| `cycle-wallpaper` | `SUPER+W`, autostart | Picks a random image from `~/Pictures/Wallpapers` via `awww img`. |
+| `cycle-wallpaper` | `SUPER+W`, autostart | Picks a random image from `~/Pictures/Wallpapers` via `awww img`, with a `grow` transition at 120fps centered on the cursor. awww has no cursor alias, so the script converts `hyprctl cursorpos` into a fraction of the monitor under it; falls back to `center`. |
 | `toggle-blackout` | `SUPER+SHIFT+W` | Solid-black background toggle for glare relief; uses `awww clear`/`awww restore`, state tracked by a `/tmp` sentinel file (no wallpaper path bookkeeping needed). |
 | `toggle-scratchpad` | `SUPER+S` | Dropdown terminal. First call spawns a ghostty tagged `--class=com.td.scratchpad` into the `special:scratchpad` workspace (matched by the `scratchpad-term` window rule in `hyprland.lua`); later calls just toggle visibility. |
 | `waybar-weather` | waybar module | wttr.in one-liner as JSON for waybar's `custom` module type; falls back to `"N/A"` on any fetch failure. |
 | `waybar-power-profile` | waybar module (click = cycle) | Reads/cycles `power-profiles-daemon`'s profile. Only meaningful on `framework` (see `docs/hosts.md`) — reports "unavailable" elsewhere. |
 | `waybar-hyprsunset` | waybar module (click = toggle), `SUPER+R`/`SUPER+SHIFT+R` | Blue-light filter widget. Per `docs/gotchas.md`, this is the *only* correct way to drive hyprsunset once the daemon is already running. |
+| `waybar-dnd` | waybar module (click = toggle) | Do not disturb: `dunstctl set-paused toggle`. While paused dunst queues notifications rather than dropping them, and the module shows the queued count. |
 | `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `/tmp`, saves timestamped mp4 to `~/Videos/Recordings`, dunst toast on start/stop. |
 
 ## hyprsunset day/night schedule
@@ -99,6 +120,11 @@ daemon directly.
 - `scratchpad-term` — floats the scratchpad terminal, sizes it `1400 900`,
   and puts it on `special:scratchpad`.
 
+Layer rules: `blur-<namespace>` for `waybar`, `wofi`, `notifications`
+(dunst) and `swayosd`. Window blur doesn't apply to layer-shell surfaces.
+`ignore_alpha = 0.1` keeps fully transparent margins and corners unblurred.
+List namespaces with `hyprctl layers` while each surface is open.
+
 ## Theming
 
 Tokyo Night palette, as actually used across `waybar/style.css`,
@@ -119,8 +145,20 @@ Tokyo Night palette, as actually used across `waybar/style.css`,
 
 Reuse these exact values when adding a UI surface rather than introducing new
 ones. Of the stylesheets above, the last two appear only in waybar's, as
-per-module accents, and aren't part of the core four. Ghostty's ANSI palette
-(`ghostty/config`) also uses the cyan.
+per-module accents, and aren't part of the core four.
+
+The 16-color ANSI palette is defined twice with the same values: Ghostty's
+(`ghostty/config`) and the TTY's `console.colors` (`modules/core/default.nix`).
+It uses the colors above plus Tokyo Night yellow `#e0af68`, which none of
+the stylesheets use. tuigreet's
+`--theme` color names resolve through `console.colors`.
+
+Terminal tools themed in `home.nix`: `bat` and `zathura` use
+tokyonight.nvim's own exports (from `pkgs.vimPlugins.tokyonight-nvim`);
+`fzf` and `bottom` are set by hand from the palette above; `eza` reads
+`LS_COLORS` from `vivid generate tokyonight-night`, generated at build time.
+fastfetch (`users/td/fastfetch/config.jsonc`) uses ANSI color names, so it
+follows Ghostty's palette.
 
 GTK/Qt/dconf theming (`gtk`, `qt`, `dconf.settings` in `home.nix`) is the
 declarative source of truth for dark mode + accent color — don't add

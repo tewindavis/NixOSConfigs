@@ -1,0 +1,30 @@
+// Shell-start splash (see programs.zsh.initContent in home.nix). Colors are
+// ANSI names, so they come from Ghostty's Tokyo Night palette rather than
+// being hardcoded here. Icons are Nerd Font code points, written as \u
+// escapes so they survive editors that drop private-use characters.
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "source": "nixos_small",
+    "color": { "1": "blue", "2": "cyan" },
+    "padding": { "top": 1, "right": 3 }
+  },
+  "display": {
+    "separator": "  ",
+    "color": { "keys": "blue", "title": "blue" }
+  },
+  "modules": [
+    "title",
+    { "type": "os", "key": " os", "keyColor": "blue" },
+    { "type": "kernel", "key": " kernel", "keyColor": "blue" },
+    { "type": "packages", "key": " pkgs", "keyColor": "blue" },
+    { "type": "wm", "key": " wm", "keyColor": "green" },
+    { "type": "terminal", "key": " term", "keyColor": "green" },
+    { "type": "shell", "key": " shell", "keyColor": "green" },
+    { "type": "cpu", "key": " cpu", "keyColor": "magenta", "format": "{name}" },
+    { "type": "memory", "key": " mem", "keyColor": "magenta" },
+    { "type": "uptime", "key": " up", "keyColor": "yellow" },
+    "break",
+    { "type": "colors", "symbol": "circle" }
+  ]
+}

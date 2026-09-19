@@ -47,12 +47,31 @@ let
     download_wall "https://hypr.land/imgs/blog/contestWinners/Kath.png" "hyprchan-kath.png"
   '';
 
-  # Wallpaper Cycling Script
+  # Wallpaper Cycling Script. The new image grows out from the cursor: awww
+  # has no "cursor" alias for --transition-pos, but takes fractional
+  # positions (measured from the bottom-left), so this converts Hyprland's
+  # global logical cursor position into a fraction of the monitor under it.
+  # Every output gets the same fraction; on the cursor's own monitor that is
+  # exactly the cursor. Falls back to center if the lookup fails. 120fps to
+  # match the docked Dells' refresh rate.
   cycle-wallpaper = pkgs.writeShellScriptBin "cycle-wallpaper" ''
     WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
     RANDOM_WALL=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \) | ${pkgs.coreutils}/bin/shuf -n 1)
     if [ -n "$RANDOM_WALL" ]; then
-      ${pkgs.awww}/bin/awww img "$RANDOM_WALL" --transition-type wipe --transition-fps 60
+      POS=$(${pkgs.hyprland}/bin/hyprctl monitors -j 2>/dev/null | ${pkgs.jq}/bin/jq -r \
+        --argjson c "$(${pkgs.hyprland}/bin/hyprctl cursorpos -j 2>/dev/null)" '
+        def frac: [., 0.001] | max | [., 0.999] | min | tostring;
+        [ .[]
+          # width/height are physical pixels; x/y and the cursor are logical,
+          # and transforms 1/3 (90/270 degrees) swap the axes.
+          | . as $m
+          | (if .transform % 2 == 1 then [.height, .width] else [.width, .height] end
+             | map(. / $m.scale)) as [$w, $h]
+          | select($c.x >= .x and $c.x < .x + $w and $c.y >= .y and $c.y < .y + $h)
+          | "\(($c.x - .x) / $w | frac),\(1 - ($c.y - .y) / $h | frac)"
+        ] | first // empty' 2>/dev/null)
+      ${pkgs.awww}/bin/awww img "$RANDOM_WALL" --transition-type grow \
+        --transition-pos "''${POS:-center}" --transition-fps 120
     fi
   '';
 
@@ -237,6 +256,33 @@ let
     ${pkgs.jq}/bin/jq -nc --arg text "$icon" --arg tooltip "$tooltip" --arg class "$mode" '{text: $text, tooltip: $tooltip, class: $class}'
   '';
 
+  # Waybar do-not-disturb module: pauses/resumes dunst. While paused dunst
+  # queues notifications instead of dropping them (they all appear on
+  # resume), so the bell shows how many are waiting. `waybar-dnd toggle`
+  # flips it; waybar re-runs the bare form right after a click.
+  waybar-dnd = pkgs.writeShellScriptBin "waybar-dnd" ''
+    DUNSTCTL="${pkgs.dunst}/bin/dunstctl"
+    if [ "$1" = "toggle" ]; then
+      $DUNSTCTL set-paused toggle
+    fi
+    if [ "$($DUNSTCTL is-paused)" = "true" ]; then
+      ${pkgs.jq}/bin/jq -nc --arg n "$($DUNSTCTL count waiting)" \
+        '{text: ("" + (if $n == "0" then "" else " " + $n end)),
+          tooltip: "Do not disturb: on, \($n) queued (click to resume)",
+          class: "paused"}'
+    else
+      ${pkgs.jq}/bin/jq -nc \
+        '{text: "", tooltip: "Do not disturb: off (click to pause notifications)", class: "active"}'
+    fi
+  '';
+
+  # Tokyo Night LS_COLORS for eza (and anything else that reads it), sourced
+  # from zsh's initContent. Generated at build time so shells don't run vivid
+  # on every start.
+  lsColors = pkgs.runCommand "ls-colors-tokyonight-night" { } ''
+    echo "export LS_COLORS='$(${pkgs.vivid}/bin/vivid generate tokyonight-night)'" > $out
+  '';
+
   # Screen recording toggle (SUPER+ALT+R): mirrors the grimblast/swappy
   # screenshot pattern above, but for video. First call starts wf-recorder
   # in the background against the whole output and stashes its PID; second
@@ -276,13 +322,12 @@ in
     waybar-weather
     waybar-power-profile
     waybar-hyprsunset
+    waybar-dnd
     pkgs.power-profiles-daemon # powerprofilesctl CLI, used by waybar-power-profile above
     # Modern CLI
     pkgs.ripgrep
-    pkgs.bat
     pkgs.eza
     pkgs.fd
-    pkgs.bottom
     pkgs.jq # Used by toggle-scratchpad to query hyprctl clients JSON
     pkgs.gh # GitHub CLI, for agentic PR/issue workflows
     pkgs.nh # Nicer nixos-rebuild wrapper (diffed switches, easy GC); reads
@@ -363,7 +408,6 @@ in
     # source app/window closes, which wlroots otherwise drops (autostarted below)
     pkgs.swayosd # Volume/brightness on-screen display
     pkgs.imv # Image viewer, for screenshots/images opened from Thunar
-    pkgs.zathura # PDF viewer, for docs opened from Thunar
     pkgs.mpv # Video/audio player, for media opened from Thunar
     pkgs.wf-recorder # Screen recording backend for toggle-recording (SUPER+ALT+R)
     pkgs.keepassxc # Password manager
@@ -475,6 +519,8 @@ in
 
   # Config Links
   xdg.configFile."waybar/config".source = ./waybar/config.jsonc;
+  # Pulled into every bar in config via "include".
+  xdg.configFile."waybar/modules.jsonc".source = ./waybar/modules.jsonc;
   xdg.configFile."waybar/style.css".source = ./waybar/style.css;
   xdg.configFile."wofi/style.css".source = ./wofi/style.css;
   # No HM module here would actually help: hyprland.nix/hyprland.lua don't
@@ -495,6 +541,7 @@ in
     recursive = true;
   };
   xdg.configFile."ghostty/config".source = ./ghostty/config;
+  xdg.configFile."fastfetch/config.jsonc".source = ./fastfetch/config.jsonc;
   # save_dir matches XDG_SCREENSHOTS_DIR below; show_panel keeps the
   # annotate toolbar open, early_exit closes swappy once you copy/save.
   xdg.configFile."swappy/config".text = ''
@@ -851,7 +898,107 @@ in
   # generated content via a wrapper --cmd flag, so it coexists with our
   # hand-managed init.lua rather than fighting it for the same path.
   programs.neovim.sideloadInitLua = true;
-  programs.fzf.enable = true;
+  programs.fzf = {
+    enable = true;
+    # Tokyo Night, using the repo's palette (see docs/desktop.md) rather than
+    # tokyonight.nvim's fzf extra, which brings in extra colors. bg -1 keeps
+    # Ghostty's translucent background; bg+ is Ghostty's selection color.
+    colors = {
+      fg = "#c0caf5";
+      "fg+" = "#c0caf5";
+      bg = "-1";
+      "bg+" = "#3b3d4d";
+      hl = "#7dcfff";
+      "hl+" = "#7dcfff";
+      info = "#9ece6a";
+      prompt = "#7aa2f7";
+      pointer = "#ff9e64";
+      marker = "#9ece6a";
+      spinner = "#bb9af7";
+      header = "#ff9e64";
+      border = "#7aa2f7";
+    };
+  };
+
+  # `cat` is aliased to bat below. The theme is tokyonight.nvim's own
+  # sublime export, the same colorscheme LazyVim uses.
+  programs.bat = {
+    enable = true;
+    config.theme = "tokyonight_night";
+    themes.tokyonight_night = {
+      src = pkgs.vimPlugins.tokyonight-nvim;
+      file = "extras/sublime/tokyonight_night.tmTheme";
+    };
+  };
+
+  # btm (waybar's cpu/memory click action).
+  programs.bottom = {
+    enable = true;
+    settings.styles = {
+      cpu = {
+        all_entry_color = "#7aa2f7";
+        avg_entry_color = "#ff9e64";
+        cpu_core_colors = [
+          "#7aa2f7"
+          "#9ece6a"
+          "#bb9af7"
+          "#7dcfff"
+          "#ff9e64"
+          "#e0af68"
+          "#f7768e"
+        ];
+      };
+      memory = {
+        ram_color = "#bb9af7"; # Purple, matches waybar's memory module
+        cache_color = "#7dcfff";
+        swap_color = "#ff9e64";
+        gpu_colors = [
+          "#7aa2f7"
+          "#9ece6a"
+          "#ff9e64"
+        ];
+      };
+      network = {
+        rx_color = "#9ece6a";
+        tx_color = "#7aa2f7";
+        rx_total_color = "#9ece6a";
+        tx_total_color = "#7aa2f7";
+      };
+      battery = {
+        high_battery_color = "#9ece6a";
+        medium_battery_color = "#ff9e64";
+        low_battery_color = "#f7768e";
+      };
+      tables.headers = {
+        color = "#7aa2f7";
+        bold = true;
+      };
+      graphs = {
+        graph_color = "#414868";
+        legend_text.color = "#a9b1d6";
+      };
+      widgets = {
+        border_color = "#414868";
+        selected_border_color = "#7aa2f7";
+        widget_title.color = "#c0caf5";
+        text.color = "#c0caf5";
+        selected_text = {
+          color = "#1a1b26";
+          bg_color = "#7aa2f7";
+        };
+        disabled_text.color = "#414868";
+      };
+    };
+  };
+
+  # PDF viewer for docs opened from Thunar. tokyonight.nvim's zathura export
+  # themes the UI; recolor also darkens the pages themselves (Ctrl+R toggles
+  # back to the original colors).
+  programs.zathura = {
+    enable = true;
+    options.recolor = true;
+    extraConfig = "include ${pkgs.vimPlugins.tokyonight-nvim}/extras/zathura/tokyonight_night.zathurarc";
+  };
   programs.zoxide.enable = true;
   programs.direnv = {
     enable = true;
@@ -881,6 +1028,7 @@ in
     # Themed system-info splash on shell start; TERM=dumb guard matches the
     # starship one above (VS Code's shell integration, CI, etc).
     initContent = lib.mkAfter ''
+      source ${lsColors}
       if [[ $TERM != "dumb" ]]; then
         fastfetch
       fi

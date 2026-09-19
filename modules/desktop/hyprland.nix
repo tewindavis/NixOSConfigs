@@ -6,12 +6,14 @@
     enable = true;
   };
 
-  # Log in straight to Hyprland via a TUI greeter
+  # Log in straight to Hyprland via a TUI greeter. --theme takes ANSI color
+  # names, which resolve through console.colors (modules/core/default.nix),
+  # so "blue" here is Tokyo Night's #7aa2f7.
   services.greetd = {
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd start-hyprland";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --asterisks --theme 'border=blue;title=blue;text=white;greet=blue;prompt=green;input=white;time=yellow;action=blue;button=yellow;container=black' --cmd start-hyprland";
       };
     };
   };
