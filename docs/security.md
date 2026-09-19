@@ -71,6 +71,8 @@ What closing everything costs on framework:
   LAN; on utm-vm it depends on UTM's network mode.
 - Prometheus's remote-write receiver is on (Telegraf pushes into it), but
   only on `127.0.0.1`, so only local processes can write.
+- `sb3_prometheus.PrometheusCallback` serves a training process's metrics
+  on `127.0.0.1:9435` only (dl-prototype).
 
 ## Script state
 

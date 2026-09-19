@@ -29,14 +29,35 @@
         # against the *unpatched* gymnasium via its propagatedBuildInputs --
         # a sibling override wouldn't retroactively fix that reference.
         patchedGymnasium = ps.gymnasium.overridePythonAttrs { doCheck = false; };
+        stableBaselines3 =
+          (ps.stable-baselines3.override { gymnasium = patchedGymnasium; }).overridePythonAttrs
+            {
+              doCheck = false;
+            };
+        # PrometheusCallback for model.learn(): exports everything SB3 logs
+        # to 127.0.0.1:9435, scraped by training-metrics.nix. Usage is in
+        # the module's docstring.
+        sb3Prometheus = ps.buildPythonPackage {
+          pname = "sb3-prometheus";
+          version = "0.1.0";
+          pyproject = true;
+          src = ./sb3_prometheus;
+          build-system = [ ps.setuptools ];
+          dependencies = [
+            ps.prometheus-client
+            stableBaselines3
+          ];
+          pythonImportsCheck = [ "sb3_prometheus" ];
+        };
       in
       [
-        # doCheck disabled here too: stable-baselines3's own
-        # nativeCheckInputs separately pull in tensorboard -> tensorflow.
-        ((ps.stable-baselines3.override { gymnasium = patchedGymnasium; }).overridePythonAttrs {
-          doCheck = false;
-        })
+        # doCheck disabled here too (in stableBaselines3 above):
+        # stable-baselines3's own nativeCheckInputs separately pull in
+        # tensorboard -> tensorflow.
+        stableBaselines3
         patchedGymnasium
+        sb3Prometheus
+        ps.prometheus-client
         ps.scikit-learn
       ]
     ))

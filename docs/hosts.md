@@ -81,8 +81,39 @@ hardware to manage.
   `grafana-tunnel dl-prototype`; admin password in
   `/var/lib/grafana-secrets/admin_password`), fed by `node_exporter`, the
   NVIDIA GPU exporter and Liftoff telemetry on UDP 9001.
+- Training runs: pass `sb3_prometheus.PrometheusCallback(run="name")` to
+  `model.learn(...)` (package in `modules/dev/rl-binary.nix`). Everything
+  stable-baselines3 logs (reward, episode length, fps, losses) is served on
+  `127.0.0.1:9435` and charted in Grafana's *Training run* dashboard next to
+  GPU use.
 - Root filesystem is not encrypted. Port 22 (key-only), Syncthing, mDNS and
   UDP 9001 (Liftoff telemetry) are open; see `docs/security.md`.
+
+### First deploy checklist
+
+The config is complete except for the hardware file, so bringing the
+machine up is mostly ordering:
+
+1. Install NixOS from the installer ISO (partitioning, and whether to
+   encrypt the root: framework does, this host's config doesn't assume it).
+2. On the machine, run `nixos-generate-config --show-hardware-config` and
+   replace the placeholder `hosts/dl-prototype/hardware-configuration.nix`
+   with its output. The placeholder's all-zero root UUID won't boot.
+3. Check the GPU generation before the first switch: `open = false` in
+   `modules/hardware/nvidia.nix` is the proprietary module; the open one is
+   an option only on Turing (RTX 20) or newer. See `docs/gotchas.md`.
+4. Deploy with the explicit attr: `sudo nixos-rebuild switch --flake
+   .#dl-prototype`. SSH comes up key-only with `td`'s key from
+   `users/td/nixos.nix`.
+5. If it will hold secrets, enroll it in sops first (`docs/secrets.md`,
+   "Enroll a new host"), including `sops updatekeys`. Nothing here needs a
+   secret yet: Grafana generates its own on first start.
+6. Check the monitoring came up: `systemctl status prometheus grafana
+   grafana-secrets prometheus-node-exporter prometheus-nvidia-gpu-exporter
+   telegraf`, then from the laptop `grafana-tunnel dl-prototype` and log in
+   as `admin` with `sudo cat /var/lib/grafana-secrets/admin_password`.
+7. Pair Syncthing devices in its GUI (devices and folders are GUI-managed,
+   see `docs/gotchas.md`).
 
 ## utm-vm
 

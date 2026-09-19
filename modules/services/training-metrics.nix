@@ -19,6 +19,10 @@ let
       '';
     }
     {
+      name = "training-run.json";
+      path = ./training/dashboards/training-run.json;
+    }
+    {
       # grafana.com "Node Exporter Full" (id 1860), pinned by revision and
       # hash. Its ${ds_prometheus} is a data-source picker variable, which
       # works as provisioned.
@@ -58,6 +62,13 @@ in
         job_name = "nvidia-gpu";
         scrape_interval = "5s";
         static_configs = [ { targets = [ "127.0.0.1:${toString exporters.nvidia-gpu.port}" ]; } ];
+      }
+      {
+        # sb3_prometheus.PrometheusCallback (modules/dev/rl-binary.nix) in a
+        # running training process. Down between runs, which is expected.
+        job_name = "sb3";
+        scrape_interval = "5s";
+        static_configs = [ { targets = [ "127.0.0.1:9435" ]; } ];
       }
     ];
   };

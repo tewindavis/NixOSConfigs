@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sb3-prometheus"
+version = "0.1.0"
+description = "Export stable-baselines3 training stats to Prometheus"
+
+[tool.setuptools]
+py-modules = ["sb3_prometheus"]
