@@ -9,6 +9,8 @@
     ../../modules/hardware/bluetooth.nix
     ../../modules/services/vpn.nix
     ../../modules/services/syncthing.nix
+    ../../modules/services/training-metrics.nix
+    ../../modules/services/liftoff-telemetry.nix
     ../../modules/dev/rl-binary.nix
     ../../users/td/nixos.nix
   ];

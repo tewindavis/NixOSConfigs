@@ -15,6 +15,11 @@ assuming a module applies everywhere.
 | `modules/hardware/nvidia.nix` | — | ✓ | — |
 | `modules/hardware/utm.nix` (QEMU/Spice guest) | — | — | ✓ |
 | `modules/dev/rl-binary.nix` (ghidra/radare2/gdb + RL Python) | — | ✓ | — |
+| `modules/services/training-metrics.nix` (node + NVIDIA GPU exporters, training dashboards; imports `monitoring.nix`) | — | ✓ | — |
+| `modules/services/liftoff-telemetry.nix` (Liftoff UDP telemetry → Telegraf → Prometheus, dashboard; imports `monitoring.nix`) | — | ✓ | ✓ |
+
+`modules/services/monitoring.nix` (local-only Prometheus + Grafana) isn't
+imported by hosts directly; the two modules above pull it in.
 
 Bluetooth is skipped on `utm-vm` because it's a VM with no Bluetooth
 hardware to manage.
@@ -72,8 +77,12 @@ hardware to manage.
   `doCheck = false` — see `docs/gotchas.md`).
 - Not yet sops-enrolled — see `docs/secrets.md` before declaring any
   `sops.secrets.*` here.
-- Root filesystem is not encrypted. Port 22 (key-only), Syncthing and mDNS
-  are open; see `docs/security.md`.
+- Monitoring: Prometheus and Grafana on 127.0.0.1 (view with
+  `grafana-tunnel dl-prototype`; admin password in
+  `/var/lib/grafana-secrets/admin_password`), fed by `node_exporter`, the
+  NVIDIA GPU exporter and Liftoff telemetry on UDP 9001.
+- Root filesystem is not encrypted. Port 22 (key-only), Syncthing, mDNS and
+  UDP 9001 (Liftoff telemetry) are open; see `docs/security.md`.
 
 ## utm-vm
 
@@ -90,5 +99,9 @@ hardware to manage.
   driver.
 - No bluetooth, no fingerprint, no NVIDIA — smallest hardware surface of the
   three.
-- Root filesystem is not encrypted. Port 22 (key-only), Syncthing and mDNS
-  are open; see `docs/security.md`.
+- Liftoff telemetry: the game on the Mac sends to this VM's UDP 9001;
+  view the dashboard with `grafana-tunnel utm-nixos` (Prometheus and
+  Grafana on 127.0.0.1; admin password in
+  `/var/lib/grafana-secrets/admin_password`).
+- Root filesystem is not encrypted. Port 22 (key-only), Syncthing, mDNS and
+  UDP 9001 (Liftoff telemetry) are open; see `docs/security.md`.

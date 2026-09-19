@@ -561,6 +561,17 @@ let
     done
   '';
 
+  # Opens Grafana on a monitoring host (dl-prototype, utm-nixos) through an
+  # SSH tunnel: Grafana listens only on that host's 127.0.0.1
+  # (modules/services/monitoring.nix). Ctrl+C closes the tunnel.
+  grafana-tunnel = pkgs.writeShellScriptBin "grafana-tunnel" ''
+    host="''${1:?usage: grafana-tunnel <host> [local-port]}"
+    port="''${2:-3000}"
+    echo "Grafana on $host -> http://localhost:$port (Ctrl+C to close)"
+    (sleep 2 && ${pkgs.xdg-utils}/bin/xdg-open "http://localhost:$port") &
+    exec ssh -N -L "$port:localhost:3000" "$host"
+  '';
+
   # Screen recording toggle (SUPER+ALT+R): mirrors the grimblast/swappy
   # screenshot pattern above, but for video. First call starts wf-recorder
   # in the background against the whole output and stashes its PID; second
@@ -601,6 +612,7 @@ in
     waybar-power-profile
     waybar-hyprsunset
     waybar-cava
+    grafana-tunnel
     pkgs.power-profiles-daemon # powerprofilesctl CLI, used by waybar-power-profile above
     # Modern CLI
     pkgs.ripgrep

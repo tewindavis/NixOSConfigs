@@ -9,7 +9,7 @@ costs. The code is the authority. Where a mechanism is already explained in
 | | framework | dl-prototype | utm-vm |
 |---|---|---|---|
 | TCP open | none | 22, 22000 | 22, 22000 |
-| UDP open | none | 5353, 21027, 22000 | 5353, 21027, 22000 |
+| UDP open | none | 5353, 9001, 21027, 22000 | 5353, 9001, 21027, 22000 |
 | sshd listens on | `127.0.0.1`, `::1` | all interfaces | all interfaces |
 
 Regenerate the port rows with:
@@ -20,8 +20,9 @@ nix eval --json .#nixosConfigurations.<host>.config.networking.firewall \
 ```
 
 The ports come from `services.openssh.openFirewall` (22),
-`services.syncthing.openDefaultPorts` (22000, 21027) and
-`services.avahi.openFirewall` (5353). The syncthing and avahi options are
+`services.syncthing.openDefaultPorts` (22000, 21027),
+`services.avahi.openFirewall` (5353) and `modules/services/liftoff-telemetry.nix`
+(9001: Telegraf receiving Liftoff telemetry). The syncthing and avahi options are
 `mkDefault true` in their modules so that a host can turn them off.
 
 **framework opens nothing** (`hosts/framework/configuration.nix`). It is the
@@ -52,6 +53,24 @@ What closing everything costs on framework:
   only, so the firewall isn't the only layer. sshd still runs because
   sops-nix decrypts with its host key, `/etc/ssh/ssh_host_ed25519_key` (see
   `docs/secrets.md`). `ssh localhost` works.
+
+## Monitoring (dl-prototype, utm-vm)
+
+- Prometheus, Grafana and the exporters listen on `127.0.0.1` only.
+  Grafana is reached through SSH (`grafana-tunnel <host>`), so its login
+  page is never on the network and SSH keys are the gate.
+- Grafana's admin password and secret key are generated on the host at
+  first start (`grafana-secrets` in `modules/services/monitoring.nix`) into
+  `/var/lib/grafana-secrets` (`0700`, owned by `grafana`). They never enter
+  the repo or the Nix store. These hosts aren't sops recipients.
+- Grafana's usage reporting, update checks and news feed are off.
+- UDP 9001 is open for Liftoff telemetry. Telegraf only accepts exact
+  80-byte packets and decodes them as 20 floats; anything else is dropped.
+  Anyone who can reach the port can write fake telemetry into the charts,
+  nothing more. The port is on every interface, so on dl-prototype it's the
+  LAN; on utm-vm it depends on UTM's network mode.
+- Prometheus's remote-write receiver is on (Telegraf pushes into it), but
+  only on `127.0.0.1`, so only local processes can write.
 
 ## Name resolution and discovery
 

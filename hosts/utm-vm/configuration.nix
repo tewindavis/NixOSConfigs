@@ -8,6 +8,7 @@
     ../../modules/hardware/utm.nix
     ../../modules/services/vpn.nix
     ../../modules/services/syncthing.nix
+    ../../modules/services/liftoff-telemetry.nix
     ../../users/td/nixos.nix
   ];
 

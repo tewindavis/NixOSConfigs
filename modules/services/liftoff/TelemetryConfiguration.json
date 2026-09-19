@@ -1,0 +1,12 @@
+{
+  "EndPoint": "HOST_IP:9001",
+  "StreamFormat": [
+    "Timestamp",
+    "Position",
+    "Attitude",
+    "Velocity",
+    "Gyro",
+    "Input",
+    "Battery"
+  ]
+}

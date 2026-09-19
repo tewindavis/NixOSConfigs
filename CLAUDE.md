@@ -35,7 +35,8 @@ modules/
   desktop/       default.nix   # Thunar, fonts, archive support; imports hyprland.nix
                  hyprland.nix  # greetd/tuigreet, portals, polkit, gnome-keyring
   hardware/      framework.nix, nvidia.nix, utm.nix, bluetooth.nix   # per-host opt-in modules
-  services/      syncthing.nix, vpn.nix
+  services/      syncthing.nix, vpn.nix, monitoring.nix (local Prometheus + Grafana),
+                 training-metrics.nix, liftoff-telemetry.nix (+ liftoff/)   # dl-prototype / utm-vm
   dev/           rl-binary.nix   # ghidra/radare2/gdb + RL Python env, dl-prototype only
 users/td/
   home.nix       # Home Manager: packages, dotfiles, Hyprland/waybar/swaync/etc config, shell scripts
