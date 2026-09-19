@@ -6,8 +6,8 @@
 // so waybar sees its description as "BOE 0x0BCA " with a trailing space,
 // which is why it isn't matched that way.
 [
-    // framework's laptop panel: battery-focused, no cpu/memory polling,
-    // visualizer or media.
+    // framework's laptop panel: battery-focused, so no cpu/memory polling.
+    // cava idles (no FFT, slower polling) and hides after 5s of silence.
     {
         "layer": "top",
         "position": "top",
@@ -19,7 +19,7 @@
         "include": "~/.config/waybar/modules.jsonc",
         "output": "eDP-1",
         "modules-left": ["hyprland/workspaces", "hyprland/window"],
-        "modules-center": ["clock", "custom/weather"],
+        "modules-center": ["clock", "custom/weather", "mpris", "cava"],
         "modules-right": ["privacy", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "custom/hyprsunset", "custom/dnd", "tray", "custom/power"]
     },
 
