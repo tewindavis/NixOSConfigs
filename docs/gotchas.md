@@ -91,6 +91,19 @@ these from scratch.
 
 ## Other apps
 
+- **tokyonight's yazi theme needs patching for yazi 26.** Its `[filetype]`
+  rules use `{ name = ... }`; yazi 26 wants `url` and rejects the *whole*
+  theme ("at least one of `url` or `mime` must be specified"), falling back
+  to its preset. `home.nix` rewrites the key with `sed` when linking it.
+- **`mpvpaper` doesn't show up as `mpvpaper`.** The Nix wrapper's process is
+  `.mpvpaper-wrapped`, truncated to `.mpvpaper-wrapp` in `comm`, so
+  `pgrep -x mpvpaper` finds nothing even while videos play. Use
+  `ps -eo comm= | grep mpvpaper`, or `wallpaper-video`'s own PID files.
+- **swaync scripts run during do-not-disturb,** and a script that exits
+  non-zero makes swaync post a "script failed" notification, which runs
+  the scripts again. `notify-sound` checks DND itself for normal urgency
+  and always exits 0 so a missing audio device can't loop.
+
 - **delta ignores `git -c` config.** It reads git config from the files on
   disk (libgit2), so `git -c include.path=... diff` changes git but not
   delta's options. To test a delta config, put it where git will find it,

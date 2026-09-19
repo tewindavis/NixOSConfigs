@@ -180,7 +180,8 @@ let
   # a fraction of the monitor under it. 120fps to match the docked Dells.
   cycle-wallpaper = pkgs.writeShellScriptBin "cycle-wallpaper" ''
     WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
-    mapfile -t WALLS < <(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \) | ${pkgs.coreutils}/bin/shuf)
+    mapfile -t WALLS < <(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \
+      -o -name "*.mp4" -o -name "*.webm" -o -name "*.mkv" -o -name "*.mov" \) | ${pkgs.coreutils}/bin/shuf)
     [ "''${#WALLS[@]}" -gt 0 ] || exit 0
 
     # One "<output> <transition-pos>" line per monitor.
@@ -201,11 +202,153 @@ let
     i=0
     for line in "''${OUTPUTS[@]}"; do
       read -r output pos <<< "$line"
-      ${pkgs.awww}/bin/awww img -o "$output" "''${WALLS[i % ''${#WALLS[@]}]}" \
-        --transition-type grow --transition-pos "''${pos:-center}" --transition-fps 120 &
+      wall="''${WALLS[i % ''${#WALLS[@]}]}"
+      case "$wall" in
+        *.mp4 | *.webm | *.mkv | *.mov)
+          ${wallpaper-video}/bin/wallpaper-video start "$output" "$wall"
+          ;;
+        *)
+          ${wallpaper-video}/bin/wallpaper-video stop "$output"
+          ${pkgs.awww}/bin/awww img -o "$output" "$wall" \
+            --transition-type grow --transition-pos "''${pos:-center}" --transition-fps 120 &
+          ;;
+      esac
       i=$((i + 1))
     done
     wait
+  '';
+
+  # Live (video) wallpapers: one mpvpaper per output, each with an mpv IPC
+  # socket in $XDG_RUNTIME_DIR/wallpaper-video/ so the others (cycle-wallpaper,
+  # toggle-blackout, perf-mode, power-watch) can stop, pause and resume it.
+  # mpvpaper draws above awww on the background layer; stopping it uncovers
+  # whatever still awww shows. panscan=1.0 crops a video to fill the screen
+  # rather than letterboxing it. Videos play only on AC with performance mode
+  # off ("should-play"), and also pause themselves while a fullscreen window
+  # covers them (mpvpaper -p -a FULL).
+  wallpaper-video = pkgs.writeShellScriptBin "wallpaper-video" ''
+    set -u
+    RUNTIME="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    DIR="$RUNTIME/wallpaper-video"
+    mkdir -p "$DIR"
+
+    running() { # <output> -> prints the pid if its mpvpaper is alive
+      local pid
+      pid=$(cat "$DIR/$1.pid" 2>/dev/null) || return 1
+      ${pkgs.gnugrep}/bin/grep -qa mpvpaper "/proc/$pid/cmdline" 2>/dev/null && echo "$pid"
+    }
+    stop() { # <output> [keep]: keep remembers the video (toggle-blackout)
+      local pid
+      if pid=$(running "$1"); then kill "$pid"; fi
+      rm -f "$DIR/$1.pid" "$DIR/$1.sock"
+      [ "''${2:-}" = keep ] || rm -f "$DIR/$1.path"
+    }
+    set_pause() { # true|false, for every running video
+      local sock
+      for sock in "$DIR"/*.sock; do
+        [ -S "$sock" ] || continue
+        echo "{\"command\":[\"set_property\",\"pause\",$1]}" |
+          ${pkgs.socat}/bin/socat - "UNIX-CONNECT:$sock" >/dev/null 2>&1 || true
+      done
+    }
+    on_ac() { # desktops/VMs without a Mains supply count as on AC
+      local d found=0
+      for d in /sys/class/power_supply/*; do
+        [ "$(cat "$d/type" 2>/dev/null)" = Mains ] || continue
+        found=1
+        [ "$(cat "$d/online" 2>/dev/null)" = 1 ] && return 0
+      done
+      [ "$found" = 0 ]
+    }
+    perf_active() {
+      [ "$(${pkgs.hyprland}/bin/hyprctl getoption animations:enabled -j | ${pkgs.jq}/bin/jq -r .bool)" = false ]
+    }
+    should_play() { on_ac && ! perf_active; }
+
+    case "''${1:-}" in
+      start) # <output> <file>
+        stop "$2"
+        ${pkgs.mpvpaper}/bin/mpvpaper -p -a FULL \
+          -o "no-audio loop hwdec=auto panscan=1.0 input-ipc-server=$DIR/$2.sock" \
+          "$2" "$3" >/dev/null 2>&1 &
+        echo $! > "$DIR/$2.pid"
+        printf '%s\n' "$3" > "$DIR/$2.path"
+        if ! should_play; then
+          for _ in $(seq 20); do [ -S "$DIR/$2.sock" ] && break; sleep 0.1; done
+          set_pause true
+        fi
+        ;;
+      stop) stop "$2" ;;
+      stop-all) # [keep]
+        for f in "$DIR"/*.pid; do [ -e "$f" ] && stop "$(basename "$f" .pid)" "''${2:-}"; done
+        ;;
+      resume-saved) # restart videos remembered by `stop-all keep`
+        for f in "$DIR"/*.path; do
+          [ -e "$f" ] || continue
+          out=$(basename "$f" .path)
+          running "$out" >/dev/null || "$0" start "$out" "$(cat "$f")"
+        done
+        ;;
+      sync) if should_play; then set_pause false; else set_pause true; fi ;;
+      should-play) if should_play; then echo yes; else echo no; fi ;;
+      *) echo "usage: wallpaper-video start|stop|stop-all|resume-saved|sync|should-play" >&2; exit 1 ;;
+    esac
+  '';
+
+  # Performance mode (SUPER+SHIFT+F, and automatic in power-saver via
+  # power-watch): blur, shadows and all animations (the rotating border too)
+  # off, video wallpapers paused. Reads Hyprland's live state rather than a
+  # flag, since a config reload (e.g. hyprshell starting) silently resets it.
+  # "off" turns blur/shadows back on, which is what hyprland.lua sets.
+  perf-mode = pkgs.writeShellScriptBin "perf-mode" ''
+    HCTL=${pkgs.hyprland}/bin/hyprctl
+    active() {
+      [ "$($HCTL getoption animations:enabled -j | ${pkgs.jq}/bin/jq -r .bool)" = false ]
+    }
+    set_mode() {
+      if [ "$1" = on ]; then v=false; else v=true; fi
+      $HCTL eval "hl.config({ animations = { enabled = $v }, decoration = { blur = { enabled = $v }, shadow = { enabled = $v } } })" >/dev/null
+      ${wallpaper-video}/bin/wallpaper-video sync
+      ${pkgs.libnotify}/bin/notify-send -u low -a "Performance mode" "Performance mode $1"
+    }
+    case "''${1:-toggle}" in
+      on | off) set_mode "$1" ;;
+      toggle) if active; then set_mode off; else set_mode on; fi ;;
+      status) if active; then echo on; else echo off; fi ;;
+      *) echo "usage: perf-mode on|off|toggle|status" >&2; exit 1 ;;
+    esac
+  '';
+
+  # Autostarted loop tying the two above to power: entering power-saver
+  # turns performance mode on and leaving it turns it off (changes only, so
+  # a manual SUPER+SHIFT+F sticks until the next profile change), and video
+  # wallpapers are kept paused whenever they shouldn't play (battery or
+  # performance mode). Pausing is re-applied every tick because mpvpaper's
+  # own auto-pause can resume a video when a fullscreen window closes.
+  power-watch = pkgs.writeShellScriptBin "power-watch" ''
+    WV=${wallpaper-video}/bin/wallpaper-video
+    PERF=${perf-mode}/bin/perf-mode
+    profile() { ${pkgs.power-profiles-daemon}/bin/powerprofilesctl get 2>/dev/null || echo none; }
+
+    last_profile=$(profile)
+    [ "$last_profile" = power-saver ] && $PERF on
+    last_play=$($WV should-play)
+    while sleep 10; do
+      now=$(profile)
+      if [ "$now" != "$last_profile" ]; then
+        if [ "$now" = power-saver ]; then
+          $PERF on
+        elif [ "$last_profile" = power-saver ]; then
+          $PERF off
+        fi
+        last_profile=$now
+      fi
+      play=$($WV should-play)
+      if [ "$play" = no ] || [ "$play" != "$last_play" ]; then
+        $WV sync
+      fi
+      last_play=$play
+    done
   '';
 
   # High-Contrast Blackout Toggle (SUPER+SHIFT+W): swaps to a solid black
@@ -219,8 +362,12 @@ let
     STATE_FILE="$RUNTIME/wallpaper-blackout"
     if [ -f "$STATE_FILE" ]; then
       ${pkgs.awww}/bin/awww restore
+      ${wallpaper-video}/bin/wallpaper-video resume-saved
       rm -f "$STATE_FILE"
     else
+      # Video wallpapers sit above awww, so they have to go for black to show;
+      # `keep` remembers them for the restore above.
+      ${wallpaper-video}/bin/wallpaper-video stop-all keep
       ${pkgs.awww}/bin/awww clear
       touch "$STATE_FILE"
     fi
@@ -537,6 +684,28 @@ let
     done
   '';
 
+  # Notification sounds, run by swaync's `scripts` (services.swaync below)
+  # per urgency: a soft chime for normal, a warning tone for critical,
+  # nothing for low. swaync runs scripts even in do-not-disturb, so normal
+  # ones check it here; critical ones sound regardless, since their popups
+  # bypass DND too. Always exits 0: swaync posts a "script failed"
+  # notification otherwise, which would run this again and loop.
+  notify-sound = pkgs.writeShellScript "notify-sound" ''
+    sounds=${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo
+    case "$1" in
+      critical) sound=dialog-warning ;;
+      normal)
+        if [ "$(${pkgs.swaynotificationcenter}/bin/swaync-client -D -sw 2>/dev/null)" = true ]; then
+          exit 0
+        fi
+        sound=message-new-instant
+        ;;
+      *) exit 0 ;;
+    esac
+    ${pkgs.pipewire}/bin/pw-play "$sounds/$sound.oga" || true
+    exit 0
+  '';
+
   # hyprlock label helpers. Labels are Pango markup, so text from outside
   # (track titles) has &, < and > escaped. Each prints nothing when there's
   # nothing to show, which leaves the label empty.
@@ -720,6 +889,9 @@ in
     waybar-hyprsunset
     waybar-cava
     grafana-tunnel
+    wallpaper-video
+    perf-mode
+    power-watch
     update-check
     update-apply
     idle-dim
@@ -1181,7 +1353,18 @@ in
   # never reached here. Config and style are tested files in ./swaync.
   services.swaync = {
     enable = true;
-    settings = lib.importJSON ./swaync/config.json;
+    settings = lib.importJSON ./swaync/config.json // {
+      scripts = {
+        sound-normal = {
+          urgency = "Normal";
+          exec = "${notify-sound} normal";
+        };
+        sound-critical = {
+          urgency = "Critical";
+          exec = "${notify-sound} critical";
+        };
+      };
+    };
     style = ./swaync/style.css;
   };
 
@@ -1470,6 +1653,24 @@ in
     options.recolor = true;
     extraConfig = "include ${pkgs.vimPlugins.tokyonight-nvim}/extras/zathura/tokyonight_night.zathurarc";
   };
+  # yazi: terminal file manager with image/PDF/video previews in Ghostty
+  # (kitty graphics protocol). pkgs.yazi already wraps its preview helpers
+  # (ffmpeg, poppler, ImageMagick, chafa, 7-Zip, fd, rg, fzf, zoxide).
+  # `y` opens it and cd's the shell to wherever you quit.
+  programs.yazi = {
+    enable = true;
+    enableZshIntegration = true;
+    shellWrapperName = "y";
+  };
+  # tokyonight.nvim's own yazi export, like bat/zathura/delta above.
+  # programs.yazi only writes theme.toml when its `theme` is set. The export
+  # still writes [filetype] rules as `{ name = ... }`, which yazi 26 rejects
+  # ("at least one of `url` or `mime` must be specified", and the whole theme
+  # is dropped); the key is `url` now.
+  xdg.configFile."yazi/theme.toml".source = pkgs.runCommand "yazi-tokyonight-night.toml" { } ''
+    sed 's/{ name = /{ url = /' \
+      ${pkgs.vimPlugins.tokyonight-nvim}/extras/yazi/tokyonight_night.toml > $out
+  '';
   programs.zoxide.enable = true;
   programs.direnv = {
     enable = true;

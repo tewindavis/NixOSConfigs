@@ -77,11 +77,12 @@ What closing everything costs on framework:
 ## Script state
 
 The shell scripts in `home.nix` (`toggle-recording`, `toggle-blackout`,
-`waybar-hyprsunset`, `waybar-cava`, `idle-dim`) keep their state in
+`waybar-hyprsunset`, `waybar-cava`, `idle-dim`, `wallpaper-video`) keep their state in
 `$XDG_RUNTIME_DIR` (`/run/user/<uid>`: `0700`, cleared at logout), never at
 fixed names in the shared `/tmp`. `idle-dim` exists for this: `brightnessctl
 -s`/`-r` would save under brightnessctl's own fixed `/tmp/brightnessctl/`.
-Scripts that signal a PID from a file (`toggle-recording`, `waybar-cava`)
+Scripts that signal a PID from a file (`toggle-recording`, `waybar-cava`,
+`wallpaper-video`)
 first check `/proc/<pid>/cmdline`, so a stale file can't hit an unrelated
 process.
 

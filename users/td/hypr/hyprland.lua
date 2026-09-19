@@ -282,6 +282,9 @@ hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("wofi-emoji"))
 
 -- Window State
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen(0))
+-- Performance mode: blur, shadows, animations off and video wallpapers
+-- paused (perf-mode in home.nix; also automatic in power-saver).
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd("perf-mode toggle"))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + SHIFT + Space", hl.dsp.window.float())
 
@@ -376,4 +379,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("hyprsunset")
   hl.exec_cmd("setup-wallpapers")
   hl.exec_cmd("cycle-wallpaper")
+  -- Power profile -> performance mode, and pausing video wallpapers on
+  -- battery (power-watch in home.nix).
+  hl.exec_cmd("power-watch")
 end)

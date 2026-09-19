@@ -36,7 +36,7 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 
 *   **Vibrant Glass:** Windows default to a frosted-glass aesthetic (90% active / 80% inactive opacity over a 6-size, 3-pass blur with a touch of vibrancy and noise), with soft shadows. Waybar, wofi, notifications and the swayosd OSD are blurred too, via layer rules. Two exceptions: Ghostty is a touch more translucent (its window rule multiplies on top of that, plus its own background opacity), and Brave is forced fully opaque. Brave's own tab strip and toolbar are tinted to the palette's `#1a1b26` by a managed browser policy, so they blend in rather than sitting there as a gray block.
 *   **Complementary Spectrum:** Status modules and UI accents use a bold spectrum: **Blue** (#7aa2f7) for identity, **Green** (#9ece6a) for location, and **Orange** (#ff9e64) for status.
-*   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first login (it runs at every Hyprland start but skips a file that's already there); drop in more images and `cycle-wallpaper` (`SUPER + W`) gives each monitor its own random pick from the folder, growing out from the cursor.
+*   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first login (it runs at every Hyprland start but skips a file that's already there); drop in more images and `cycle-wallpaper` (`SUPER + W`) gives each monitor its own random pick from the folder, growing out from the cursor. Videos (`.mp4`, `.webm`, `.mkv`, `.mov`) work too, as live wallpapers via `mpvpaper`: they play only on AC power, pause under a fullscreen window, and are paused in performance mode.
 *   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, weather, battery, now-playing track, and Fingerprint-or-Password prompt), `swaync` notifications, the `swayosd` volume/brightness OSD, and the `wlogout` power menu are all styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors, including a recolored `wlogout` icon set (blue lock/logout, green suspend/hibernate, orange reboot, red shutdown).
 *   **Idle Inhibitor:** A clickable Waybar toggle (right of the volume module) suspends `hypridle`'s auto-lock/DPMS while active — turns red when suppressing.
 *   **Idle Warning:** The laptop panel dims to 10% at 4:30 idle, 30 seconds before the 5-minute lock; any input restores the brightness.
@@ -48,6 +48,8 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 *   **Sharp Cursor:** the Catppuccin Mocha blue cursor is drawn from its vector (hyprcursor) version, so it stays crisp at the laptop's 1.175× and the docked monitors' 1.5× scaling.
 *   **Shape & Layout:** Windows use the same 12px corner radius as the bar, launcher and notifications. Pop-up utilities (volume, Bluetooth, network, image viewer) float centered instead of squashing the tiled layout, and `SUPER + G` turns windows into tabbed groups with a palette-colored tab bar.
 *   **Boot to Desktop:** A Plymouth splash (Catppuccin Mocha) with silent boot, including the LUKS prompt on framework, then a Tokyo Night–themed `tuigreet` headed with the machine's name and NixOS release. The TTY palette matches Ghostty's.
+*   **Performance Mode:** `SUPER + SHIFT + F` switches blur, shadows and all animations off (and pauses video wallpapers) for battery or a sluggish moment; it also turns on by itself in the power-saver profile and off again when you leave it.
+*   **Notification Sounds:** a soft chime for normal notifications, a warning tone for critical ones, silence for low urgency and while do-not-disturb is on (critical still sounds, as its popup still shows).
 *   **Themed CLI:** `bat`, `fzf`, `bottom`, `zathura`, `eza` (via `vivid`) and zsh's syntax highlighting and autosuggestions all use the same palette. Starship's right side shows how long slow (2s+) commands took and the time, and Ghostty draws a short fading trail when the cursor jumps.
 *   **Window Swallowing:** A graphical app started from a Ghostty window (an `xdg-open`ed PDF, `mpv`, `imv`, anything) takes that window's place until it closes.
 *   **Themed Git Diffs:** `git diff`/`log -p`/`show` go through `delta`: side-by-side, line numbers, tokyonight syntax and diff colors.
@@ -76,6 +78,7 @@ System controls are bound to the **`SUPER`** (Command) key, apart from `Print`, 
 | `SUPER + 1-9` | Switch Workspace |
 | `SUPER + SHIFT + 1-9` | Move Window to Workspace |
 | `SUPER + F` | Toggle Fullscreen |
+| `SUPER + SHIFT + F` | Toggle Performance Mode (blur, shadows, animations off; video wallpapers paused) |
 | `SUPER + P` | Toggle Pseudotile |
 | `SUPER + SHIFT + Space` | Toggle Floating |
 | `SUPER + S` | Toggle Dropdown Scratchpad Terminal |
@@ -114,6 +117,7 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 *   **Languages:** Rust (Cargo/Rustc/Rustlings), Zig (ZLS), Julia, Lua, Octave, C/C++, and Python 3.
 *   **Modern Shell:** Zsh is the default shell, featuring syntax highlighting, auto-suggestions, the **Starship** Powerline prompt, and a stock `fastfetch` system-info splash when a shell starts.
 *   **CLI Essentials:** `ripgrep`, `fd`, `bat` (cat), `eza` (ls), `zoxide` (cd), `gh` (GitHub CLI), and `direnv` for automatic flake environment loading.
+*   **yazi:** a terminal file manager with real image, PDF and video previews in Ghostty, Tokyo Night themed. `y` opens it and leaves the shell in whatever folder you quit in.
 *   **Media & Printing:** `mpv` handles video/audio opened from Thunar; CUPS + Avahi provide zero-config discovery and printing to network/AirPrint printers, managed via `system-config-printer` (discovery is off on `framework`, which opens no inbound ports; add printers there by IP).
 *   **Screen Sharing:** `xdg-desktop-portal-hyprland` is wired in alongside the GTK portal, so screen/window capture works in Brave and any other portal-aware app.
 *   **Screen Recording:** `SUPER + ALT + R` toggles `wf-recorder` in the background, saving timestamped mp4s to `~/Videos/Recordings` with a start/stop notification.

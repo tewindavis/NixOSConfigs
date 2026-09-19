@@ -36,6 +36,7 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 | `SUPER+CTRL+h/j/k/l` | Move window into the neighbouring group, or out of its own (`group_aware` move) |
 | `SUPER+X` | Kill active window |
 | `SUPER+F` | Fullscreen |
+| `SUPER+SHIFT+F` | `perf-mode toggle` (blur, shadows, animations off; video wallpapers paused) |
 | `SUPER+P` | Pseudotile |
 | `SUPER+SHIFT+Space` | Toggle floating |
 | `SUPER+h/j/k/l` | Focus left/down/up/right |
@@ -100,8 +101,8 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | Script | Bound to | What it does |
 |---|---|---|
 | `setup-wallpapers` | autostart | Downloads a starter wallpaper into `~/Pictures/Wallpapers` on first run (idempotent — skips if already present). |
-| `cycle-wallpaper` | `SUPER+W`, autostart | Gives each monitor its own random image from `~/Pictures/Wallpapers` (`awww img -o <output>`; images repeat only when there are fewer than monitors), with a `grow` transition at 120fps. On the monitor under the cursor it grows from the cursor: awww has no cursor alias, so the script converts `hyprctl cursorpos` into a fraction of that monitor. Other monitors grow from `center`. |
-| `toggle-blackout` | `SUPER+SHIFT+W` | Solid-black background toggle for glare relief; uses `awww clear`/`awww restore`, state tracked by a sentinel file in `$XDG_RUNTIME_DIR` (no wallpaper path bookkeeping needed). |
+| `cycle-wallpaper` | `SUPER+W`, autostart | Gives each monitor its own random pick from `~/Pictures/Wallpapers` (picks repeat only when there are fewer files than monitors). Stills (`.jpg`/`.png`/`.webp`) go through `awww img -o <output>` with a `grow` transition at 120fps, growing from the cursor on the monitor under it (awww has no cursor alias, so `hyprctl cursorpos` is converted into a fraction of that monitor) and from `center` elsewhere; that output's video, if any, is stopped first. Videos (`.mp4`/`.webm`/`.mkv`/`.mov`) go to `wallpaper-video start`. |
+| `toggle-blackout` | `SUPER+SHIFT+W` | Solid-black background toggle for glare relief: `wallpaper-video stop-all keep` (videos sit above awww, so they must go) then `awww clear`; off again runs `awww restore` and `wallpaper-video resume-saved`. State is a sentinel file in `$XDG_RUNTIME_DIR`. |
 | `toggle-scratchpad` | `SUPER+S` | Dropdown terminal. First call spawns a ghostty tagged `--class=com.td.scratchpad` into the `special:scratchpad` workspace (matched by the `scratchpad-term` window rule in `hyprland.lua`); later calls just toggle visibility. |
 | `waybar-weather` | waybar module | wttr.in one-liner as JSON for waybar's `custom` module type; falls back to `"N/A"` on any fetch failure. |
 | `waybar-power-profile` | waybar module (click = cycle) | Reads/cycles `power-profiles-daemon`'s profile. Only meaningful on `framework` (see `docs/hosts.md`) — reports "unavailable" elsewhere. |
@@ -111,6 +112,9 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `update-apply` | "Update now" (opens in Ghostty) | Refuses if `flake.lock` has uncommitted changes. Otherwise `nix flake update`, then `nh os switch /etc/nixos -H <this host's flake attr> --ask`, which shows the package diff and asks before activating. Declining restores `flake.lock`; accepting offers to commit it. |
 | `idle-dim` | hypridle (270s idle / resume) | `idle-dim dim` saves the current backlight level in `$XDG_RUNTIME_DIR` and sets 10%; `idle-dim restore` puts it back. Replaces `brightnessctl -s`/`-r`, whose save file is a fixed `/tmp` path. |
 | `grafana-tunnel` | by hand: `grafana-tunnel <host> [local-port]` | SSH tunnel to Grafana on a monitoring host (dl-prototype, utm-nixos), where it listens only on 127.0.0.1, then opens the browser at `http://localhost:<port>`. See `modules/services/monitoring.nix`. |
+| `wallpaper-video` | `cycle-wallpaper`, `toggle-blackout`, `perf-mode`, `power-watch` | Video wallpapers: one `mpvpaper` per output (`-p -a FULL`: pauses itself under a fullscreen window; `panscan=1.0` crops to fill), each with an mpv IPC socket in `$XDG_RUNTIME_DIR/wallpaper-video/`. `start`, `stop`, `stop-all [keep]`, `resume-saved`, `sync` (pause/resume to match `should-play`: on AC and performance mode off). |
+| `perf-mode` | `SUPER+SHIFT+F`; `power-watch` | `on`/`off`/`toggle`/`status`. Sets `animations.enabled`, `decoration.blur.enabled` and `decoration.shadow.enabled` live via `hyprctl eval`, then `wallpaper-video sync`. Reads the live `animations:enabled` rather than a flag, since a config reload resets it. |
+| `power-watch` | autostart | Loop, every 10s: entering the power-saver profile runs `perf-mode on`, leaving it `perf-mode off` (changes only, so a manual toggle holds until the next change); keeps video wallpapers paused whenever they shouldn't play, re-applied each tick because mpvpaper's auto-pause can resume one when a fullscreen window closes. |
 | `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `$XDG_RUNTIME_DIR` (checked to still be `wf-recorder` before it's signalled), saves timestamped mp4 to `~/Videos/Recordings`, `notify-send` toast on start/stop. |
 
 ## hyprsunset day/night schedule
@@ -183,7 +187,9 @@ which sets its CSS variables from the palette above.
 
 Terminal tools themed in `home.nix`: `bat` and `zathura` use
 tokyonight.nvim's own exports (from `pkgs.vimPlugins.tokyonight-nvim`);
-`fzf` and `bottom` are set by hand from the palette above; `eza` reads
+`fzf` and `bottom` are set by hand from the palette above; yazi uses
+tokyonight's yazi export (with its `[filetype]` `name` keys rewritten to
+`url` at build time, see `docs/gotchas.md`); `eza` reads
 `LS_COLORS` from `vivid generate tokyonight-night`, generated at build time.
 zsh's `syntaxHighlighting.styles` and `autosuggestion.highlight` are set by
 hand from the palette. Neovim's tokyonight is set to `night` (LazyVim's own
@@ -212,7 +218,11 @@ be changed from settings. Check it's applied at `brave://policy`; policies
 are read only when Brave starts.
 
 Notifications are swaync (`services.swaync`, config and style in
-`swaync/`). `style.css` only overrides the palette variables, font and
+`swaync/`, plus `scripts` added in `home.nix`). Sounds come from those
+scripts via `notify-sound`: `message-new-instant` for normal urgency
+(skipped while do-not-disturb is on), `dialog-warning` for critical
+(always, as critical popups bypass DND), nothing for low; freedesktop sound
+theme, played with `pw-play`. `style.css` only overrides the palette variables, font and
 urgency borders of swaync's packaged stylesheet, which swaync always loads
 first.
 
@@ -288,7 +298,7 @@ inactive and `hyprland.lua`'s autostart launches the processes instead:
   `graphical-session.target`, so it isn't enabled; autostart runs
   `hyprshell run`, which finds `~/.config/hyprshell/config.json` itself.
 
-The same autostart also runs helpers that were never units: `nm-applet
+`power-watch` (above) is autostarted the same way. The same autostart also runs helpers that were never units: `nm-applet
 --indicator` (network icon in the waybar tray), `hyprpolkitagent` (the
 password prompt for privileged GUI actions such as mounting drives in
 Thunar; without an agent they fail silently), the clipboard watchers, and
