@@ -72,6 +72,17 @@ What closing everything costs on framework:
 - Prometheus's remote-write receiver is on (Telegraf pushes into it), but
   only on `127.0.0.1`, so only local processes can write.
 
+## Script state
+
+The shell scripts in `home.nix` (`toggle-recording`, `toggle-blackout`,
+`waybar-hyprsunset`, `waybar-cava`, `idle-dim`) keep their state in
+`$XDG_RUNTIME_DIR` (`/run/user/<uid>`: `0700`, cleared at logout), never at
+fixed names in the shared `/tmp`. `idle-dim` exists for this: `brightnessctl
+-s`/`-r` would save under brightnessctl's own fixed `/tmp/brightnessctl/`.
+Scripts that signal a PID from a file (`toggle-recording`, `waybar-cava`)
+first check `/proc/<pid>/cmdline`, so a stale file can't hit an unrelated
+process.
+
 ## Name resolution and discovery
 
 - **systemd-resolved** (enabled in `modules/services/vpn.nix`, all hosts):
@@ -194,13 +205,6 @@ These have been identified but not acted on.
   not the source edit. Review `git status` / `git diff` before switching.
 - **Syncthing's web GUI** listens on `127.0.0.1:8384`. Its password is
   GUI-managed state in `~/.config/syncthing/config.xml`, not declared in Nix.
-- **Fixed `/tmp` paths:** `toggle-recording` (a pidfile it later `kill`s,
-  plus its log), `toggle-blackout` and `waybar-hyprsunset` keep state at
-  fixed names under `/tmp` rather than in `$XDG_RUNTIME_DIR`, and
-  hypridle's dim step runs `brightnessctl -s`, which saves the previous
-  brightness under brightnessctl's own fixed `/tmp/brightnessctl/`. There is only one
-  human account and `fs.protected_symlinks` is on, so this is hygiene, not an
-  open hole.
 - **The mic indicator can be dodged by name.** Waybar's `privacy` module
   ignores any audio-capture stream whose PipeWire `node.name` is `cava`
   (the visualizer's own capture), and any program running as `td` can pick

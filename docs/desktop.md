@@ -100,13 +100,13 @@ From `waybar/modules.jsonc`, which is the source of truth:
 |---|---|---|
 | `setup-wallpapers` | autostart | Downloads a starter wallpaper into `~/Pictures/Wallpapers` on first run (idempotent — skips if already present). |
 | `cycle-wallpaper` | `SUPER+W`, autostart | Gives each monitor its own random image from `~/Pictures/Wallpapers` (`awww img -o <output>`; images repeat only when there are fewer than monitors), with a `grow` transition at 120fps. On the monitor under the cursor it grows from the cursor: awww has no cursor alias, so the script converts `hyprctl cursorpos` into a fraction of that monitor. Other monitors grow from `center`. |
-| `toggle-blackout` | `SUPER+SHIFT+W` | Solid-black background toggle for glare relief; uses `awww clear`/`awww restore`, state tracked by a `/tmp` sentinel file (no wallpaper path bookkeeping needed). |
+| `toggle-blackout` | `SUPER+SHIFT+W` | Solid-black background toggle for glare relief; uses `awww clear`/`awww restore`, state tracked by a sentinel file in `$XDG_RUNTIME_DIR` (no wallpaper path bookkeeping needed). |
 | `toggle-scratchpad` | `SUPER+S` | Dropdown terminal. First call spawns a ghostty tagged `--class=com.td.scratchpad` into the `special:scratchpad` workspace (matched by the `scratchpad-term` window rule in `hyprland.lua`); later calls just toggle visibility. |
 | `waybar-weather` | waybar module | wttr.in one-liner as JSON for waybar's `custom` module type; falls back to `"N/A"` on any fetch failure. |
 | `waybar-power-profile` | waybar module (click = cycle) | Reads/cycles `power-profiles-daemon`'s profile. Only meaningful on `framework` (see `docs/hosts.md`) — reports "unavailable" elsewhere. |
 | `waybar-hyprsunset` | waybar module (click = toggle), `SUPER+R`/`SUPER+SHIFT+R` | Blue-light filter widget. Per `docs/gotchas.md`, this is the *only* correct way to drive hyprsunset once the daemon is already running. |
 | `waybar-cava` | waybar module (click = toggle) | Audio visualizer: runs the `cava` CLI in raw mode and maps each frame to block characters. Quiet frames show flat bars; it hides after `waybarCavaHideAfter` (10) seconds of them, so dialogue gaps don't make it flicker. It sits at the left end of `modules-right` rather than in the center group, so appearing and disappearing doesn't shift the clock. Off means cava isn't running and a dim note icon remains. Used instead of waybar's built-in `cava` module, whose only click action freezes the bars. Toggling signals the runners listed in `$XDG_RUNTIME_DIR/waybar-cava/`. |
-| `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `/tmp`, saves timestamped mp4 to `~/Videos/Recordings`, `notify-send` toast on start/stop. |
+| `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `$XDG_RUNTIME_DIR` (checked to still be `wf-recorder` before it's signalled), saves timestamped mp4 to `~/Videos/Recordings`, `notify-send` toast on start/stop. |
 
 ## hyprsunset day/night schedule
 
@@ -188,8 +188,9 @@ default is `moon`) with a transparent background, in
 The lock screen's weather, battery and now-playing labels come from
 `waybar-weather` and two small helpers in `home.nix` (`hyprlock-battery`,
 `hyprlock-nowplaying`); each prints nothing when there's nothing to show.
-hypridle dims the backlight to 10% at 270s idle (`brightnessctl -s`) and
-restores it on input (`-r`), 30s before the 300s lock.
+hypridle dims the backlight to 10% at 270s idle and restores it on input,
+30s before the 300s lock, via `idle-dim dim|restore` (saves the previous
+level in `$XDG_RUNTIME_DIR` rather than brightnessctl's fixed `/tmp` path).
 
 GTK apps' colors come from `gtk.gtk3.extraCss` / `gtk.gtk4.extraCss`
 (`gtkNamedColors`, plus `gtkCssVariables` for newer libadwaita): the

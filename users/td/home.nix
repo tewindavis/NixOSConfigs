@@ -212,7 +212,9 @@ let
   # the daemon's own last-displayed image, so no wallpaper path needs tracking
   # here — just whether we're currently in the blacked-out state.
   toggle-blackout = pkgs.writeShellScriptBin "toggle-blackout" ''
-    STATE_FILE="/tmp/wallpaper-blackout-$USER"
+    # Per-user runtime dir (0700, cleared at logout), not a fixed /tmp name.
+    RUNTIME="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    STATE_FILE="$RUNTIME/wallpaper-blackout"
     if [ -f "$STATE_FILE" ]; then
       ${pkgs.awww}/bin/awww restore
       rm -f "$STATE_FILE"
@@ -312,7 +314,8 @@ let
     DAY_START="${hyprsunsetDayStart}"
     NIGHT_START="${hyprsunsetNightStart}"
     NIGHT_TEMP="${hyprsunsetNightTemp}"
-    STATE_FILE="/tmp/hyprsunset-widget-$USER"
+    RUNTIME="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    STATE_FILE="$RUNTIME/hyprsunset-widget"
 
     now_epoch=$($DATE +%s)
     day_epoch=$($DATE -d "today $DAY_START" +%s)
@@ -442,7 +445,7 @@ let
   '';
   waybar-cava = pkgs.writeShellScriptBin "waybar-cava" ''
     OFF="''${XDG_STATE_HOME:-$HOME/.local/state}/waybar-cava-off"
-    RUNDIR="''${XDG_RUNTIME_DIR:-/tmp}/waybar-cava"
+    RUNDIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/waybar-cava"
     PKILL="${pkgs.procps}/bin/pkill"
 
     if [ "$1" = "toggle" ]; then
@@ -561,6 +564,28 @@ let
     done
   '';
 
+  # hypridle's dim-before-lock step. Saves the current brightness in the
+  # runtime dir and restores it on input, instead of brightnessctl -s/-r,
+  # whose save file is a fixed path under the shared /tmp.
+  idle-dim = pkgs.writeShellScriptBin "idle-dim" ''
+    RUNTIME="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    SAVE="$RUNTIME/brightness-before-dim"
+    BCTL=${pkgs.brightnessctl}/bin/brightnessctl
+    case "$1" in
+      dim)
+        $BCTL get > "$SAVE" && $BCTL -q set 10%
+        ;;
+      restore)
+        [ -s "$SAVE" ] && $BCTL -q set "$(cat "$SAVE")"
+        rm -f "$SAVE"
+        ;;
+      *)
+        echo "usage: idle-dim dim|restore" >&2
+        exit 1
+        ;;
+    esac
+  '';
+
   # Opens Grafana on a monitoring host (dl-prototype, utm-nixos) through an
   # SSH tunnel: Grafana listens only on that host's 127.0.0.1
   # (modules/services/monitoring.nix). Ctrl+C closes the tunnel.
@@ -579,17 +604,21 @@ let
   # and clears the PID file. notify-send gives a themed start/stop toast
   # through whatever notification daemon is running (swaync here).
   toggle-recording = pkgs.writeShellScriptBin "toggle-recording" ''
-    PIDFILE="/tmp/wf-recorder-$USER.pid"
+    RUNTIME="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    PIDFILE="$RUNTIME/wf-recorder.pid"
     OUT_DIR="$HOME/Videos/Recordings"
     mkdir -p "$OUT_DIR"
 
-    if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
-      kill -INT "$(cat "$PIDFILE")"
+    # Only signal the PID if it's still wf-recorder: a stale file (e.g. the
+    # recorder crashed) could otherwise name some unrelated process.
+    PID=$(cat "$PIDFILE" 2>/dev/null)
+    if [ -n "$PID" ] && ${pkgs.gnugrep}/bin/grep -qa wf-recorder "/proc/$PID/cmdline" 2>/dev/null; then
+      kill -INT "$PID"
       rm -f "$PIDFILE"
       ${pkgs.libnotify}/bin/notify-send "Screen Recording" "Stopped"
     else
       FILE="$OUT_DIR/recording-$(date +%Y%m%d-%H%M%S).mp4"
-      ${pkgs.wf-recorder}/bin/wf-recorder -f "$FILE" >/tmp/wf-recorder.log 2>&1 &
+      ${pkgs.wf-recorder}/bin/wf-recorder -f "$FILE" >"$RUNTIME/wf-recorder.log" 2>&1 &
       echo $! > "$PIDFILE"
       ${pkgs.libnotify}/bin/notify-send "Screen Recording" "Started: $FILE"
     fi
@@ -613,6 +642,7 @@ in
     waybar-hyprsunset
     waybar-cava
     grafana-tunnel
+    idle-dim
     pkgs.power-profiles-daemon # powerprofilesctl CLI, used by waybar-power-profile above
     # Modern CLI
     pkgs.ripgrep
@@ -1085,12 +1115,12 @@ in
       listener = [
         {
           # Dim to 10% 30s before the lock below, as a warning: any input
-          # before then restores the saved brightness. -s/-r save and
-          # restore the previous level. Only affects backlit panels
+          # before then restores the saved brightness (idle-dim above keeps
+          # it in the runtime dir). Only affects backlit panels
           # (framework's eDP-1); external monitors aren't touched.
           timeout = 270;
-          on-timeout = "${pkgs.brightnessctl}/bin/brightnessctl -s set 10%";
-          on-resume = "${pkgs.brightnessctl}/bin/brightnessctl -r";
+          on-timeout = "${idle-dim}/bin/idle-dim dim";
+          on-resume = "${idle-dim}/bin/idle-dim restore";
         }
         {
           # Lock at 5 min idle (loginctl broadcasts the Lock signal that
