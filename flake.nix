@@ -92,11 +92,28 @@
         # Docs drift is invisible until someone trusts a stale cheat sheet, so
         # assert the README's keybind table still matches hyprland.lua. Runs
         # standalone too: ./scripts/check-keybinds.sh
-        keybindings = nixpkgs.legacyPackages.${system}.runCommand "check-keybindings" { } ''
-          cd ${self}
-          bash ${./scripts/check-keybinds.sh}
-          touch $out
-        '';
+        keybindings =
+          nixpkgs.legacyPackages.${system}.runCommand "check-keybindings"
+            {
+              # hyprshell's binds are read from its JSON config with jq.
+              nativeBuildInputs = [ nixpkgs.legacyPackages.${system}.jq ];
+            }
+            ''
+              cd ${self}
+              bash ${./scripts/check-keybinds.sh}
+              touch $out
+            '';
+
+        # hyprshell rejects unknown or mistyped fields at startup, which would
+        # silently leave SUPER+Tab/ALT+Tab unbound; catch that at build time.
+        hyprshell-config =
+          nixpkgs.legacyPackages.${system}.runCommand "check-hyprshell-config"
+            { nativeBuildInputs = [ nixpkgs.legacyPackages.${system}.hyprshell ]; }
+            ''
+              export HOME=$TMPDIR
+              hyprshell config check -c ${./users/td/hyprshell/config.json}
+              touch $out
+            '';
 
         # Every input must follow our nixpkgs; a second copy in the lock is
         # another, usually staler, package set running at build time.

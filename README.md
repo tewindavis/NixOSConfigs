@@ -36,14 +36,17 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 *   **Vibrant Glass:** Windows default to a frosted-glass aesthetic (90% active / 80% inactive opacity over a 6-size, 3-pass blur with a touch of vibrancy and noise), with soft shadows. Waybar, wofi, dunst and the swayosd OSD are blurred too, via layer rules. Two exceptions: Ghostty is a touch more translucent (its window rule multiplies on top of that, plus its own background opacity), and Brave is forced fully opaque.
 *   **Complementary Spectrum:** Status modules and UI accents use a bold spectrum: **Blue** (#7aa2f7) for identity, **Green** (#9ece6a) for location, and **Orange** (#ff9e64) for status.
 *   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first login (it runs at every Hyprland start but skips a file that's already there); drop in more images and `cycle-wallpaper` (`SUPER + W`) will pick a random one from the folder each time.
-*   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, and Fingerprint-or-Password prompt), `dunst`, the `swayosd` volume/brightness OSD, and the `wlogout` power menu are all styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors, including a recolored `wlogout` icon set (blue lock/logout, green suspend/hibernate, orange reboot, red shutdown).
+*   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, weather, battery, now-playing track, and Fingerprint-or-Password prompt), `dunst`, the `swayosd` volume/brightness OSD, and the `wlogout` power menu are all styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors, including a recolored `wlogout` icon set (blue lock/logout, green suspend/hibernate, orange reboot, red shutdown).
 *   **Idle Inhibitor:** A clickable Waybar toggle (right of the volume module) suspends `hypridle`'s auto-lock/DPMS while active — turns red when suppressing.
+*   **Idle Warning:** The laptop panel dims to 10% at 4:30 idle, 30 seconds before the 5-minute lock; any input restores the brightness.
 *   **Persistent Workspaces:** Waybar always shows workspaces 1-9, even when empty, so the active one is never ambiguous.
 *   **A Bar Per Monitor:** Every bar except the portrait Dell's shows now-playing media and an inline `cava` audio visualizer (click it to turn it off; a dim note icon stays to turn it back on). The laptop panel leaves out CPU/memory to save battery, the portrait Dell gets a slim bar (workspaces + clock), and everything else gets the full bar.
 *   **Privacy & Do Not Disturb:** A red Waybar indicator appears while the screen is being shared or the mic is recording. A bell toggle pauses notifications and shows how many are queued.
-*   **Motion:** Workspaces slide-and-fade, the scratchpad drops down from the top, and the active border's blue→green gradient slowly rotates. `SUPER + W` wallpapers grow outward from the cursor.
+*   **Motion:** Workspaces slide-and-fade, the scratchpad drops down from the top (dimming what's behind it), and the active border's blue→green gradient slowly rotates. Notifications slide in from the right and the launcher pops in. `SUPER + W` wallpapers grow outward from the cursor.
+*   **Overview & Switcher:** `SUPER + Tab` opens a `hyprshell` overview of every workspace and its windows with a built-in launcher (apps by usage, calculator, web search, power actions). `ALT + Tab` is a Windows-style switcher: most recently used first, hold Alt and tap Tab, release to switch. Both are themed and blurred to match.
+*   **Shape & Layout:** Windows use the same 12px corner radius as the bar, launcher and notifications. Pop-up utilities (volume, Bluetooth, network, image viewer) float centered instead of squashing the tiled layout, and `SUPER + G` turns windows into tabbed groups with a palette-colored tab bar.
 *   **Boot to Desktop:** A Plymouth splash (Catppuccin Mocha) with silent boot, including the LUKS prompt on framework, then a Tokyo Night–themed `tuigreet`. The TTY palette matches Ghostty's.
-*   **Themed CLI:** `bat`, `fzf`, `bottom`, `zathura` and `eza` (via `vivid`) all use the same palette.
+*   **Themed CLI:** `bat`, `fzf`, `bottom`, `zathura`, `eza` (via `vivid`) and zsh's syntax highlighting and autosuggestions all use the same palette.
 *   **Weather:** A Waybar module next to the clock shows current conditions via `wttr.in`, with a graceful "N/A" fallback if the network or upstream service is unavailable.
 *   **Auto Blue-Light Filter:** `hyprsunset` runs as a daemon on login and switches itself between neutral (7:30am) and warm 2450K (8:00pm) — f.lux/redshift-style — per the schedule in `hyprsunset.conf`. A Waybar toggle (sun/moon icon, next to the idle inhibitor) shows and flips the current state; `SUPER + R`/`SUPER + SHIFT + R` do the same from the keyboard. Any of the three count as a manual override until the next scheduled switch.
 
@@ -61,12 +64,17 @@ System controls are bound to the **`SUPER`** (Command) key, apart from `Print` a
 | `SUPER + E` | Open File Manager (Thunar) |
 | `SUPER + X` | Kill Active Window |
 | `SUPER + H/J/K/L` | Move Focus (Vim-style) |
+| `SUPER + Tab` | Overview: every workspace and its windows, plus a launcher (type to search apps, calculate, web search); Tab/Return to pick (`hyprshell`) |
+| `ALT + Tab` / `ALT + SHIFT + Tab` / `ALT + Grave` | Windows-style switcher: hold Alt, recently used first, release to switch (`hyprshell`) |
 | `SUPER + 1-9` | Switch Workspace |
 | `SUPER + SHIFT + 1-9` | Move Window to Workspace |
 | `SUPER + F` | Toggle Fullscreen |
 | `SUPER + P` | Toggle Pseudotile |
 | `SUPER + SHIFT + Space` | Toggle Floating |
 | `SUPER + S` | Toggle Dropdown Scratchpad Terminal |
+| `SUPER + G` | Toggle Tabbed Group (new windows join the focused group) |
+| `SUPER + CTRL + Tab` / `SUPER + CTRL + SHIFT + Tab` | Next / Previous Tab in Group |
+| `SUPER + CTRL + H/J/K/L` | Move Window Into Neighbouring Group (or out of its own) |
 | `SUPER + SHIFT + E` | Exit Hyprland |
 | `3-Finger Swipe` | Switch Workspace (Gesture) |
 
@@ -79,6 +87,7 @@ System controls are bound to the **`SUPER`** (Command) key, apart from `Print` a
 | `SUPER + ALT + R` | Toggle Screen Recording (mp4, `~/Videos/Recordings`) |
 | `SUPER + C` | Pick Color Under Cursor (`hyprpicker`, copies to clipboard) |
 | `SUPER + V` | Clipboard History |
+| `SUPER + Period` | Emoji Picker (types it and copies it) |
 | `SUPER + N` | Pop Last Dismissed Notification |
 | `SUPER + SHIFT + P` | Power Menu |
 | `SUPER + W` | Cycle Wallpaper |
@@ -114,6 +123,7 @@ Neovim is configured as a full IDE using the **LazyVim** framework, featuring:
 *   **File Explorer:** `Leader + e` for an integrated file tree (`snacks.explorer`; Neo-tree is not installed).
 *   **Language Servers:** All LSPs, formatters, and linters (Rust, Zig, Python, Nix, Lua, etc.) are installed declaratively via Nix in `home.nix` and picked up straight off `PATH`. Mason is deliberately disabled, so editor tooling stays reproducible with `nixos-rebuild` instead of drifting from whatever Mason downloaded at runtime. To add language support, add the package in `home.nix`. The plugins themselves are *not* Nix-managed: first launch clones lazy.nvim and every plugin pinned in `lazy-lock.json` from GitHub, and nvim-treesitter downloads and compiles its parsers. `:Lazy update` writes the new pins straight into this repo's `lazy-lock.json`, so updates show up in `git status` to commit or revert.
 *   **Treesitter:** Automated syntax highlighting and structural editing.
+*   **Colorscheme:** tokyonight's Night variant (LazyVim defaults to Moon), with a transparent background so Ghostty's blur shows through.
 *   **Markdown:** rendered in the buffer by `render-markdown.nvim`. The browser-preview plugin from LazyVim's markdown extra is disabled (see `docs/gotchas.md`).
 
 ---

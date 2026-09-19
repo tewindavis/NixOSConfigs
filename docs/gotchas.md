@@ -60,6 +60,28 @@ these from scratch.
   leaves, styles and bezier names with an error, so `hyprctl eval` is a
   cheap way to validate one before editing.
 
+- **Group dispatchers:** `hl.dsp.group.move_window` only reorders tabs
+  inside a group. Moving a window into or out of a group is
+  `hl.dsp.window.move({ direction = ..., group_aware = true })` (also
+  `into_group = "<dir>"` / `out_of_group = true`). Dispatcher builders
+  don't validate their arguments, so a wrong field silently does the
+  default; check `src/config/lua/bindings/LuaBindingsDispatchers.cpp`.
+
+- **Starting hyprshell reloads Hyprland's config.** `hyprshell run`
+  triggers a config reload at startup (its log says "Reloading hyprland
+  config"; `reload_hyprland_config` in `crates/exec-lib`), which throws away
+  anything applied live with `hyprctl eval` and reloads the *deployed*
+  `~/.config/hypr/hyprland.lua`. Trialling a change live and then starting
+  hyprshell reverts it; deploy first (`nh os switch`), or restart hyprshell
+  before the live experiment rather than after.
+- **hyprshell supports one switcher.** Its config accepts `switch_2`, but
+  only the config crates read it; the daemon never binds it (4.10.8).
+  `switch` (ALT+Tab) and `overview` (SUPER+Tab) are the two modes.
+- **`pgrep -f`/`pkill -f` match your own shell.** Any command line that
+  contains the pattern matches, including the shell running the pgrep.
+  That killed test shells twice and hid a dead hyprshell daemon once while
+  building these features. Use `pgrep -x <name>` or a PID file.
+
 ## Waybar
 
 - **Match the laptop panel by connector name, not description.** waybar

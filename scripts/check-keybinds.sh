@@ -12,6 +12,9 @@ set -euo pipefail
 
 lua="${1:-users/td/hypr/hyprland.lua}"
 readme="${2:-README.md}"
+# hyprshell registers its own binds at runtime from this file, so they never
+# appear in hyprland.lua. Needs jq, which is why the config is strict JSON.
+hyprshell="${3:-users/td/hyprshell/config.json}"
 
 # Both sides get uppercased and stripped of spaces around "+" so that
 # `SUPER + h` and `SUPER+H` compare equal.
@@ -40,7 +43,22 @@ binds_from_lua() {
 		if grep -qE 'hl\.bind\(mainMod \.\. " \+ SHIFT \+ " \.\. i' "$lua"; then
 			seq 1 9 | sed 's/^/SUPER+SHIFT+/'
 		fi
+
+		binds_from_hyprshell
 	} | normalize
+}
+
+# Mirrors hyprshell's generate_open_keybinds (crates/windows-lib/src/
+# keybinds.rs in its source): the overview is MOD+KEY; the switcher is
+# MOD+KEY, MOD+grave (reverse) and MOD+SHIFT+KEY. Its release binds on the
+# bare modifier and Shift keys only close the switcher, so they're left out.
+binds_from_hyprshell() {
+	jq -r '
+		.windows
+		| (.overview // empty | "\(.modifier)+\(.key)"),
+		  (.switch // empty
+		   | "\(.modifier)+\(.key)", "\(.modifier)+grave", "\(.modifier)+SHIFT+\(.key)")
+	' "$hyprshell"
 }
 
 # The cheat sheet writes some binds as human shorthand covering several real
@@ -48,7 +66,8 @@ binds_from_lua() {
 expand_shorthand() {
 	while IFS= read -r key; do
 		case "$key" in
-		*H/J/K/L*) printf 'SUPER+%s\n' H J K L ;;
+		# Keep whatever modifiers precede the shorthand (`SUPER + CTRL + H/J/K/L`).
+		*H/J/K/L*) printf "${key%%H/J/K/L*}%s\n" H J K L ;;
 		"SUPER + SHIFT + 1-9") seq 1 9 | sed 's/^/SUPER+SHIFT+/' ;;
 		"SUPER + 1-9") seq 1 9 | sed 's/^/SUPER+/' ;;
 		"Media Keys") printf '%s\n' \
@@ -75,7 +94,7 @@ binds_from_readme() {
 		normalize
 }
 
-for f in "$lua" "$readme"; do
+for f in "$lua" "$readme" "$hyprshell"; do
 	[ -r "$f" ] || {
 		echo "check-keybinds: cannot read $f (run from the repo root?)" >&2
 		exit 2
@@ -87,20 +106,20 @@ phantom=$(comm -13 <(binds_from_lua) <(binds_from_readme))
 
 status=0
 if [ -n "$undocumented" ]; then
-	echo "Bound in $lua but missing from $readme's cheat sheet:" >&2
+	echo "Bound in $lua or $hyprshell but missing from $readme's cheat sheet:" >&2
 	echo "$undocumented" | sed 's/^/  /' >&2
 	status=1
 fi
 if [ -n "$phantom" ]; then
-	echo "Listed in $readme's cheat sheet but not bound in $lua:" >&2
+	echo "Listed in $readme's cheat sheet but not bound in $lua or $hyprshell:" >&2
 	echo "$phantom" | sed 's/^/  /' >&2
 	status=1
 fi
 
 if [ "$status" -eq 0 ]; then
-	echo "check-keybinds: README cheat sheet matches hyprland.lua"
+	echo "check-keybinds: README cheat sheet matches hyprland.lua and hyprshell"
 else
 	echo "" >&2
-	echo "hyprland.lua is the source of truth — update the README to match." >&2
+	echo "hyprland.lua (plus hyprshell's config.json) is the source of truth — update the README to match." >&2
 fi
 exit "$status"

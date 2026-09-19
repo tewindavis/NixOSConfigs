@@ -1,0 +1,23 @@
+{
+  "version": 4,
+  "windows": {
+    "scale": 8.5,
+    "items_per_row": 5,
+    "overview": {
+      "key": "Tab",
+      "modifier": "super",
+      "filter_by": [],
+      "exclude_workspaces": "special:.*",
+      "launcher": {
+        "default_terminal": "ghostty",
+        "launch_modifier": "ctrl"
+      }
+    },
+    "switch": {
+      "modifier": "alt",
+      "key": "Tab",
+      "filter_by": ["current_workspace"],
+      "switch_workspaces": false
+    }
+  }
+}

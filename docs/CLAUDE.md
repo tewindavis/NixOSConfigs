@@ -69,8 +69,11 @@ because a check enforces it.
 
 ## What is and isn't machine-checked
 
-- **Checked:** README's keybind cheat sheet vs. `hyprland.lua`, via
+- **Checked:** README's keybind cheat sheet vs. `hyprland.lua` plus the
+  binds hyprshell registers from `users/td/hyprshell/config.json`, via
   `checks.keybindings` / `scripts/check-keybinds.sh`, in both directions.
+- **Checked:** `users/td/hyprshell/config.json` parses with hyprshell's own
+  `config check`, via `checks.hyprshell-config`.
 - **Checked:** `docs/security.md`'s "single nixpkgs" claim, via
   `checks.single-nixpkgs` / `scripts/check-single-nixpkgs.sh`.
 - **Not checked:** everything else — `docs/desktop.md`'s own keybind table,

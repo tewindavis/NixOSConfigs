@@ -40,12 +40,12 @@ modules/
 users/td/
   home.nix       # Home Manager: packages, dotfiles, Hyprland/waybar/dunst/etc config, shell scripts
   nixos.nix      # the `td` user account definition (groups, shell, authorized SSH key)
-  hypr/hyprland.lua, waybar/, wofi/, wlogout/, swayosd/, ghostty/, nvim/   # linked dotfiles
+  hypr/hyprland.lua, waybar/, wofi/, wlogout/, swayosd/, ghostty/, hyprshell/, nvim/   # linked dotfiles
 docs/
   CLAUDE.md      # rules for editing docs — read before changing any of them
   hosts.md, desktop.md, secrets.md, security.md, gotchas.md   # deep-dive references
 scripts/
-  check-keybinds.sh   # README-vs-hyprland.lua bind diff; wired into `nix flake check`
+  check-keybinds.sh   # README vs hyprland.lua + hyprshell/config.json bind diff; wired into `nix flake check`
   check-single-nixpkgs.sh   # fails if flake.lock pins >1 nixpkgs; wired into `nix flake check`
 secrets/secrets.yaml        # sops-encrypted; edit only via `sops secrets/secrets.yaml`
 .sops.yaml                  # sops age-key recipients per host
@@ -74,14 +74,16 @@ add a `mkHost { hostname = "<name>"; system = "..."; }` entry in `flake.nix`.
 ```bash
 sudo nixos-rebuild switch --flake .#<attr>       # apply; <attr> is the hosts/ dir name (see note below)
 nh os switch                                      # nicer wrapper, diffed switch; reads NH_FLAKE=/etc/nixos
-nix flake check                                   # formatting + keybind-doc sync + single nixpkgs + all 3 hosts evaluate
+nix flake check                                   # formatting + keybind-doc sync + single nixpkgs + hyprshell config + all 3 hosts evaluate
 nix fmt                                            # nixfmt + statix + deadnix over the whole tree
 ./scripts/check-keybinds.sh                       # just the keybind check, standalone
 ```
 
 **Adding or removing a Hyprland keybind?** Update `hyprland.lua` *and*
 README's cheat sheet — `checks.keybindings` diffs the two and fails
-`nix flake check` if they diverge, in either direction. `docs/desktop.md`'s
+`nix flake check` if they diverge, in either direction. SUPER+Tab and
+ALT+Tab are the exception: the hyprshell daemon binds them at runtime from
+`users/td/hyprshell/config.json`, which the check also reads. `docs/desktop.md`'s
 table is not machine-checked, so update it by hand in the same change.
 
 Always run `nix fmt` before committing — treefmt is the formatting source of

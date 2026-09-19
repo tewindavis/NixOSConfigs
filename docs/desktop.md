@@ -28,6 +28,11 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 | `SUPER+E` | Thunar |
 | `SUPER+Space` | `wofi --show drun` |
 | `SUPER+S` | Toggle dropdown scratchpad terminal |
+| `SUPER+Tab` | hyprshell overview + launcher (all workspaces). Bound at runtime by the hyprshell daemon from `hyprshell/config.json`, not in `hyprland.lua` |
+| `ALT+Tab` / `ALT+SHIFT+Tab` / `ALT+grave` | hyprshell switcher: most-recently-used windows on the current workspace; release Alt to switch. Also bound by the daemon |
+| `SUPER+G` | Toggle tabbed group on the focused window |
+| `SUPER+CTRL+Tab` / `SUPER+CTRL+SHIFT+Tab` | Next / previous tab in group |
+| `SUPER+CTRL+h/j/k/l` | Move window into the neighbouring group, or out of its own (`group_aware` move) |
 | `SUPER+X` | Kill active window |
 | `SUPER+F` | Fullscreen |
 | `SUPER+P` | Pseudotile |
@@ -46,6 +51,7 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 | `Print` | Full-output screenshot, instant copy+save, with notification |
 | `SUPER+C` | `hyprpicker -a` color picker |
 | `SUPER+V` | Clipboard history (`cliphist` → wofi) |
+| `SUPER+period` | `wofi-emoji`: types the pick into the focused window (`wtype`) and copies it |
 | `SUPER+N` | Pop last notification (`dunstctl history-pop`) |
 | `SUPER+ALT+R` | Toggle screen recording |
 | `SUPER+LMB` / `SUPER+RMB` | Drag to move / resize |
@@ -99,7 +105,7 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `waybar-power-profile` | waybar module (click = cycle) | Reads/cycles `power-profiles-daemon`'s profile. Only meaningful on `framework` (see `docs/hosts.md`) — reports "unavailable" elsewhere. |
 | `waybar-hyprsunset` | waybar module (click = toggle), `SUPER+R`/`SUPER+SHIFT+R` | Blue-light filter widget. Per `docs/gotchas.md`, this is the *only* correct way to drive hyprsunset once the daemon is already running. |
 | `waybar-dnd` | waybar module (click = toggle) | Do not disturb: `dunstctl set-paused toggle`. While paused dunst queues notifications rather than dropping them, and the module shows the queued count. |
-| `waybar-cava` | waybar module (click = toggle) | Audio visualizer: runs the `cava` CLI in raw mode and maps each frame to block characters. Quiet frames show flat bars; it hides after `waybarCavaHideAfter` (5) seconds of them, so dialogue gaps don't make it flicker. Off means cava isn't running and a dim note icon remains. Used instead of waybar's built-in `cava` module, whose only click action freezes the bars. Toggling signals the runners listed in `$XDG_RUNTIME_DIR/waybar-cava/`. |
+| `waybar-cava` | waybar module (click = toggle) | Audio visualizer: runs the `cava` CLI in raw mode and maps each frame to block characters. Quiet frames show flat bars; it hides after `waybarCavaHideAfter` (10) seconds of them, so dialogue gaps don't make it flicker. It sits at the left end of `modules-right` rather than in the center group, so appearing and disappearing doesn't shift the clock. Off means cava isn't running and a dim note icon remains. Used instead of waybar's built-in `cava` module, whose only click action freezes the bars. Toggling signals the runners listed in `$XDG_RUNTIME_DIR/waybar-cava/`. |
 | `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `/tmp`, saves timestamped mp4 to `~/Videos/Recordings`, dunst toast on start/stop. |
 
 ## hyprsunset day/night schedule
@@ -121,11 +127,23 @@ daemon directly.
   `docs/gotchas.md` for why plain `"1.0 1.0"` doesn't work here.
 - `scratchpad-term` — floats the scratchpad terminal, sizes it `1400 900`,
   and puts it on `special:scratchpad`.
+- `float-<class>` — floats, sizes and centers pavucontrol
+  (`org.pulseaudio.pavucontrol`), `blueman-manager`, `nm-connection-editor`
+  and `imv`. Classes were read from `hyprctl clients`; check there before
+  adding another app.
 
 Layer rules: `blur-<namespace>` for `waybar`, `wofi`, `notifications`
-(dunst) and `swayosd`. Window blur doesn't apply to layer-shell surfaces.
+(dunst), `swayosd` and hyprshell's three overlays (`hyprshell_overview`,
+`hyprshell_launcher`, `hyprshell_switch`). Window blur doesn't apply to layer-shell surfaces.
 `ignore_alpha = 0.1` keeps fully transparent margins and corners unblurred.
 List namespaces with `hyprctl layers` while each surface is open.
+`anim-notifications` slides dunst in from the right; `anim-wofi` pops the
+launcher in.
+
+Also in `hl.config`: `rounding = 12` to match the stylesheets' 12px panels,
+`dim_special = 0.4` (default 0.2) to dim what's behind the scratchpad, and a
+`group` block that colors tabbed groups' borders and tab bar from the
+palette.
 
 ## Theming
 
@@ -155,10 +173,23 @@ It uses the colors above plus Tokyo Night yellow `#e0af68`, which none of
 the stylesheets use. tuigreet's
 `--theme` color names resolve through `console.colors`.
 
+hyprshell's overview, launcher and switcher use `hyprshell/styles.css`,
+which sets its CSS variables from the palette above.
+
 Terminal tools themed in `home.nix`: `bat` and `zathura` use
 tokyonight.nvim's own exports (from `pkgs.vimPlugins.tokyonight-nvim`);
 `fzf` and `bottom` are set by hand from the palette above; `eza` reads
 `LS_COLORS` from `vivid generate tokyonight-night`, generated at build time.
+zsh's `syntaxHighlighting.styles` and `autosuggestion.highlight` are set by
+hand from the palette. Neovim's tokyonight is set to `night` (LazyVim's own
+default is `moon`) with a transparent background, in
+`nvim/lua/plugins/colorscheme.lua`.
+
+The lock screen's weather, battery and now-playing labels come from
+`waybar-weather` and two small helpers in `home.nix` (`hyprlock-battery`,
+`hyprlock-nowplaying`); each prints nothing when there's nothing to show.
+hypridle dims the backlight to 10% at 270s idle (`brightnessctl -s`) and
+restores it on input (`-r`), 30s before the 300s lock.
 
 GTK/Qt/dconf theming (`gtk`, `qt`, `dconf.settings` in `home.nix`) is the
 declarative source of truth for dark mode + accent color — don't add
@@ -189,6 +220,10 @@ inactive and `hyprland.lua`'s autostart launches the processes instead:
 - **`swayosd-server`, `syncthingtray`:** no unit at all (no HM service is
   enabled for either, and syncthingtray only ships a `.desktop` file, which
   nothing here processes). Autostart is the only thing that launches them.
+- **`hyprshell`:** HM's `services.hyprshell` would work, but its unit is
+  wanted by `wayland.systemd.target`, which defaults to
+  `graphical-session.target`, so it isn't enabled; autostart runs
+  `hyprshell run`, which finds `~/.config/hyprshell/config.json` itself.
 
 Check with `pgrep -a <name>`, not `systemctl --user`, which reports the
 unused units as inactive even while the processes run.

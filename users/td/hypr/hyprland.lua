@@ -81,7 +81,10 @@ hl.config({
   },
 
   decoration = {
-    rounding = 6,
+    -- Same 12px radius as waybar, wofi, wlogout and dunst.
+    rounding = 12,
+    -- Default is 0.2, too faint to notice behind the scratchpad (SUPER+S).
+    dim_special = 0.4,
     active_opacity = 0.9,
     inactive_opacity = 0.8,
     -- Strong enough that the 0.9/0.8 opacity above reads as frosted glass
@@ -104,6 +107,30 @@ hl.config({
 
   animations = {
     enabled = true,
+  },
+
+  -- Tabbed groups (SUPER+G): active group gets the same blue->green border
+  -- as a focused window, and the tab bar uses the palette's blue on the
+  -- module background.
+  group = {
+    col = {
+      border_active = { colors = { "rgba(7aa2f7ee)", "rgba(9ece6aee)" }, angle = 45 },
+      border_inactive = "rgba(1a1a20aa)",
+    },
+    groupbar = {
+      font_family = "JetBrainsMono Nerd Font",
+      font_size = 10,
+      height = 18,
+      gradients = true,
+      rounding = 6,
+      gradient_rounding = 6,
+      indicator_height = 0,
+      text_color = "rgba(c0caf5ff)",
+      col = {
+        active = "rgba(7aa2f7cc)",
+        inactive = "rgba(1a1b26cc)",
+      },
+    },
   },
 
   misc = {
@@ -135,7 +162,15 @@ hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 -- via `hyprctl layers` with each one open. ignore_alpha skips fully
 -- transparent pixels (bar margins, rounded corners) so only the visible
 -- panel gets blurred.
-for _, ns in ipairs({ "waybar", "wofi", "notifications", "swayosd" }) do
+for _, ns in ipairs({
+  "waybar",
+  "wofi",
+  "notifications",
+  "swayosd",
+  "hyprshell_overview",
+  "hyprshell_launcher",
+  "hyprshell_switch",
+}) do
   hl.layer_rule({
     name = "blur-" .. ns,
     match = { namespace = "^(" .. ns .. ")$" },
@@ -143,6 +178,11 @@ for _, ns in ipairs({ "waybar", "wofi", "notifications", "swayosd" }) do
     ignore_alpha = 0.1,
   })
 end
+
+-- dunst sits top-right, so its notifications slide in from the right edge;
+-- the launcher pops in from the center.
+hl.layer_rule({ name = "anim-notifications", match = { namespace = "^(notifications)$" }, animation = "slide right" })
+hl.layer_rule({ name = "anim-wofi", match = { namespace = "^(wofi)$" }, animation = "popin 90%" })
 
 -- Window Rules
 hl.window_rule({
@@ -180,6 +220,24 @@ hl.window_rule({
   workspace = "special:scratchpad",
 })
 
+-- Pop-up utilities (mostly waybar click targets) float centered instead of
+-- squashing the tiled layout. Classes confirmed via `hyprctl clients`;
+-- pavucontrol's is its reverse-DNS app-id.
+for _, app in ipairs({
+  { class = "org.pulseaudio.pavucontrol", size = "900 600" },
+  { class = "blueman-manager", size = "800 550" },
+  { class = "nm-connection-editor", size = "800 550" },
+  { class = "imv", size = "1200 800" },
+}) do
+  hl.window_rule({
+    name = "float-" .. app.class,
+    match = { class = "^(" .. app.class .. ")$" },
+    float = true,
+    size = app.size,
+    center = true,
+  })
+end
+
 -- Bindings
 local mainMod = "SUPER"
 
@@ -207,6 +265,8 @@ hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("sh -c 'umask 077; cliphist list | wo
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("wlogout"))
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("toggle-scratchpad"))
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("dunstctl history-pop"))
+-- Types the picked emoji into the focused window and copies it.
+hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("wofi-emoji"))
 
 -- Window State
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen(0))
@@ -218,6 +278,24 @@ hl.bind(mainMod .. " + h", hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + l", hl.dsp.focus({ direction = "right" }))
 hl.bind(mainMod .. " + k", hl.dsp.focus({ direction = "up" }))
 hl.bind(mainMod .. " + j", hl.dsp.focus({ direction = "down" }))
+
+-- Tabbed groups: G turns the focused window into a group (or dissolves it);
+-- new windows opened while a group is focused join it. CTRL+Tab cycles tabs
+-- (plain SUPER+Tab is hyprshell's overview).
+-- CTRL+direction moves a window into the neighbouring group, or out of its
+-- own group when there's none that way.
+hl.bind(mainMod .. " + G", hl.dsp.group.toggle())
+hl.bind(mainMod .. " + CTRL + Tab", hl.dsp.group.next())
+hl.bind(mainMod .. " + CTRL + SHIFT + Tab", hl.dsp.group.prev())
+hl.bind(mainMod .. " + CTRL + h", hl.dsp.window.move({ direction = "left", group_aware = true }))
+hl.bind(mainMod .. " + CTRL + l", hl.dsp.window.move({ direction = "right", group_aware = true }))
+hl.bind(mainMod .. " + CTRL + k", hl.dsp.window.move({ direction = "up", group_aware = true }))
+hl.bind(mainMod .. " + CTRL + j", hl.dsp.window.move({ direction = "down", group_aware = true }))
+
+-- SUPER+Tab (overview) and ALT+Tab (most-recently-used switcher) aren't
+-- bound here: the hyprshell daemon (autostarted below) registers them at
+-- runtime from users/td/hyprshell/config.json. scripts/check-keybinds.sh
+-- reads that file too, so the README cheat sheet stays checked.
 
 -- Workspaces
 for i = 1, 9 do
@@ -263,6 +341,10 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("umask 077; wl-paste --type image --watch cliphist store")
   hl.exec_cmd("wl-clip-persist --clipboard regular --all-mime-type-regex '^(?!x-kde-passwordManagerHint).+'")
   hl.exec_cmd("swayosd-server")
+  -- SUPER+Tab overview / ALT+Tab switcher. Autostarted rather than via Home
+  -- Manager's services.hyprshell, whose unit waits on
+  -- graphical-session.target, which this session never reaches.
+  hl.exec_cmd("hyprshell run")
   -- syncthingtray is launched here, like swayosd-server, because nothing
   -- else would: it has no unit at all (only a .desktop file). --wait holds
   -- it until waybar's tray exists.

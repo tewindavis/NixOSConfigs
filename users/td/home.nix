@@ -300,7 +300,7 @@ let
   # On USR1 a runner kills its current job (cava pipeline or idle sleep) and
   # re-reads the state.
   waybarCavaFps = 30;
-  waybarCavaHideAfter = 5; # seconds of all-zero frames before hiding
+  waybarCavaHideAfter = 10; # seconds of all-zero frames before hiding
   waybarCavaConf = pkgs.writeText "waybar-cava.conf" ''
     [general]
     framerate = ${toString waybarCavaFps}
@@ -418,6 +418,35 @@ let
       if { [ "$STATE" = on ] && [ ! -f "$OFF" ]; } || { [ "$STATE" = off ] && [ -f "$OFF" ]; }; then
         sleep 2
       fi
+    done
+  '';
+
+  # hyprlock label helpers. Labels are Pango markup, so text from outside
+  # (track titles) has &, < and > escaped. Each prints nothing when there's
+  # nothing to show, which leaves the label empty.
+  hyprlock-nowplaying = pkgs.writeShellScript "hyprlock-nowplaying" ''
+    PCTL="${pkgs.playerctl}/bin/playerctl"
+    case "$($PCTL status 2>/dev/null)" in
+      Playing) icon=$'\uf04b' ;;
+      Paused) icon=$'\uf04c' ;;
+      *) exit 0 ;;
+    esac
+    track=$($PCTL metadata --format '{{title}}  ·  {{artist}}' 2>/dev/null |
+      ${pkgs.gnused}/bin/sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+    printf '%s  %s\n' "$icon" "$track"
+  '';
+  hyprlock-battery = pkgs.writeShellScript "hyprlock-battery" ''
+    for b in /sys/class/power_supply/BAT*; do
+      [ -r "$b/capacity" ] || continue
+      cap=$(cat "$b/capacity")
+      if [ "$cap" -ge 85 ]; then icon=$'\uf240'
+      elif [ "$cap" -ge 60 ]; then icon=$'\uf241'
+      elif [ "$cap" -ge 35 ]; then icon=$'\uf242'
+      elif [ "$cap" -ge 10 ]; then icon=$'\uf243'
+      else icon=$'\uf244'; fi
+      [ "$(cat "$b/status")" = Charging ] && icon="$icon "$'\uf0e7'
+      printf '%s  %s%%\n' "$icon" "$cap"
+      exit 0
     done
   '';
 
@@ -549,6 +578,8 @@ in
     pkgs.imv # Image viewer, for screenshots/images opened from Thunar
     pkgs.mpv # Video/audio player, for media opened from Thunar
     pkgs.wf-recorder # Screen recording backend for toggle-recording (SUPER+ALT+R)
+    pkgs.wofi-emoji # Emoji picker (SUPER+period); types the pick via wtype and copies it
+    pkgs.hyprshell # SUPER+Tab overview + launcher, ALT+Tab switcher (autostarted in hyprland.lua)
     pkgs.keepassxc # Password manager
     pkgs.resources # GTK4/libadwaita system monitor (GUI complement to bottom/htop)
     pkgs.rclone # CLI sync/mount for cloud storage remotes
@@ -680,6 +711,11 @@ in
     recursive = true;
   };
   xdg.configFile."ghostty/config".source = ./ghostty/config;
+  # hyprshell probes config.ron, .toml, .json, .json5 in that order, so this
+  # is picked up as long as no config.ron exists. Strict JSON (valid JSON5)
+  # so scripts/check-keybinds.sh can read its binds with jq.
+  xdg.configFile."hyprshell/config.json".source = ./hyprshell/config.json;
+  xdg.configFile."hyprshell/styles.css".source = ./hyprshell/styles.css;
   # save_dir matches XDG_SCREENSHOTS_DIR below; show_panel keeps the
   # annotate toolbar open, early_exit closes swappy once you copy/save.
   xdg.configFile."swappy/config".text = ''
@@ -760,6 +796,17 @@ in
         };
       };
 
+      # Explicit fade: hyprlock 0.9 already fades in by default (0.8s, default
+      # curve); this makes it a quicker ease-out.
+      animations = {
+        enabled = true;
+        bezier = [ "easeOut, 0.16, 1, 0.3, 1" ];
+        animation = [
+          "fadeIn, 1, 5, easeOut"
+          "fadeOut, 1, 5, easeOut"
+        ];
+      };
+
       background = [
         {
           path = "screenshot";
@@ -823,6 +870,38 @@ in
           position = "0, 20";
           halign = "center";
           valign = "center";
+        }
+        {
+          # Weather, top-left, orange like waybar's weather module. Same
+          # wttr.in line; fetched once at lock and every 30 minutes.
+          text = "cmd[update:1800000] ${waybar-weather}/bin/waybar-weather | ${pkgs.jq}/bin/jq -r .text";
+          color = "rgb(255, 158, 100)";
+          font_size = 16;
+          font_family = "JetBrainsMono Nerd Font";
+          position = "30, -30";
+          halign = "left";
+          valign = "top";
+        }
+        {
+          # Battery, top-right, green like the charging state in waybar.
+          # Empty on hosts without a battery.
+          text = "cmd[update:30000] ${hyprlock-battery}";
+          color = "rgb(158, 206, 106)";
+          font_size = 16;
+          font_family = "JetBrainsMono Nerd Font";
+          position = "-30, -30";
+          halign = "right";
+          valign = "top";
+        }
+        {
+          # Now playing, bottom center; empty when no player is active.
+          text = "cmd[update:2000] ${hyprlock-nowplaying}";
+          color = "rgb(192, 202, 245)";
+          font_size = 14;
+          font_family = "JetBrainsMono Nerd Font";
+          position = "0, 40";
+          halign = "center";
+          valign = "bottom";
         }
       ];
     };
@@ -916,6 +995,15 @@ in
       };
       listener = [
         {
+          # Dim to 10% 30s before the lock below, as a warning: any input
+          # before then restores the saved brightness. -s/-r save and
+          # restore the previous level. Only affects backlit panels
+          # (framework's eDP-1); external monitors aren't touched.
+          timeout = 270;
+          on-timeout = "${pkgs.brightnessctl}/bin/brightnessctl -s set 10%";
+          on-resume = "${pkgs.brightnessctl}/bin/brightnessctl -r";
+        }
+        {
           # Lock at 5 min idle (loginctl broadcasts the Lock signal that
           # general.lock_cmd above responds to).
           timeout = 300;
@@ -1006,6 +1094,11 @@ in
     enable = true;
     defaultApplications = {
       "application/pdf" = "org.pwmt.zathura.desktop";
+      # Nothing claimed web links before, so hyprshell's web-search plugin
+      # (and anything else going through xdg-open) fell back to guessing.
+      "text/html" = "brave-browser.desktop";
+      "x-scheme-handler/http" = "brave-browser.desktop";
+      "x-scheme-handler/https" = "brave-browser.desktop";
       "image/png" = "imv.desktop";
       "image/jpeg" = "imv.desktop";
       "image/webp" = "imv.desktop";
@@ -1145,8 +1238,44 @@ in
   programs.zsh = {
     enable = true;
     enableCompletion = true;
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
+    autosuggestion = {
+      enable = true;
+      # Ghost text in the palette's muted slate (Ghostty's bright black).
+      highlight = "fg=#414868";
+    };
+    # Tokyo Night: commands blue, keywords purple, strings green, options
+    # orange, unknown commands red.
+    syntaxHighlighting = {
+      enable = true;
+      styles = {
+        default = "fg=#c0caf5";
+        unknown-token = "fg=#f7768e";
+        reserved-word = "fg=#bb9af7";
+        alias = "fg=#7aa2f7";
+        suffix-alias = "fg=#7aa2f7";
+        global-alias = "fg=#7aa2f7";
+        builtin = "fg=#7aa2f7";
+        function = "fg=#7aa2f7";
+        command = "fg=#7aa2f7";
+        precommand = "fg=#7aa2f7,italic";
+        hashed-command = "fg=#7aa2f7";
+        arg0 = "fg=#7aa2f7";
+        commandseparator = "fg=#7dcfff";
+        redirection = "fg=#7dcfff";
+        globbing = "fg=#7dcfff";
+        history-expansion = "fg=#7dcfff";
+        path = "fg=#c0caf5,underline";
+        single-hyphen-option = "fg=#ff9e64";
+        double-hyphen-option = "fg=#ff9e64";
+        single-quoted-argument = "fg=#9ece6a";
+        double-quoted-argument = "fg=#9ece6a";
+        dollar-quoted-argument = "fg=#9ece6a";
+        back-quoted-argument = "fg=#bb9af7";
+        dollar-double-quoted-argument = "fg=#7dcfff";
+        back-double-quoted-argument = "fg=#7dcfff";
+        comment = "fg=#414868,italic";
+      };
+    };
 
     shellAliases = {
       ls = "eza --icons";
