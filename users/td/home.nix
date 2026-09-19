@@ -288,7 +288,9 @@ let
   # freeze on the last frame, and with hide_on_silence there's nothing to
   # click while no audio plays. This runs the cava CLI in raw mode instead,
   # turning each frame of 0-7 levels into block characters.
-  #   on:  bars while audio plays, hidden during silence
+  #   on:  bars while audio plays. Quiet frames show flat bars, and the
+  #        module only hides after waybarCavaHideAfter seconds of them, so
+  #        pauses in dialogue don't make it blink out and back.
   #   off: cava isn't running at all (no capture); a dim note icon stays so
   #        it can be clicked back on
   # Every bar runs its own `waybar-cava run`, and each registers its PID in
@@ -297,14 +299,20 @@ let
   # which would also hit any shell whose command line mentions the script).
   # On USR1 a runner kills its current job (cava pipeline or idle sleep) and
   # re-reads the state.
+  waybarCavaFps = 30;
+  waybarCavaHideAfter = 5; # seconds of all-zero frames before hiding
   waybarCavaConf = pkgs.writeText "waybar-cava.conf" ''
     [general]
-    framerate = 30
+    framerate = ${toString waybarCavaFps}
     bars = 12
     autosens = 1
     lower_cutoff_freq = 50
     higher_cutoff_freq = 10000
-    sleep_timer = 5
+    # cava stops writing frames after this long of digital silence (e.g.
+    # playback paused). Kept above waybarCavaHideAfter so the hide countdown
+    # always finishes first; otherwise frames could stop before it did and
+    # leave flat bars showing for the whole pause.
+    sleep_timer = ${toString (waybarCavaHideAfter * 2)}
 
     [input]
     method = pipewire
@@ -377,17 +385,29 @@ let
         JOB=$!
       else
         STATE=on
-        # All-zero frames (silence) print empty text, which hides the module.
+        # All-zero frames count toward the hide delay and render as flat
+        # bars until it's reached; then one empty text hides the module.
         # Anything that isn't a frame is dropped: when cava fails (e.g. it
         # can't reach PipeWire) it still writes a terminal-title escape.
         (
-          ${pkgs.cava}/bin/cava -p ${waybarCavaConf} 2>/dev/null | ${pkgs.gnused}/bin/sed -u '
-            /^[0-9;]*$/!d
-            s/;//g
-            /^0*$/ { s/.*/{"text": ""}/; b }
-            s/0/▁/g; s/1/▂/g; s/2/▃/g; s/3/▄/g; s/4/▅/g; s/5/▆/g; s/6/▇/g; s/7/█/g
-            s/.*/{"text": "&", "class": "on", "tooltip": "Visualizer on (click to turn off)"}/
-          '
+          ${pkgs.cava}/bin/cava -p ${waybarCavaConf} 2>/dev/null |
+            ${pkgs.gawk}/bin/awk -v hide=${toString (waybarCavaFps * waybarCavaHideAfter)} '
+              BEGIN { split("▁ ▂ ▃ ▄ ▅ ▆ ▇ █", glyph, " ") }
+              !/^[0-9;]*$/ { next }
+              { gsub(/;/, "") }
+              /^0*$/ {
+                quiet++
+                if (quiet == hide) { print "{\"text\": \"\"}"; fflush() }
+                if (quiet >= hide) next
+              }
+              !/^0*$/ { quiet = 0 }
+              {
+                bars = ""
+                for (i = 1; i <= length($0); i++) bars = bars glyph[substr($0, i, 1) + 1]
+                printf "{\"text\": \"%s\", \"class\": \"on\", \"tooltip\": \"Visualizer on (click to turn off)\"}\n", bars
+                fflush()
+              }
+            '
         ) &
         JOB=$!
       fi
