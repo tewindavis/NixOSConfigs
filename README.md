@@ -119,6 +119,7 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 *   **File Sync:** `syncthing` runs as a system service (LAN/P2P sync), with `syncthingtray` in the waybar tray for status/control; `rclone` is available for cloud-storage remotes.
 *   **System Monitor:** `resources`, a GTK4/libadwaita system monitor, complements the CLI `htop`/`bottom`.
 *   **Firmware:** `gnome-firmware` gives a GUI alongside `fwupdmgr` for firmware updates (the `fwupd` daemon only runs on `framework`).
+*   **GIS:** QGIS (long-term release, `qgis-ltr`) and GRASS GIS (`grass`) as separate apps. GRASS's algorithms appear in QGIS's Processing toolbox once the bundled **GRASS GIS provider** plugin is enabled (Plugins → Manage and Install Plugins → Installed; it's off by default). QGIS's native GRASS plugin isn't included: that build isn't in the binary cache.
 *   **AI Integration:** `claude-code` and `antigravity-cli` are pre-installed for agentic development and interactive codebase analysis.
 
 ### Neovim (LazyVim IDE)

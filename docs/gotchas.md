@@ -107,6 +107,15 @@ these from scratch.
   read-only store path, so this only happens in tests; delete the stray
   file afterwards.
 
+- **QGIS lists no GRASS algorithms until its provider is enabled.** The
+  `grassprovider` plugin ships with QGIS but starts disabled (in the GUI:
+  Plugins → Installed → GRASS GIS provider; headless:
+  `qgis_process plugins enable grassprovider`, which writes to the QGIS
+  profile). Once enabled it finds `grass` on `PATH` (307 algorithms,
+  verified by running `grass:g.version` through `qgis_process`). The
+  native GRASS plugin needs `qgis-ltr.override { withGrass = true; }`,
+  which isn't cached and builds QGIS from source.
+
 ## Waybar
 
 - **Match the laptop panel by connector name, not description.** waybar

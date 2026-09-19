@@ -152,6 +152,10 @@ be escaped before it reaches them.
     not signed.
 
   Details are in `docs/gotchas.md` (Neovim / LazyVim).
+- QGIS and GRASS can install code at runtime, outside Nix: QGIS's plugin
+  manager downloads Python plugins from plugins.qgis.org (run inside
+  QGIS), and GRASS's `g.extension` downloads add-ons from GitHub and
+  compiles them. Nothing is installed unless you ask for it.
 - Qt apps load the `qt5ct` platform-theme plugin (`qt.platformTheme.name =
   "qtct"`), which runs inside each app's process. `libsForQt5.qt5ct` has
   no nixpkgs maintainer (a SourceForge tarball, no patches), so KeePassXC

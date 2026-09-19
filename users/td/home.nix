@@ -713,6 +713,13 @@ in
     pkgs.syncthingtray # Waybar tray icon/control for the syncthing service
     # (modules/services/syncthing.nix)
 
+    # GIS. Kept as two separate packages because QGIS's native GRASS plugin
+    # (qgis-ltr.override { withGrass = true; }) isn't in the binary cache
+    # and would build QGIS from source; QGIS's Processing toolbox runs GRASS
+    # algorithms through the separate `grass` on PATH instead.
+    pkgs.qgis-ltr # QGIS long-term release (3.44)
+    pkgs.grass # GRASS GIS (standalone GUI + CLI)
+
     # AI Integration
     pkgs.antigravity-cli
     pkgs.claude-code
