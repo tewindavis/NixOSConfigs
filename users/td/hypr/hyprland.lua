@@ -81,7 +81,7 @@ hl.config({
   },
 
   decoration = {
-    -- Same 12px radius as waybar, wofi, wlogout and dunst.
+    -- Same 12px radius as waybar, wofi, wlogout and swaync.
     rounding = 12,
     -- Default is 0.2, too faint to notice behind the scratchpad (SUPER+S).
     dim_special = 0.4,
@@ -136,6 +136,13 @@ hl.config({
   misc = {
     force_default_wallpaper = 0,
     disable_hyprland_logo = true,
+    -- A graphical app launched from a Ghostty window takes that window's
+    -- place until it closes. Hyprland can only filter the *terminal* (class
+    -- regex, plus a title exception regex), not the app, so this applies to
+    -- anything graphical started from Ghostty. Ghostty runs every window in
+    -- one process, so the most recently focused Ghostty window is swallowed.
+    enable_swallow = true,
+    swallow_regex = "^(com.mitchellh.ghostty)$",
   },
 })
 
@@ -165,7 +172,8 @@ hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 for _, ns in ipairs({
   "waybar",
   "wofi",
-  "notifications",
+  "swaync-notification-window",
+  "swaync-control-center",
   "swayosd",
   "hyprshell_overview",
   "hyprshell_launcher",
@@ -179,9 +187,13 @@ for _, ns in ipairs({
   })
 end
 
--- dunst sits top-right, so its notifications slide in from the right edge;
--- the launcher pops in from the center.
-hl.layer_rule({ name = "anim-notifications", match = { namespace = "^(notifications)$" }, animation = "slide right" })
+-- Notifications and the swaync panel sit on the right, so they slide in
+-- from the right edge; the launcher pops in from the center.
+hl.layer_rule({
+  name = "anim-notifications",
+  match = { namespace = "^(swaync-notification-window|swaync-control-center)$" },
+  animation = "slide right",
+})
 hl.layer_rule({ name = "anim-wofi", match = { namespace = "^(wofi)$" }, animation = "popin 90%" })
 
 -- Window Rules
@@ -264,7 +276,7 @@ hl.bind(mainMod .. " + ALT + R", hl.dsp.exec_cmd("toggle-recording"))
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("sh -c 'umask 077; cliphist list | wofi --dmenu | cliphist decode | wl-copy'"))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("wlogout"))
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("toggle-scratchpad"))
-hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("dunstctl history-pop"))
+hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t -sw"))
 -- Types the picked emoji into the focused window and copies it.
 hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("wofi-emoji"))
 

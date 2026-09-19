@@ -162,14 +162,25 @@
         "tooltip": true
     },
 
-    // Do-not-disturb: click pauses/resumes dunst. Paused notifications are
-    // queued, not dropped, and the count shows while paused. The interval
-    // catches pauses made outside the bar (e.g. `dunstctl set-paused`).
-    "custom/dnd": {
-        "exec": "waybar-dnd",
-        "on-click": "waybar-dnd toggle",
+    // swaync: click opens the notification center, right-click toggles do
+    // not disturb. swaync-client streams its state as waybar JSON; "alt"
+    // picks the icon and doubles as the CSS class.
+    "custom/notification": {
+        "exec": "swaync-client -swb",
         "return-type": "json",
-        "interval": 5,
-        "tooltip": true
+        "escape": true,
+        "format": "{icon}",
+        "format-icons": {
+            "notification": "\uf0f3",
+            "none": "\uf0a2",
+            "dnd-notification": "\uf1f6",
+            "dnd-none": "\uf1f6",
+            "inhibited-notification": "\uf0f3",
+            "inhibited-none": "\uf0a2",
+            "dnd-inhibited-notification": "\uf1f6",
+            "dnd-inhibited-none": "\uf1f6"
+        },
+        "on-click": "swaync-client -t -sw",
+        "on-click-right": "swaync-client -d -sw"
     }
 }

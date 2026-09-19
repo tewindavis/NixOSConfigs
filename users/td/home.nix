@@ -76,6 +76,68 @@ let
     }
   '';
 
+  # qt5ct/qt6ct color scheme: 21 colors per state in QPalette role order
+  # (WindowText, Button, Light, Midlight, Dark, Mid, Text, BrightText,
+  # ButtonText, Base, Window, Shadow, Highlight, HighlightedText, Link,
+  # LinkVisited, AlternateBase, NoRole, ToolTipBase, ToolTipText,
+  # PlaceholderText), the format of qt6ct's bundled schemes.
+  qtColorScheme =
+    let
+      active = [
+        "#ffc0caf5" # WindowText
+        "#ff3b3d4d" # Button
+        "#ff414868" # Light
+        "#ff3b3d4d" # Midlight
+        "#ff0a0b10" # Dark
+        "#ff15161e" # Mid
+        "#ffc0caf5" # Text
+        "#ffffffff" # BrightText
+        "#ffc0caf5" # ButtonText
+        "#ff15161e" # Base
+        "#ff1a1b26" # Window
+        "#ff000000" # Shadow
+        "#ff7aa2f7" # Highlight
+        "#ff15161e" # HighlightedText
+        "#ff7aa2f7" # Link
+        "#ffbb9af7" # LinkVisited
+        "#ff1a1b26" # AlternateBase
+        "#ff1a1b26" # NoRole
+        "#ff1a1b26" # ToolTipBase
+        "#ffc0caf5" # ToolTipText
+        "#80c0caf5" # PlaceholderText
+      ];
+      # Disabled text/labels drop to the palette's muted slate.
+      disabled = lib.imap0 (
+        i: c:
+        if
+          builtins.elem i [
+            0
+            6
+            8
+          ]
+        then
+          "#ff414868"
+        else
+          c
+      ) active;
+      join = lib.concatStringsSep ", ";
+    in
+    pkgs.writeText "tokyonight-night.conf" ''
+      [ColorScheme]
+      active_colors=${join active}
+      disabled_colors=${join disabled}
+      inactive_colors=${join active}
+    '';
+  qtctSettings = {
+    Appearance = {
+      custom_palette = true;
+      color_scheme_path = "${qtColorScheme}";
+      style = "Fusion";
+      icon_theme = "Papirus-Dark";
+      standard_dialogs = "default";
+    };
+  };
+
   # hyprsunset day/night schedule, shared between hyprsunset.conf (the
   # daemon's own schedule) and waybar-hyprsunset below (so the widget's
   # "what should be active right now" math can't drift from the config
@@ -325,26 +387,6 @@ let
     ${pkgs.jq}/bin/jq -nc --arg text "$icon" --arg tooltip "$tooltip" --arg class "$mode" '{text: $text, tooltip: $tooltip, class: $class}'
   '';
 
-  # Waybar do-not-disturb module: pauses/resumes dunst. While paused dunst
-  # queues notifications instead of dropping them (they all appear on
-  # resume), so the bell shows how many are waiting. `waybar-dnd toggle`
-  # flips it; waybar re-runs the bare form right after a click.
-  waybar-dnd = pkgs.writeShellScriptBin "waybar-dnd" ''
-    DUNSTCTL="${pkgs.dunst}/bin/dunstctl"
-    if [ "$1" = "toggle" ]; then
-      $DUNSTCTL set-paused toggle
-    fi
-    if [ "$($DUNSTCTL is-paused)" = "true" ]; then
-      ${pkgs.jq}/bin/jq -nc --arg n "$($DUNSTCTL count waiting)" \
-        '{text: ("" + (if $n == "0" then "" else " " + $n end)),
-          tooltip: "Do not disturb: on, \($n) queued (click to resume)",
-          class: "paused"}'
-    else
-      ${pkgs.jq}/bin/jq -nc \
-        '{text: "", tooltip: "Do not disturb: off (click to pause notifications)", class: "active"}'
-    fi
-  '';
-
   # Tokyo Night LS_COLORS for eza (and anything else that reads it), sourced
   # from zsh's initContent. Generated at build time so shells don't run vivid
   # on every start.
@@ -523,8 +565,8 @@ let
   # screenshot pattern above, but for video. First call starts wf-recorder
   # in the background against the whole output and stashes its PID; second
   # call sends SIGINT (wf-recorder's clean-stop signal, finalizes the mp4)
-  # and clears the PID file. dunstify gives a themed start/stop toast since
-  # dunst is already the notification daemon here.
+  # and clears the PID file. notify-send gives a themed start/stop toast
+  # through whatever notification daemon is running (swaync here).
   toggle-recording = pkgs.writeShellScriptBin "toggle-recording" ''
     PIDFILE="/tmp/wf-recorder-$USER.pid"
     OUT_DIR="$HOME/Videos/Recordings"
@@ -533,12 +575,12 @@ let
     if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
       kill -INT "$(cat "$PIDFILE")"
       rm -f "$PIDFILE"
-      ${pkgs.dunst}/bin/dunstify "Screen Recording" "Stopped"
+      ${pkgs.libnotify}/bin/notify-send "Screen Recording" "Stopped"
     else
       FILE="$OUT_DIR/recording-$(date +%Y%m%d-%H%M%S).mp4"
       ${pkgs.wf-recorder}/bin/wf-recorder -f "$FILE" >/tmp/wf-recorder.log 2>&1 &
       echo $! > "$PIDFILE"
-      ${pkgs.dunst}/bin/dunstify "Screen Recording" "Started: $FILE"
+      ${pkgs.libnotify}/bin/notify-send "Screen Recording" "Started: $FILE"
     fi
   '';
 in
@@ -558,7 +600,6 @@ in
     waybar-weather
     waybar-power-profile
     waybar-hyprsunset
-    waybar-dnd
     waybar-cava
     pkgs.power-profiles-daemon # powerprofilesctl CLI, used by waybar-power-profile above
     # Modern CLI
@@ -705,10 +746,16 @@ in
   };
 
   # Qt Theming
+  # Qt apps (KeePassXC, syncthingtray, Octave) get the palette through
+  # qt5ct/qt6ct: a color scheme built from the Tokyo Night values, applied
+  # with the Fusion style (Adwaita's Qt style draws its own grays and
+  # ignores the palette).
   qt = {
     enable = true;
-    platformTheme.name = "gtk3";
-    style.name = "adwaita-dark";
+    platformTheme.name = "qtct";
+    style.name = "Fusion";
+    qt5ctSettings = qtctSettings;
+    qt6ctSettings = qtctSettings;
   };
 
   # XDG Desktop Portal Color Scheme
@@ -983,83 +1030,14 @@ in
     };
   };
 
-  services.dunst = {
+  # Notifications + notification center (SUPER+N, waybar bell). Its HM unit
+  # is Type=dbus with BusName org.freedesktop.Notifications, so D-Bus starts
+  # it on the first notification even though graphical-session.target is
+  # never reached here. Config and style are tested files in ./swaync.
+  services.swaync = {
     enable = true;
-    settings = {
-      global = {
-        monitor = 0;
-        follow = "mouse";
-        width = 320;
-        height = "(0, 300)";
-        origin = "top-right";
-        offset = "(12, 40)";
-        scale = 0;
-        notification_limit = 5;
-
-        progress_bar = true;
-        progress_bar_height = 10;
-        progress_bar_frame_width = 1;
-        progress_bar_min_width = 150;
-        progress_bar_max_width = 300;
-
-        transparency = 10;
-        separator_height = 2;
-        separator_color = "frame";
-        padding = 12;
-        horizontal_padding = 12;
-        text_icon_padding = 8;
-        frame_width = 2;
-        frame_color = "#7aa2f7"; # Blue, matches waybar border accent
-        corner_radius = 12; # Matches wofi/waybar module radius
-
-        sort = true;
-        idle_threshold = 120;
-
-        font = "JetBrainsMono Nerd Font 10";
-        line_height = 2;
-        markup = "full";
-        format = "<b>%s</b>\\n%b";
-        alignment = "left";
-        vertical_alignment = "center";
-        show_age_threshold = 60;
-        ellipsize = "middle";
-        stack_duplicates = true;
-        hide_duplicate_count = false;
-        show_indicators = true;
-
-        icon_position = "left";
-        min_icon_size = 32;
-        max_icon_size = 48;
-
-        sticky_history = true;
-        history_length = 20;
-
-        mouse_left_click = "close_current";
-        mouse_middle_click = "do_action, close_current";
-        mouse_right_click = "close_all";
-      };
-
-      urgency_low = {
-        background = "#1a1b26";
-        foreground = "#c0caf5";
-        frame_color = "#9ece6a"; # Green
-        timeout = 5;
-      };
-
-      urgency_normal = {
-        background = "#1a1b26";
-        foreground = "#c0caf5";
-        frame_color = "#7aa2f7"; # Blue
-        timeout = 8;
-      };
-
-      urgency_critical = {
-        background = "#1a1b26";
-        foreground = "#c0caf5";
-        frame_color = "#f7768e"; # Tokyo Night Red
-        timeout = 0;
-      };
-    };
+    settings = lib.importJSON ./swaync/config.json;
+    style = ./swaync/style.css;
   };
 
   services.hypridle = {
@@ -1221,6 +1199,31 @@ in
   # generated content via a wrapper --cmd flag, so it coexists with our
   # hand-managed init.lua rather than fighting it for the same path.
   programs.neovim.sideloadInitLua = true;
+  # git itself was configured only by the hand-written ~/.gitconfig (name,
+  # email, safe.directory), which git still reads after this file; HM adds
+  # ~/.config/git/config for delta. Side-by-side diffs with line numbers,
+  # tokyonight syntax colors (the bat theme above) and tokyonight's own
+  # delta diff colors via include.
+  programs.git = {
+    enable = true;
+    includes = [
+      { path = "${pkgs.vimPlugins.tokyonight-nvim}/extras/delta/tokyonight_night.gitconfig"; }
+    ];
+  };
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+    options = {
+      side-by-side = true;
+      line-numbers = true;
+      navigate = true; # n / N jump between files
+      syntax-theme = "tokyonight_night";
+      file-style = "bold #7aa2f7";
+      file-decoration-style = "#7aa2f7 ul";
+      hunk-header-decoration-style = "#414868 box";
+    };
+  };
+
   programs.fzf = {
     enable = true;
     # Tokyo Night, using the repo's palette (see docs/desktop.md) rather than

@@ -38,9 +38,9 @@ modules/
   services/      syncthing.nix, vpn.nix
   dev/           rl-binary.nix   # ghidra/radare2/gdb + RL Python env, dl-prototype only
 users/td/
-  home.nix       # Home Manager: packages, dotfiles, Hyprland/waybar/dunst/etc config, shell scripts
+  home.nix       # Home Manager: packages, dotfiles, Hyprland/waybar/swaync/etc config, shell scripts
   nixos.nix      # the `td` user account definition (groups, shell, authorized SSH key)
-  hypr/hyprland.lua, waybar/, wofi/, wlogout/, swayosd/, ghostty/, hyprshell/, nvim/   # linked dotfiles
+  hypr/hyprland.lua, waybar/, wofi/, wlogout/, swayosd/, ghostty/, hyprshell/, swaync/, nvim/   # linked dotfiles
 docs/
   CLAUDE.md      # rules for editing docs — read before changing any of them
   hosts.md, desktop.md, secrets.md, security.md, gotchas.md   # deep-dive references

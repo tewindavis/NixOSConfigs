@@ -1,0 +1,34 @@
+/* Tokyo Night over swaync's packaged stylesheet (loaded first as the
+   "system" CSS): only its color variables and urgency borders change. */
+:root {
+  --cc-bg: rgba(10, 11, 16, 0.85);
+  --noti-border-color: rgba(122, 162, 247, 0.5);
+  --noti-bg: 26, 27, 38;
+  --noti-bg-alpha: 0.9;
+  --noti-bg-darker: rgb(21, 22, 30);
+  --noti-bg-hover: rgb(59, 61, 77);
+  --noti-bg-focus: rgba(59, 61, 77, 0.6);
+  --noti-close-bg: rgb(59, 61, 77);
+  --noti-close-bg-hover: rgb(65, 72, 104);
+  --text-color: rgb(192, 202, 245);
+  --text-color-disabled: rgb(65, 72, 104);
+  --bg-selected: rgb(122, 162, 247);
+  --border: 2px solid var(--noti-border-color);
+  --font-size-body: 13px;
+  --font-size-summary: 14px;
+}
+
+* {
+  font-family: "JetBrainsMono Nerd Font";
+}
+
+/* Urgency borders: low green, normal blue, critical red. */
+.notification-row .notification-background .notification.low {
+  border: 2px solid #9ece6a;
+}
+.notification-row .notification-background .notification.normal {
+  border: 2px solid #7aa2f7;
+}
+.notification-row .notification-background .notification.critical {
+  border: 2px solid #f7768e;
+}

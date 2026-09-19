@@ -7,8 +7,8 @@
 window#waybar {
     background: rgba(10, 11, 16, 0.85); /* Deeper black matching Ghostty */
     color: #c0caf5;
-    border: 2px solid rgba(122, 162, 247, 0.5); /* Blue border accent, matches wofi/hyprlock/dunst */
-    border-radius: 12px; /* Matches wofi/hyprlock/dunst radius */
+    border: 2px solid rgba(122, 162, 247, 0.5); /* Blue border accent, matches wofi/hyprlock/swaync */
+    border-radius: 12px; /* Matches wofi/hyprlock/swaync radius */
 }
 
 #workspaces button {
@@ -22,7 +22,7 @@ window#waybar {
 }
 
 #clock, #cpu, #memory, #battery, #bluetooth, #network, #pulseaudio, #tray, #idle_inhibitor, #custom-power,
-#privacy, #mpris, #custom-cava, #custom-dnd {
+#privacy, #mpris, #custom-cava, #custom-notification {
     padding: 0 10px;
     margin: 4px 4px;
     border-radius: 8px;
@@ -78,7 +78,7 @@ window#waybar {
 }
 
 #idle_inhibitor.activated {
-    color: #f7768e; /* Red - lock/DPMS suppressed, matches dunst critical */
+    color: #f7768e; /* Red - lock/DPMS suppressed, matches critical notifications */
 }
 
 #custom-hyprsunset {
@@ -95,7 +95,7 @@ window#waybar {
 
 /* Only visible while the screen or mic is in use, so it should grab attention */
 #privacy {
-    background: rgba(247, 118, 142, 0.9); /* Red, matches dunst critical */
+    background: rgba(247, 118, 142, 0.9); /* Red, matches critical notifications */
 }
 
 #mpris {
@@ -114,10 +114,29 @@ window#waybar {
     color: #414868; /* Dim - visualizer turned off */
 }
 
-#custom-dnd {
+#custom-notification {
     color: #c0caf5;
 }
 
-#custom-dnd.paused {
-    color: #f7768e; /* Red - notifications held back, matches idle_inhibitor.activated */
+#custom-notification.notification {
+    color: #7aa2f7; /* Blue - unread notifications waiting */
+}
+
+#custom-notification.dnd-notification,
+#custom-notification.dnd-none,
+#custom-notification.dnd-inhibited-notification,
+#custom-notification.dnd-inhibited-none {
+    color: #f7768e; /* Red - do not disturb, matches idle_inhibitor.activated */
+}
+
+/* Tooltips (calendar, weather, module details) match the bar's panels */
+tooltip {
+    background: rgba(26, 27, 38, 0.95);
+    border: 2px solid rgba(122, 162, 247, 0.5);
+    border-radius: 12px;
+}
+
+tooltip label {
+    color: #c0caf5;
+    padding: 4px;
 }

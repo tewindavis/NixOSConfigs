@@ -1,4 +1,4 @@
-/* Tokyo Night theme, matching waybar/wofi/hyprlock/dunst */
+/* Tokyo Night theme, matching waybar/wofi/hyprlock/swaync */
 * {
     background-image: none;
     box-shadow: none;
@@ -10,7 +10,7 @@ window {
 }
 
 button {
-    border-radius: 12px; /* Matches waybar/wofi/hyprlock/dunst radius */
+    border-radius: 12px; /* Matches waybar/wofi/hyprlock/swaync radius */
     border: 2px solid rgba(122, 162, 247, 0.5); /* Blue border accent */
     color: #c0caf5;
     background-color: rgba(26, 27, 38, 0.9); /* Matches waybar/wofi module bg */
@@ -38,7 +38,7 @@ button:hover {
 #shutdown:focus,
 #shutdown:active,
 #shutdown:hover {
-    background-color: rgba(247, 118, 142, 0.25); /* Red, matches dunst critical */
+    background-color: rgba(247, 118, 142, 0.25); /* Red, matches critical notifications */
     border-color: #f7768e;
 }
 

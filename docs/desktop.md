@@ -2,7 +2,7 @@
 
 Source files: `users/td/hypr/hyprland.lua` (binds, autostart, window rules,
 per-host monitor config), `users/td/home.nix` (all custom shell-script
-packages, dunst/hyprlock/hypridle config, theming), and
+packages, swaync/hyprlock/hypridle config, theming), and
 `users/td/waybar/` (per-output bar layout in `config.jsonc`, shared module
 definitions in `modules.jsonc`, stylesheet; all linked in by `home.nix`). A
 single `hyprland.lua` source file is shared, unmodified, across all three
@@ -52,7 +52,7 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 | `SUPER+C` | `hyprpicker -a` color picker |
 | `SUPER+V` | Clipboard history (`cliphist` → wofi) |
 | `SUPER+period` | `wofi-emoji`: types the pick into the focused window (`wtype`) and copies it |
-| `SUPER+N` | Pop last notification (`dunstctl history-pop`) |
+| `SUPER+N` | Toggle the swaync notification center (`swaync-client -t -sw`) |
 | `SUPER+ALT+R` | Toggle screen recording |
 | `SUPER+LMB` / `SUPER+RMB` | Drag to move / resize |
 | Volume/brightness/mute keys | `swayosd-client` (shows OSD + applies change; `locked` so they work on the lock screen) |
@@ -88,7 +88,7 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `custom/power-profile` | Cycle power profile |
 | `custom/hyprsunset` | Toggle blue-light filter |
 | `custom/power` | `wlogout` |
-| `custom/dnd` | Pause/resume dunst (do not disturb) |
+| `custom/notification` | Click: toggle the swaync notification center. Right-click: toggle do not disturb (`swaync-client -d`). State comes from `swaync-client -swb`; its `alt` value picks the icon and is the CSS class |
 | `custom/cava` | Turn the audio visualizer off/on |
 | `mpris` | Built-in defaults: play/pause, middle = previous, right = next |
 | `idle_inhibitor` | Toggle idle inhibit (built-in) |
@@ -105,9 +105,8 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `waybar-weather` | waybar module | wttr.in one-liner as JSON for waybar's `custom` module type; falls back to `"N/A"` on any fetch failure. |
 | `waybar-power-profile` | waybar module (click = cycle) | Reads/cycles `power-profiles-daemon`'s profile. Only meaningful on `framework` (see `docs/hosts.md`) — reports "unavailable" elsewhere. |
 | `waybar-hyprsunset` | waybar module (click = toggle), `SUPER+R`/`SUPER+SHIFT+R` | Blue-light filter widget. Per `docs/gotchas.md`, this is the *only* correct way to drive hyprsunset once the daemon is already running. |
-| `waybar-dnd` | waybar module (click = toggle) | Do not disturb: `dunstctl set-paused toggle`. While paused dunst queues notifications rather than dropping them, and the module shows the queued count. |
 | `waybar-cava` | waybar module (click = toggle) | Audio visualizer: runs the `cava` CLI in raw mode and maps each frame to block characters. Quiet frames show flat bars; it hides after `waybarCavaHideAfter` (10) seconds of them, so dialogue gaps don't make it flicker. It sits at the left end of `modules-right` rather than in the center group, so appearing and disappearing doesn't shift the clock. Off means cava isn't running and a dim note icon remains. Used instead of waybar's built-in `cava` module, whose only click action freezes the bars. Toggling signals the runners listed in `$XDG_RUNTIME_DIR/waybar-cava/`. |
-| `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `/tmp`, saves timestamped mp4 to `~/Videos/Recordings`, dunst toast on start/stop. |
+| `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `/tmp`, saves timestamped mp4 to `~/Videos/Recordings`, `notify-send` toast on start/stop. |
 
 ## hyprsunset day/night schedule
 
@@ -133,12 +132,12 @@ daemon directly.
   and `imv`. Classes were read from `hyprctl clients`; check there before
   adding another app.
 
-Layer rules: `blur-<namespace>` for `waybar`, `wofi`, `notifications`
-(dunst), `swayosd` and hyprshell's three overlays (`hyprshell_overview`,
+Layer rules: `blur-<namespace>` for `waybar`, `wofi`,
+`swaync-notification-window`, `swaync-control-center`, `swayosd` and hyprshell's three overlays (`hyprshell_overview`,
 `hyprshell_launcher`, `hyprshell_switch`). Window blur doesn't apply to layer-shell surfaces.
 `ignore_alpha = 0.1` keeps fully transparent margins and corners unblurred.
 List namespaces with `hyprctl layers` while each surface is open.
-`anim-notifications` slides dunst in from the right; `anim-wofi` pops the
+`anim-notifications` slides swaync's popups and panel in from the right; `anim-wofi` pops the
 launcher in.
 
 Also in `hl.config`: `rounding = 12` to match the stylesheets' 12px panels,
@@ -150,7 +149,7 @@ palette.
 
 Tokyo Night palette, as actually used across `waybar/style.css`,
 `wofi/style.css`, `wlogout/style.css`, `swayosd/style.css`, and the
-`programs.hyprlock` / `services.dunst` settings blocks in `home.nix`:
+`programs.hyprlock` settings block in `home.nix` and `swaync/style.css`:
 
 | Hex | Role |
 |---|---|
@@ -206,6 +205,29 @@ Side effects: Brave reports itself as managed, and its theme color can't
 be changed from settings. Check it's applied at `brave://policy`; policies
 are read only when Brave starts.
 
+Notifications are swaync (`services.swaync`, config and style in
+`swaync/`). `style.css` only overrides the palette variables and urgency
+borders of swaync's packaged stylesheet, which swaync always loads first.
+
+Qt apps use `qt5ct`/`qt6ct` (`qt.platformTheme.name = "qtct"`) with the
+Fusion style and `qtColorScheme` in `home.nix`, a palette built from the
+table above. Home Manager exports `QT_QPA_PLATFORMTHEME=qt5ct` for both Qt
+versions; the qt5ct plugin registers both `qt5ct` and `qt6ct`, so Qt 6 apps
+load it too (qt6ct's own settings window warns about the name; harmless).
+KeePassXC draws its own light/dark themes unless its theme is *Classic*
+(`[GUI] ApplicationTheme=classic` in `~/.config/keepassxc/keepassxc.ini`,
+set by hand because KeePassXC writes that file itself).
+
+`git` goes through `delta` (`programs.delta`, `programs.git`): side-by-side,
+line numbers, `syntax-theme = tokyonight_night` (bat's theme cache) and
+tokyonight's delta diff colors via a git `include`. Identity still lives in
+the hand-written `~/.gitconfig`, which git reads after
+`~/.config/git/config`.
+
+Neovim's start screen header (`nvim/lua/plugins/dashboard.lua`) is
+block-letter NIXOS, one snacks text section per row so each row gets its
+own highlight along the #7aa2f7 -> #9ece6a gradient.
+
 Starship's `right_format` shows `cmd_duration` (commands over 2s) and the
 time. Ghostty's `custom-shader` is `ghostty/shaders/cursor_trail.glsl`, a
 fading trail when the cursor moves two or more cells; shaders keep an
@@ -235,8 +257,9 @@ inactive and `hyprland.lua`'s autostart launches the processes instead:
 - **`hypridle`, `awww`:** their HM units are also wanted by
   `graphical-session.target` and stay inactive. `hyprland.lua` starts both
   directly (`hypridle`, `awww-daemon`).
-- **`dunst`:** its unit is `Type=dbus`, so D-Bus activates it on the first
-  notification. It works without the target.
+- **`swaync`:** its HM unit (`services.swaync`) is `Type=dbus` with
+  `BusName=org.freedesktop.Notifications`, so D-Bus activates it on the
+  first notification or `swaync-client` call. It works without the target.
 - **`swayosd-server`, `syncthingtray`:** no unit at all (no HM service is
   enabled for either, and syncthingtray only ships a `.desktop` file, which
   nothing here processes). Autostart is the only thing that launches them.

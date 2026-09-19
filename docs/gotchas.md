@@ -45,6 +45,12 @@ these from scratch.
   it stays `0` until bolt approves the dock, which is why framework enables
   `services.hardware.bolt`.
 
+- **Swallowing can't be limited to particular apps.** `misc:swallow_regex`
+  matches the *terminal's* class and `swallow_exception_regex` its title
+  (`CWindow::getSwallowee` in `src/desktop/view/Window.cpp`); the new
+  window's class is never checked, and there is no no-swallow window rule
+  in 0.56. With `swallow_regex` set to Ghostty, every graphical app
+  launched from Ghostty swallows it.
 - **There is no workspace-overview plugin for 0.56.** hyprexpo was
   dropped from `hyprwm/hyprland-plugins` by its `v0.56.0` tag (the README's
   Nix example still names it), and nixpkgs' `hyprlandPlugins.hyprspace`
@@ -53,9 +59,10 @@ these from scratch.
   (`nix build .#nixosConfigurations.framework.pkgs.hyprlandPlugins.<name>`)
   before wiring it in.
 - **Layer-shell surfaces need their own blur.** `decoration.blur` only
-  covers windows; waybar, wofi, dunst and swayosd are blurred by the
+  covers windows; waybar, wofi, swaync and swayosd are blurred by the
   `hl.layer_rule` loop in `hyprland.lua`. Namespaces aren't the binary
-  names (dunst's is `notifications`); read them from `hyprctl layers` with
+  names (swaync's are `swaync-notification-window` and
+  `swaync-control-center`); read them from `hyprctl layers` with
   the surface open. `hl.layer_rule`/`hl.animation` reject unknown fields,
   leaves, styles and bezier names with an error, so `hyprctl eval` is a
   cheap way to validate one before editing.
@@ -81,6 +88,22 @@ these from scratch.
   contains the pattern matches, including the shell running the pgrep.
   That killed test shells twice and hid a dead hyprshell daemon once while
   building these features. Use `pgrep -x <name>` or a PID file.
+
+## Other apps
+
+- **delta ignores `git -c` config.** It reads git config from the files on
+  disk (libgit2), so `git -c include.path=... diff` changes git but not
+  delta's options. To test a delta config, put it where git will find it,
+  e.g. `XDG_CONFIG_HOME=<dir>` with `<dir>/git/config`.
+- **KeePassXC ignores the Qt palette by default.** Its "Automatic" theme
+  draws its own light/dark style; only *Classic* follows qt5ct. That's a
+  KeePassXC setting (`[GUI] ApplicationTheme=classic`), not something
+  `qt.*` can change.
+- **Testing Neovim with the repo as its config dir writes into the repo.**
+  Pointing `XDG_CONFIG_HOME` at a directory linking to `users/td/nvim`
+  lets LazyVim write `lazyvim.json` there. The deployed config is a
+  read-only store path, so this only happens in tests; delete the stray
+  file afterwards.
 
 ## Waybar
 

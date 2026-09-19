@@ -1,6 +1,6 @@
 /* hyprshell (SUPER+Tab overview, ALT+Tab switcher) in the repo's Tokyo
    Night palette: same panel background, 12px radius and blue active border
-   as waybar/wofi/dunst. hyprshell falls back to these variables everywhere. */
+   as waybar/wofi/swaync. hyprshell falls back to these variables everywhere. */
 :root {
     --bg-color: rgba(26, 27, 38, 0.9);          /* #1a1b26, module background */
     --bg-color-hover: rgba(59, 61, 77, 1);       /* #3b3d4d, Ghostty's selection */
