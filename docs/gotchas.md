@@ -96,9 +96,11 @@ these from scratch.
   delta's options. To test a delta config, put it where git will find it,
   e.g. `XDG_CONFIG_HOME=<dir>` with `<dir>/git/config`.
 - **KeePassXC ignores the Qt palette by default.** Its "Automatic" theme
-  draws its own light/dark style; only *Classic* follows qt5ct. That's a
-  KeePassXC setting (`[GUI] ApplicationTheme=classic`), not something
-  `qt.*` can change.
+  draws its own light/dark style; only *Classic* follows the platform
+  palette. That's a KeePassXC setting (`[GUI] ApplicationTheme`), not
+  something `qt.*` can change. Here KeePassXC runs without qt5ct anyway
+  (`docs/security.md`), so it's set to its own `dark`; *Classic* without a
+  platform theme falls back to Fusion's light palette.
 - **Testing Neovim with the repo as its config dir writes into the repo.**
   Pointing `XDG_CONFIG_HOME` at a directory linking to `users/td/nvim`
   lets LazyVim write `lazyvim.json` there. The deployed config is a

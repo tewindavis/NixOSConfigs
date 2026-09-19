@@ -214,9 +214,11 @@ Fusion style and `qtColorScheme` in `home.nix`, a palette built from the
 table above. Home Manager exports `QT_QPA_PLATFORMTHEME=qt5ct` for both Qt
 versions; the qt5ct plugin registers both `qt5ct` and `qt6ct`, so Qt 6 apps
 load it too (qt6ct's own settings window warns about the name; harmless).
-KeePassXC draws its own light/dark themes unless its theme is *Classic*
-(`[GUI] ApplicationTheme=classic` in `~/.config/keepassxc/keepassxc.ini`,
-set by hand because KeePassXC writes that file itself).
+KeePassXC is exempt: `home.nix` wraps it to unset `QT_QPA_PLATFORMTHEME`
+and `QT_STYLE_OVERRIDE`, so qt5ct never loads into the password manager
+(see `docs/security.md`), and it uses its own Dark theme
+(`[GUI] ApplicationTheme=dark` in `~/.config/keepassxc/keepassxc.ini`, set
+by hand because KeePassXC writes that file itself).
 
 `git` goes through `delta` (`programs.delta`, `programs.git`): side-by-side,
 line numbers, `syntax-theme = tokyonight_night` (bat's theme cache) and

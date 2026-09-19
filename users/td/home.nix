@@ -691,7 +691,22 @@ in
     pkgs.wofi-emoji # Emoji picker (SUPER+period); types the pick via wtype and copies it
     pkgs.playerctl # Media keys (Play/Next/Prev in hyprland.lua)
     pkgs.hyprshell # SUPER+Tab overview + launcher, ALT+Tab switcher (autostarted in hyprland.lua)
-    pkgs.keepassxc # Password manager
+    # Password manager, launched without the qt5ct platform-theme plugin:
+    # qt5ct has no nixpkgs maintainer, and a platform theme is loaded into
+    # the app's own process. With the two variables unset KeePassXC loads
+    # only Qt's own plugins and uses its built-in Dark theme
+    # ([GUI] ApplicationTheme=dark in keepassxc.ini). The .desktop Exec is
+    # a bare `keepassxc`, so launchers and xdg-open pick up this wrapper.
+    (pkgs.symlinkJoin {
+      name = "keepassxc-without-qtct";
+      paths = [ pkgs.keepassxc ];
+      nativeBuildInputs = [ pkgs.makeWrapper ];
+      postBuild = ''
+        wrapProgram $out/bin/keepassxc \
+          --unset QT_QPA_PLATFORMTHEME \
+          --unset QT_STYLE_OVERRIDE
+      '';
+    })
     pkgs.resources # GTK4/libadwaita system monitor (GUI complement to bottom/htop)
     pkgs.rclone # CLI sync/mount for cloud storage remotes
     pkgs.gnome-firmware # GUI firmware updater, complements fwupd (see framework host)
@@ -996,8 +1011,9 @@ in
         }
         {
           # Weather, top-left, orange like waybar's weather module. Same
-          # wttr.in line; fetched once at lock and every 30 minutes.
-          text = "cmd[update:1800000] ${waybar-weather}/bin/waybar-weather | ${pkgs.jq}/bin/jq -r .text";
+          # wttr.in line; fetched once at lock and every 30 minutes. @html
+          # escapes it: labels are Pango markup and this text is remote.
+          text = "cmd[update:1800000] ${waybar-weather}/bin/waybar-weather | ${pkgs.jq}/bin/jq -r '.text | @html'";
           color = "rgb(255, 158, 100)";
           font_size = 16;
           font_family = "JetBrainsMono Nerd Font";

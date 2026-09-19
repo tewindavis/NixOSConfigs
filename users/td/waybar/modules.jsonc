@@ -83,9 +83,12 @@
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
     },
 
+    // escape: the text comes from wttr.in, and custom modules otherwise
+    // render their output as Pango markup.
     "custom/weather": {
         "exec": "waybar-weather",
         "return-type": "json",
+        "escape": true,
         "interval": 1800,
         "tooltip": true
     },

@@ -107,6 +107,10 @@ To exclude a service, set its `fprintAuth = false` explicitly.
   must.
 - The history db is created `0600` (`umask 077` on every cliphist caller;
   also in `docs/gotchas.md`).
+- swaync's notification-2fa-action is left on (its default): notifications
+  that contain a code get a "COPY" button. Clicking it puts the code on the
+  clipboard like any copy, so it lands in `cliphist` history. Nothing is
+  copied unless you click.
 
 ## Untrusted input
 
@@ -116,6 +120,18 @@ To exclude a service, set its `fprintAuth = false` explicitly.
 - Neovim: `markdown-preview.nvim` is disabled because its build step
   downloads an unsigned binary from a dormant repo. See `docs/gotchas.md`
   (Neovim / LazyVim).
+
+## Untrusted text rendered as markup
+
+Waybar, hyprlock and swaync render Pango markup, so text from outside must
+be escaped before it reaches them.
+
+- Weather comes from wttr.in: `custom/weather` has `"escape": true`, and
+  the hyprlock label pipes it through `jq '.text | @html'`. Waybar custom
+  modules do *not* escape by default.
+- Track titles (web pages set these through Brave's media session): waybar's
+  `mpris` module escapes them itself; `hyprlock-nowplaying` escapes `&`,
+  `<`, `>` with sed.
 
 ## Supply chain
 
@@ -136,6 +152,14 @@ To exclude a service, set its `fprintAuth = false` explicitly.
     not signed.
 
   Details are in `docs/gotchas.md` (Neovim / LazyVim).
+- Qt apps load the `qt5ct` platform-theme plugin (`qt.platformTheme.name =
+  "qtct"`), which runs inside each app's process. `libsForQt5.qt5ct` has
+  no nixpkgs maintainer (a SourceForge tarball, no patches), so KeePassXC
+  is launched without it: `home.nix` wraps `keepassxc` to unset
+  `QT_QPA_PLATFORMTHEME`/`QT_STYLE_OVERRIDE`, and the password manager loads
+  only Qt's own plugins. Verify with
+  `QT_DEBUG_PLUGINS=1 keepassxc 2>&1 | grep 'loaded library.*platformthemes'`
+  (no output expected).
 
 ## Known gaps, not addressed
 
@@ -149,6 +173,13 @@ These have been identified but not acted on.
   GUI-managed state in `~/.config/syncthing/config.xml`, not declared in Nix.
 - **Fixed `/tmp` paths:** `toggle-recording` (a pidfile it later `kill`s,
   plus its log), `toggle-blackout` and `waybar-hyprsunset` keep state at
-  fixed names under `/tmp` rather than in `$XDG_RUNTIME_DIR`. There is only one
+  fixed names under `/tmp` rather than in `$XDG_RUNTIME_DIR`, and
+  hypridle's dim step runs `brightnessctl -s`, which saves the previous
+  brightness under brightnessctl's own fixed `/tmp/brightnessctl/`. There is only one
   human account and `fs.protected_symlinks` is on, so this is hygiene, not an
   open hole.
+- **The mic indicator can be dodged by name.** Waybar's `privacy` module
+  ignores any audio-capture stream whose PipeWire `node.name` is `cava`
+  (the visualizer's own capture), and any program running as `td` can pick
+  that name. Web pages can't set it, so this only matters against local
+  software, which could equally stop waybar.
