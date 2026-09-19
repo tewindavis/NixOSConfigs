@@ -197,6 +197,15 @@ GTK apps' colors come from `gtk.gtk3.extraCss` / `gtk.gtk4.extraCss`
 named colors adw-gtk3 and libadwaita read, set from the palette, with
 header bars and sidebars in `#15161e` around `#1a1b26` content.
 
+Brave's tab strip and toolbar are tinted by a managed Chromium policy,
+`BrowserThemeColor = "#1a1b26"`, written to
+`/etc/brave/policies/managed/theme.json` by `modules/desktop/default.nix`.
+Brave can't make only its frame transparent, so this blends it instead.
+Chromium derives the rest of the toolbar palette from that seed color.
+Side effects: Brave reports itself as managed, and its theme color can't
+be changed from settings. Check it's applied at `brave://policy`; policies
+are read only when Brave starts.
+
 Starship's `right_format` shows `cmd_duration` (commands over 2s) and the
 time. Ghostty's `custom-shader` is `ghostty/shaders/cursor_trail.glsl`, a
 fading trail when the cursor moves two or more cells; shaders keep an

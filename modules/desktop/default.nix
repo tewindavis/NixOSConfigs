@@ -13,6 +13,17 @@
     noto-fonts-color-emoji
   ];
 
+  # Brave's tab strip and toolbar can't be made transparent (Chromium paints
+  # its frame opaque, and Hyprland's opacity is whole-window), so tint them
+  # to the Tokyo Night background instead. Brave reads Chromium-style
+  # policies from /etc/brave/policies/managed. Chromium derives a palette
+  # from this seed color rather than using it verbatim. Side effects of any
+  # managed policy: Brave shows "Managed by your organization", and the
+  # theme color can't be changed from its settings.
+  environment.etc."brave/policies/managed/theme.json".text = builtins.toJSON {
+    BrowserThemeColor = "#1a1b26";
+  };
+
   # Enable Thunar and related services
   programs.thunar.enable = true;
   programs.thunar.plugins = with pkgs; [
