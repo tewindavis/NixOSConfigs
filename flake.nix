@@ -54,7 +54,12 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.backupFileExtension = "backup";
-              home-manager.extraSpecialArgs = { inherit inputs; };
+              # flakeAttr: this host's attribute name here (the hosts/ dir
+              # name), which isn't always its hostname (utm-vm vs utm-nixos).
+              home-manager.extraSpecialArgs = {
+                inherit inputs;
+                flakeAttr = hostname;
+              };
               home-manager.users.td = import ./users/td/home.nix;
             }
           ];

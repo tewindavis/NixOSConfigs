@@ -167,6 +167,13 @@ be escaped before it reaches them.
 
 ## Supply chain
 
+- Updates are checked daily but never applied on their own: the
+  `update-check` user timer (`users/td/home.nix`) resolves what
+  `nix flake update` would change into a temp lock file and, if anything is
+  newer, asks with a notification. Only clicking **Update now** updates
+  `flake.lock`, and `nh os switch --ask` still shows the diff and asks
+  before anything is activated. Nothing is committed or deployed without
+  you. The check fetches inputs from their locked sources (GitHub).
 - Every flake input follows the root `nixpkgs`, so `flake.lock` holds a
   single nixpkgs. `checks.single-nixpkgs` (`scripts/check-single-nixpkgs.sh`)
   fails `nix flake check` if a second copy appears, and names the input that

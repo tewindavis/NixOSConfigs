@@ -5,6 +5,8 @@
   # Provided by home-manager's NixOS module integration: the underlying
   # system config, used below to make hyprland.lua's monitor block host-aware.
   osConfig,
+  # This host's attribute in flake.nix (not always its hostname).
+  flakeAttr,
   ...
 }:
 
@@ -586,6 +588,82 @@ let
     esac
   '';
 
+  # Daily update check (update-check timer below). Works out what
+  # `nix flake update` would change by writing the result to a temp file,
+  # so /etc/nixos is never touched, and if anything is newer, asks with a
+  # notification. Nothing changes unless you click "Update now".
+  update-check = pkgs.writeShellScriptBin "update-check" ''
+    set -u
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.nix
+        pkgs.git
+        pkgs.jq
+        pkgs.coreutils
+      ]
+    }:$PATH
+    # No network yet (e.g. just woke): try again tomorrow, quietly.
+    ${pkgs.networkmanager}/bin/nm-online -q -t 120 || exit 0
+
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    if ! nix flake update --flake /etc/nixos --output-lock-file "$tmp/new.lock" >"$tmp/log" 2>&1; then
+      echo "update check failed:"; cat "$tmp/log"
+      exit 0
+    fi
+
+    changes=$(jq -r --slurpfile old /etc/nixos/flake.lock '
+      .nodes | to_entries[]
+      | select(.value.locked.rev?)
+      | .key as $k
+      | ($old[0].nodes[$k].locked // {}) as $o
+      | select($o.rev != .value.locked.rev)
+      | "\($k): \(($o.lastModified // 0) | todate | .[5:10]) → \(.value.locked.lastModified | todate | .[5:10])"
+    ' "$tmp/new.lock")
+    if [ -z "$changes" ]; then
+      echo "up to date"
+      exit 0
+    fi
+    echo "updates available:"; echo "$changes"
+
+    # --wait blocks until you pick an action or dismiss it; a popup that
+    # times out stays in swaync's notification center, still answerable.
+    action=$(${pkgs.libnotify}/bin/notify-send -a "System updates" -i system-software-update \
+      -A update="Update now" -A later="Later" --wait \
+      "Updates ready" "$changes")
+    if [ "$action" = update ]; then
+      ${ghosttyBin} --title="System update" -e update-apply
+    fi
+  '';
+
+  # The "Update now" terminal: updates flake.lock, then `nh os switch --ask`,
+  # which shows the package diff and asks before activating. Declining
+  # puts flake.lock back.
+  update-apply = pkgs.writeShellScriptBin "update-apply" ''
+    set -u
+    cd /etc/nixos || exit 1
+    pause() { read -r -n1 -s -p "Press any key to close."; echo; }
+
+    if ! ${pkgs.git}/bin/git diff --quiet -- flake.lock; then
+      echo "flake.lock has uncommitted changes; commit or discard them first."
+      pause; exit 1
+    fi
+
+    ${pkgs.nix}/bin/nix flake update || { pause; exit 1; }
+    if ${pkgs.nh}/bin/nh os switch /etc/nixos -H ${flakeAttr} --ask; then
+      echo
+      read -r -p "Commit flake.lock? [y/N] " answer
+      case "$answer" in
+        y | Y) ${pkgs.git}/bin/git commit -m "Update flake.lock" -- flake.lock ;;
+        *) echo "Left uncommitted: git -C /etc/nixos commit -m 'Update flake.lock' flake.lock" ;;
+      esac
+    else
+      ${pkgs.git}/bin/git checkout -- flake.lock
+      echo "Not applied; flake.lock restored."
+    fi
+    pause
+  '';
+
   # Opens Grafana on a monitoring host (dl-prototype, utm-nixos) through an
   # SSH tunnel: Grafana listens only on that host's 127.0.0.1
   # (modules/services/monitoring.nix). Ctrl+C closes the tunnel.
@@ -642,6 +720,8 @@ in
     waybar-hyprsunset
     waybar-cava
     grafana-tunnel
+    update-check
+    update-apply
     idle-dim
     pkgs.power-profiles-daemon # powerprofilesctl CLI, used by waybar-power-profile above
     # Modern CLI
@@ -1481,6 +1561,27 @@ in
     # theme and size have one source.
     HYPRCURSOR_THEME = config.gtk.cursorTheme.name;
     HYPRCURSOR_SIZE = toString config.gtk.cursorTheme.size;
+  };
+
+  # Daily "are updates ready?" check. A user timer (timers.target), so it
+  # doesn't depend on graphical-session.target; the user manager already
+  # has the Wayland session's variables, which the notification and the
+  # "Update now" terminal need. Missed while asleep: runs at the next wake.
+  systemd.user.services.update-check = {
+    Unit.Description = "Check for NixOS updates and ask";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${update-check}/bin/update-check";
+    };
+  };
+  systemd.user.timers.update-check = {
+    Unit.Description = "Daily NixOS update check";
+    Timer = {
+      OnCalendar = "*-*-* 10:00:00";
+      RandomizedDelaySec = "10min";
+      Persistent = true;
+    };
+    Install.WantedBy = [ "timers.target" ];
   };
 
   home.activation.createScreenshotsDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
