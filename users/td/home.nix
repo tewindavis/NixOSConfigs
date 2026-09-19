@@ -541,7 +541,6 @@ in
     recursive = true;
   };
   xdg.configFile."ghostty/config".source = ./ghostty/config;
-  xdg.configFile."fastfetch/config.jsonc".source = ./fastfetch/config.jsonc;
   # save_dir matches XDG_SCREENSHOTS_DIR below; show_panel keeps the
   # annotate toolbar open, early_exit closes swappy once you copy/save.
   xdg.configFile."swappy/config".text = ''

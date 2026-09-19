@@ -157,8 +157,6 @@ Terminal tools themed in `home.nix`: `bat` and `zathura` use
 tokyonight.nvim's own exports (from `pkgs.vimPlugins.tokyonight-nvim`);
 `fzf` and `bottom` are set by hand from the palette above; `eza` reads
 `LS_COLORS` from `vivid generate tokyonight-night`, generated at build time.
-fastfetch (`users/td/fastfetch/config.jsonc`) uses ANSI color names, so it
-follows Ghostty's palette.
 
 GTK/Qt/dconf theming (`gtk`, `qt`, `dconf.settings` in `home.nix`) is the
 declarative source of truth for dark mode + accent color — don't add

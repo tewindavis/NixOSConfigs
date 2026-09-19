@@ -43,7 +43,7 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 *   **Privacy & Do Not Disturb:** A red Waybar indicator appears while the screen is being shared or the mic is recording. A bell toggle pauses notifications and shows how many are queued.
 *   **Motion:** Workspaces slide-and-fade, the scratchpad drops down from the top, and the active border's blue→green gradient slowly rotates. `SUPER + W` wallpapers grow outward from the cursor.
 *   **Boot to Desktop:** A Plymouth splash (Catppuccin Mocha) with silent boot, including the LUKS prompt on framework, then a Tokyo Night–themed `tuigreet`. The TTY palette matches Ghostty's.
-*   **Themed CLI:** `bat`, `fzf`, `bottom`, `zathura`, `eza` (via `vivid`) and the `fastfetch` splash all use the same palette.
+*   **Themed CLI:** `bat`, `fzf`, `bottom`, `zathura` and `eza` (via `vivid`) all use the same palette.
 *   **Weather:** A Waybar module next to the clock shows current conditions via `wttr.in`, with a graceful "N/A" fallback if the network or upstream service is unavailable.
 *   **Auto Blue-Light Filter:** `hyprsunset` runs as a daemon on login and switches itself between neutral (7:30am) and warm 2450K (8:00pm) — f.lux/redshift-style — per the schedule in `hyprsunset.conf`. A Waybar toggle (sun/moon icon, next to the idle inhibitor) shows and flips the current state; `SUPER + R`/`SUPER + SHIFT + R` do the same from the keyboard. Any of the three count as a manual override until the next scheduled switch.
 
