@@ -228,6 +228,13 @@ Neovim's start screen header (`nvim/lua/plugins/dashboard.lua`) is
 block-letter NIXOS, one snacks text section per row so each row gets its
 own highlight along the #7aa2f7 -> #9ece6a gradient.
 
+The cursor is catppuccin mocha blue (`gtk.cursorTheme`). Its package also
+ships a hyprcursor (vector) version, which Hyprland uses via
+`HYPRCURSOR_THEME`/`HYPRCURSOR_SIZE` in `home.sessionVariables`, set from
+`gtk.cursorTheme`; without them Hyprland scales the bitmap XCursor to
+fractional scales, which blurs it. `hyprctl setcursor <theme> <size>`
+switches it live.
+
 Starship's `right_format` shows `cmd_duration` (commands over 2s) and the
 time. Ghostty's `custom-shader` is `ghostty/shaders/cursor_trail.glsl`, a
 fading trail when the cursor moves two or more cells; shaders keep an

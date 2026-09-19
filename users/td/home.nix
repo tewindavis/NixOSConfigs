@@ -1410,6 +1410,12 @@ in
     XDG_SCREENSHOTS_DIR = "${config.home.homeDirectory}/Pictures/Screenshots";
     PATH = "$HOME/.local/bin:$PATH";
     NH_FLAKE = "/etc/nixos"; # lets `nh os switch`/`nh os boot` find this flake from anywhere
+    # The catppuccin cursor package also ships a hyprcursor (vector) version.
+    # Without these, Hyprland scales the bitmap XCursor to the panel's 1.175
+    # and the Dells' 1.5, which blurs it. Taken from gtk.cursorTheme so the
+    # theme and size have one source.
+    HYPRCURSOR_THEME = config.gtk.cursorTheme.name;
+    HYPRCURSOR_SIZE = toString config.gtk.cursorTheme.size;
   };
 
   home.activation.createScreenshotsDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

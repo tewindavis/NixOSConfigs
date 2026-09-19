@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   # Enable Hyprland at system level for SUID wrappers and system-wide integration
@@ -8,12 +8,14 @@
 
   # Log in straight to Hyprland via a TUI greeter. --theme takes ANSI color
   # names, which resolve through console.colors (modules/core/default.nix),
-  # so "blue" here is Tokyo Night's #7aa2f7.
+  # so "blue" here is Tokyo Night's #7aa2f7. The greeting line (drawn in
+  # `greet=blue`) names the machine and NixOS release, from this host's
+  # own config.
   services.greetd = {
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --asterisks --theme 'border=blue;title=blue;text=white;greet=blue;prompt=green;input=white;time=yellow;action=blue;button=yellow;container=black' --cmd start-hyprland";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --asterisks --greeting '${config.networking.hostName} · NixOS ${config.system.nixos.release}' --theme 'border=blue;title=blue;text=white;greet=blue;prompt=green;input=white;time=yellow;action=blue;button=yellow;container=black' --cmd start-hyprland";
       };
     };
   };
