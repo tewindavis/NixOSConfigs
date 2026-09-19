@@ -22,7 +22,7 @@ window#waybar {
 }
 
 #clock, #cpu, #memory, #battery, #bluetooth, #network, #pulseaudio, #tray, #idle_inhibitor, #custom-power,
-#privacy, #mpris, #custom-cava, #custom-notification {
+#privacy, #mpris, #custom-cava, #custom-perf, #custom-notification {
     padding: 0 10px;
     margin: 4px 4px;
     border-radius: 8px;
@@ -79,6 +79,14 @@ window#waybar {
 
 #idle_inhibitor.activated {
     color: #f7768e; /* Red - lock/DPMS suppressed, matches critical notifications */
+}
+
+#custom-perf {
+    color: #bb9af7; /* Purple - effects on */
+}
+
+#custom-perf.off {
+    color: #414868; /* Dim - performance mode, effects off (matches custom-cava.off) */
 }
 
 #custom-hyprsunset {

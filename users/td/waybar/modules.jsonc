@@ -116,6 +116,17 @@
         "tooltip": true
     },
 
+    // One-click "stop spending resources on looking good": see perf-mode in
+    // home.nix. Polled as well as refreshed on click, since SUPER+SHIFT+F
+    // and power-watch flip the same state behind the bar's back.
+    "custom/perf": {
+        "exec": "perf-mode waybar",
+        "on-click": "perf-mode toggle",
+        "return-type": "json",
+        "interval": 5,
+        "tooltip": true
+    },
+
     "custom/power": {
         "format": "",
         "tooltip-format": "Power menu",

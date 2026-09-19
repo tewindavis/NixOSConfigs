@@ -77,7 +77,7 @@ What closing everything costs on framework:
 ## Script state
 
 The shell scripts in `home.nix` (`toggle-recording`, `toggle-blackout`,
-`waybar-hyprsunset`, `waybar-cava`, `idle-dim`, `wallpaper-video`) keep their state in
+`waybar-hyprsunset`, `waybar-cava`, `idle-dim`, `wallpaper-video`, `perf-mode`) keep their state in
 `$XDG_RUNTIME_DIR` (`/run/user/<uid>`: `0700`, cleared at logout), never at
 fixed names in the shared `/tmp`. `idle-dim` exists for this: `brightnessctl
 -s`/`-r` would save under brightnessctl's own fixed `/tmp/brightnessctl/`.

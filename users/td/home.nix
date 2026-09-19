@@ -295,13 +295,19 @@ let
     esac
   '';
 
-  # Performance mode (SUPER+SHIFT+F, and automatic in power-saver via
-  # power-watch): blur, shadows and all animations (the rotating border too)
-  # off, video wallpapers paused. Reads Hyprland's live state rather than a
+  # Performance mode (the custom/perf waybar button, SUPER+SHIFT+F, and
+  # automatic in power-saver via power-watch): blur, shadows and all
+  # animations (the rotating border too) off, video wallpapers paused, audio
+  # visualizer stopped. Reads Hyprland's live state rather than a
   # flag, since a config reload (e.g. hyprshell starting) silently resets it.
   # "off" turns blur/shadows back on, which is what hyprland.lua sets.
   perf-mode = pkgs.writeShellScriptBin "perf-mode" ''
     HCTL=${pkgs.hyprland}/bin/hyprctl
+    CAVA=${waybar-cava}/bin/waybar-cava
+    RUNTIME="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    # Set while performance mode is what silenced the visualizer, so turning
+    # performance mode off never undoes a deliberate click on the bar.
+    CAVA_RESUME="$RUNTIME/perf-mode-cava-resume"
     active() {
       [ "$($HCTL getoption animations:enabled -j | ${pkgs.jq}/bin/jq -r .bool)" = false ]
     }
@@ -309,13 +315,31 @@ let
       if [ "$1" = on ]; then v=false; else v=true; fi
       $HCTL eval "hl.config({ animations = { enabled = $v }, decoration = { blur = { enabled = $v }, shadow = { enabled = $v } } })" >/dev/null
       ${wallpaper-video}/bin/wallpaper-video sync
+      if [ "$1" = on ]; then
+        if [ "$($CAVA status)" = on ]; then
+          $CAVA off
+          touch "$CAVA_RESUME"
+        fi
+      elif [ -f "$CAVA_RESUME" ]; then
+        $CAVA on
+        rm -f "$CAVA_RESUME"
+      fi
       ${pkgs.libnotify}/bin/notify-send -u low -a "Performance mode" "Performance mode $1"
     }
     case "''${1:-toggle}" in
       on | off) set_mode "$1" ;;
       toggle) if active; then set_mode off; else set_mode on; fi ;;
       status) if active; then echo on; else echo off; fi ;;
-      *) echo "usage: perf-mode on|off|toggle|status" >&2; exit 1 ;;
+      waybar) # the custom/perf module; dim wand = effects currently off
+        if active; then
+          ${pkgs.jq}/bin/jq -nc '{text: "", class: "off",
+            tooltip: "Performance mode: animations, blur, shadows, video wallpapers and the visualizer off (click to restore)"}'
+        else
+          ${pkgs.jq}/bin/jq -nc '{text: "", class: "on",
+            tooltip: "Effects on (click for performance mode)"}'
+        fi
+        ;;
+      *) echo "usage: perf-mode on|off|toggle|status|waybar" >&2; exit 1 ;;
     esac
   '';
 
@@ -597,13 +621,29 @@ let
     RUNDIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/waybar-cava"
     PKILL="${pkgs.procps}/bin/pkill"
 
-    if [ "$1" = "toggle" ]; then
-      if [ -f "$OFF" ]; then
-        rm -f "$OFF"
-      else
-        mkdir -p "$(dirname "$OFF")"
-        touch "$OFF"
-      fi
+    if [ "$1" = "status" ]; then
+      if [ -f "$OFF" ]; then echo off; else echo on; fi
+      exit 0
+    fi
+
+    # on/off are for perf-mode, which needs to force a state rather than flip
+    # whatever the current one is.
+    if [ "$1" = "toggle" ] || [ "$1" = "on" ] || [ "$1" = "off" ]; then
+      case "$1" in
+        on) rm -f "$OFF" ;;
+        off)
+          mkdir -p "$(dirname "$OFF")"
+          touch "$OFF"
+          ;;
+        toggle)
+          if [ -f "$OFF" ]; then
+            rm -f "$OFF"
+          else
+            mkdir -p "$(dirname "$OFF")"
+            touch "$OFF"
+          fi
+          ;;
+      esac
       # A runner killed with SIGKILL leaves its PID file behind, and USR1's
       # default action terminates, so only signal PIDs that are still a
       # waybar-cava process.

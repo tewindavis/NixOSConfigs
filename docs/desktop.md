@@ -36,7 +36,7 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 | `SUPER+CTRL+h/j/k/l` | Move window into the neighbouring group, or out of its own (`group_aware` move) |
 | `SUPER+X` | Kill active window |
 | `SUPER+F` | Fullscreen |
-| `SUPER+SHIFT+F` | `perf-mode toggle` (blur, shadows, animations off; video wallpapers paused) |
+| `SUPER+SHIFT+F` | `perf-mode toggle` (blur, shadows, animations off; video wallpapers paused, visualizer stopped) |
 | `SUPER+P` | Pseudotile |
 | `SUPER+SHIFT+Space` | Toggle floating |
 | `SUPER+h/j/k/l` | Focus left/down/up/right |
@@ -89,6 +89,7 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `pulseaudio` | `pavucontrol` |
 | `custom/power-profile` | Cycle power profile |
 | `custom/hyprsunset` | Toggle blue-light filter |
+| `custom/perf` | Toggle performance mode (`perf-mode toggle`); dim wand icon means the effects are currently off |
 | `custom/power` | `wlogout` |
 | `custom/notification` | Click: toggle the swaync notification center. Right-click: toggle do not disturb (`swaync-client -d`). State comes from `swaync-client -swb`; its `alt` value picks the icon and is the CSS class |
 | `custom/cava` | Turn the audio visualizer off/on |
@@ -107,13 +108,13 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `waybar-weather` | waybar module | wttr.in one-liner as JSON for waybar's `custom` module type; falls back to `"N/A"` on any fetch failure. |
 | `waybar-power-profile` | waybar module (click = cycle) | Reads/cycles `power-profiles-daemon`'s profile. Only meaningful on `framework` (see `docs/hosts.md`) — reports "unavailable" elsewhere. |
 | `waybar-hyprsunset` | waybar module (click = toggle), `SUPER+R`/`SUPER+SHIFT+R` | Blue-light filter widget. Per `docs/gotchas.md`, this is the *only* correct way to drive hyprsunset once the daemon is already running. |
-| `waybar-cava` | waybar module (click = toggle) | Audio visualizer: runs the `cava` CLI in raw mode and maps each frame to block characters. Quiet frames show flat bars; it hides after `waybarCavaHideAfter` (10) seconds of them, so dialogue gaps don't make it flicker. It sits at the left end of `modules-right` rather than in the center group, so appearing and disappearing doesn't shift the clock. Off means cava isn't running and a dim note icon remains. Used instead of waybar's built-in `cava` module, whose only click action freezes the bars. Toggling signals the runners listed in `$XDG_RUNTIME_DIR/waybar-cava/`. |
+| `waybar-cava` | waybar module (click = toggle) | Audio visualizer: runs the `cava` CLI in raw mode and maps each frame to block characters. Quiet frames show flat bars; it hides after `waybarCavaHideAfter` (10) seconds of them, so dialogue gaps don't make it flicker. It sits at the left end of `modules-right` rather than in the center group, so appearing and disappearing doesn't shift the clock. Off means cava isn't running and a dim note icon remains. Used instead of waybar's built-in `cava` module, whose only click action freezes the bars. Toggling signals the runners listed in `$XDG_RUNTIME_DIR/waybar-cava/`. `toggle`/`on`/`off`/`status`: the forced forms and the query exist for `perf-mode`, which has to set a state rather than flip one. |
 | `update-check` | `update-check` user timer (daily 10:00, catches up after sleep) | Runs `nix flake update --output-lock-file <temp>` so `/etc/nixos` is never touched, compares it with `flake.lock`, and if any input is newer shows a notification listing them with **Update now** / **Later**. Waits for a network (`nm-online`); a failed check is silent until the next day. |
 | `update-apply` | "Update now" (opens in Ghostty) | Refuses if `flake.lock` has uncommitted changes. Otherwise `nix flake update`, then `nh os switch /etc/nixos -H <this host's flake attr> --ask`, which shows the package diff and asks before activating. Declining restores `flake.lock`; accepting offers to commit it. |
 | `idle-dim` | hypridle (270s idle / resume) | `idle-dim dim` saves the current backlight level in `$XDG_RUNTIME_DIR` and sets 10%; `idle-dim restore` puts it back. Replaces `brightnessctl -s`/`-r`, whose save file is a fixed `/tmp` path. |
 | `grafana-tunnel` | by hand: `grafana-tunnel <host> [local-port]` | SSH tunnel to Grafana on a monitoring host (dl-prototype, utm-nixos), where it listens only on 127.0.0.1, then opens the browser at `http://localhost:<port>`. See `modules/services/monitoring.nix`. |
 | `wallpaper-video` | `cycle-wallpaper`, `toggle-blackout`, `perf-mode`, `power-watch` | Video wallpapers: one `mpvpaper` per output (`-p -a FULL`: pauses itself under a fullscreen window; `panscan=1.0` crops to fill), each with an mpv IPC socket in `$XDG_RUNTIME_DIR/wallpaper-video/`. `start`, `stop`, `stop-all [keep]`, `resume-saved`, `sync` (pause/resume to match `should-play`: on AC and performance mode off). |
-| `perf-mode` | `SUPER+SHIFT+F`; `power-watch` | `on`/`off`/`toggle`/`status`. Sets `animations.enabled`, `decoration.blur.enabled` and `decoration.shadow.enabled` live via `hyprctl eval`, then `wallpaper-video sync`. Reads the live `animations:enabled` rather than a flag, since a config reload resets it. |
+| `perf-mode` | `custom/perf` waybar button, `SUPER+SHIFT+F`; `power-watch` | `on`/`off`/`toggle`/`status`/`waybar` (the last renders the bar module). Sets `animations.enabled`, `decoration.blur.enabled` and `decoration.shadow.enabled` live via `hyprctl eval`, then `wallpaper-video sync` and `waybar-cava off`. Reads the live `animations:enabled` rather than a flag, since a config reload resets it. The visualizer is only turned back on if performance mode was what stopped it, tracked by a sentinel in `$XDG_RUNTIME_DIR` so a deliberate click on `custom/cava` survives a round trip. |
 | `power-watch` | autostart | Loop, every 10s: entering the power-saver profile runs `perf-mode on`, leaving it `perf-mode off` (changes only, so a manual toggle holds until the next change); keeps video wallpapers paused whenever they shouldn't play, re-applied each tick because mpvpaper's auto-pause can resume one when a fullscreen window closes. |
 | `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `$XDG_RUNTIME_DIR` (checked to still be `wf-recorder` before it's signalled), saves timestamped mp4 to `~/Videos/Recordings`, `notify-send` toast on start/stop. |
 

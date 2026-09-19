@@ -48,7 +48,7 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 *   **Sharp Cursor:** the Catppuccin Mocha blue cursor is drawn from its vector (hyprcursor) version, so it stays crisp at the laptop's 1.175× and the docked monitors' 1.5× scaling.
 *   **Shape & Layout:** Windows use the same 12px corner radius as the bar, launcher and notifications. Pop-up utilities (volume, Bluetooth, network, image viewer) float centered instead of squashing the tiled layout, and `SUPER + G` turns windows into tabbed groups with a palette-colored tab bar.
 *   **Boot to Desktop:** A Plymouth splash (Catppuccin Mocha) with silent boot, including the LUKS prompt on framework, then a Tokyo Night–themed `tuigreet` headed with the machine's name and NixOS release. The TTY palette matches Ghostty's.
-*   **Performance Mode:** `SUPER + SHIFT + F` switches blur, shadows and all animations off (and pauses video wallpapers) for battery or a sluggish moment; it also turns on by itself in the power-saver profile and off again when you leave it.
+*   **Performance Mode:** the wand button in the bar, or `SUPER + SHIFT + F`, switches blur, shadows and all animations off, pauses video wallpapers and stops the audio visualizer for battery or a sluggish moment; the icon dims while it's on. It also turns on by itself in the power-saver profile and off again when you leave it. Turning it off restores the visualizer only if performance mode was what stopped it.
 *   **Notification Sounds:** a soft chime for normal notifications, a warning tone for critical ones, silence for low urgency and while do-not-disturb is on (critical still sounds, as its popup still shows).
 *   **Themed CLI:** `bat`, `fzf`, `bottom`, `zathura`, `eza` (via `vivid`) and zsh's syntax highlighting and autosuggestions all use the same palette. Starship's right side shows how long slow (2s+) commands took and the time, and Ghostty draws a short fading trail when the cursor jumps.
 *   **Window Swallowing:** A graphical app started from a Ghostty window (an `xdg-open`ed PDF, `mpv`, `imv`, anything) takes that window's place until it closes.
@@ -78,7 +78,7 @@ System controls are bound to the **`SUPER`** (Command) key, apart from `Print`, 
 | `SUPER + 1-9` | Switch Workspace |
 | `SUPER + SHIFT + 1-9` | Move Window to Workspace |
 | `SUPER + F` | Toggle Fullscreen |
-| `SUPER + SHIFT + F` | Toggle Performance Mode (blur, shadows, animations off; video wallpapers paused) |
+| `SUPER + SHIFT + F` | Toggle Performance Mode (blur, shadows, animations off; video wallpapers paused, visualizer stopped) |
 | `SUPER + P` | Toggle Pseudotile |
 | `SUPER + SHIFT + Space` | Toggle Floating |
 | `SUPER + S` | Toggle Dropdown Scratchpad Terminal |
