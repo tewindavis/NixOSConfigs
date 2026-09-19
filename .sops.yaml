@@ -10,6 +10,7 @@
 # from). To add dl-prototype or utm-vm once you're on them:
 #   cat /etc/ssh/ssh_host_ed25519_key.pub | nix run nixpkgs#ssh-to-age
 # then add the result below and re-run `sops updatekeys secrets/secrets.yaml`
+# (from a host that can already decrypt; see docs/secrets.md "Running sops")
 # so the file is re-encrypted for the new recipient too.
 keys:
   - &framework age1cmnrjfsrrtkcy9l49mh09hpgkcvr9ah3eattfkpml33g5jrs8v5s2fwpva

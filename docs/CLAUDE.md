@@ -15,8 +15,8 @@ bend the code to match it.
 
 | Question | Authority |
 |---|---|
-| Which keys are bound | `users/td/hypr/hyprland.lua` |
-| Which packages, LSPs, scripts, dotfiles exist | `users/td/home.nix` |
+| Which keys are bound | `users/td/hypr/hyprland.lua`, plus `users/td/hyprshell/config.json` (SUPER+Tab, ALT+Tab) |
+| Which packages, LSPs, scripts, dotfiles exist | `users/td/home.nix` (user); system-wide packages in `modules/core` and `modules/desktop`; the RL Python env in `modules/dev/rl-binary.nix` |
 | Which modules a host gets | `hosts/<name>/configuration.nix` |
 | Which Neovim plugins are installed | `users/td/nvim/lazy-lock.json` |
 | Which hosts can decrypt secrets | `.sops.yaml` |

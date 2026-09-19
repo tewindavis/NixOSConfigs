@@ -11,7 +11,7 @@ result-*
 .DS_Store
 
 # Accidental plaintext secrets: sops should be the only thing writing to
-# secrets/*.yaml, decrypted in-place via `sops secrets/secrets.yaml`. These
+# secrets/*.yaml, decrypted in-place by sops (docs/secrets.md). These
 # patterns catch stray decrypted copies or local env files before they can
 # be committed.
 *.dec.yaml

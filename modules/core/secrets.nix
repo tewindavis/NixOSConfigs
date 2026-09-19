@@ -11,7 +11,8 @@ _:
   # To add a real secret:
   #   1. Make sure this host's key is a recipient in .sops.yaml (framework's
   #      already is).
-  #   2. sops secrets/secrets.yaml   # edit in cleartext, re-encrypts on save
+  #   2. sops secrets/secrets.yaml   # edit in cleartext, re-encrypts on save;
+  #      needs the host key, see docs/secrets.md "Running sops"
   #   3. Declare it: sops.secrets.my_secret = {};
   #      then reference its decrypted path: config.sops.secrets.my_secret.path
   sops.defaultSopsFile = ../../secrets/secrets.yaml;

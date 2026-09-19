@@ -25,8 +25,8 @@ Hardened by default on every host. The full reference, with the cost of each cho
 *   **Quiet on the LAN:** systemd-resolved's LLMNR and mDNS are off, and `cups-browsed` is disabled, so printers advertised on the LAN are never added automatically. Print dialogs still list network printers on hosts where mDNS is open.
 *   **Passwords stay out of clipboard history:** entries copied from KeePassXC are never written to `cliphist`, and the history file is private (`0600`).
 *   **Hostile files:** archives go through the official 7-Zip rather than the abandoned `p7zip` fork, and the unmaintained LHA backend is removed.
-*   **Supply chain:** every flake input shares one pinned `nixpkgs`, and `nix flake check` fails if that changes. Neovim plugins are pinned by `lazy-lock.json`.
-*   **Updates, on your say-so:** a daily check notifies you when newer inputs (nixpkgs, Home Manager, …) are available, listing what moved. **Update now** opens a terminal that updates `flake.lock` and runs `nh os switch --ask`, so you see the package diff and confirm before anything changes. Nothing updates on its own. `markdown-preview.nvim`, which downloaded an unsigned binary from a dormant repo, is disabled. `blink.cmp` still downloads its prebuilt fuzzy-matcher library; see `docs/security.md`.
+*   **Supply chain:** every flake input shares one pinned `nixpkgs`, and `nix flake check` fails if that changes. Neovim plugins are pinned by `lazy-lock.json`. `markdown-preview.nvim`, which downloaded an unsigned binary from a dormant repo, is disabled. `blink.cmp` still downloads its prebuilt fuzzy-matcher library; see `docs/security.md`.
+*   **Updates, on your say-so:** a daily check notifies you when newer inputs (nixpkgs, Home Manager, …) are available, listing what moved. **Update now** opens a terminal that updates `flake.lock` and runs `nh os switch --ask`, so you see the package diff and confirm before anything changes. Nothing updates on its own.
 
 ---
 
@@ -34,23 +34,25 @@ Hardened by default on every host. The full reference, with the cost of each cho
 
 The desktop environment is built on the **Tokyo Night (Night)** color palette, optimized for high contrast and vibrant visual energy without pastel washout.
 
-*   **Vibrant Glass:** Windows default to a frosted-glass aesthetic (90% active / 80% inactive opacity over a 6-size, 3-pass blur with a touch of vibrancy and noise), with soft shadows. Waybar, wofi, notifications and the swayosd OSD are blurred too, via layer rules. Two exceptions: Ghostty is a touch more translucent (its window rule multiplies on top of that, plus its own background opacity), and Brave is forced fully opaque.
+*   **Vibrant Glass:** Windows default to a frosted-glass aesthetic (90% active / 80% inactive opacity over a 6-size, 3-pass blur with a touch of vibrancy and noise), with soft shadows. Waybar, wofi, notifications and the swayosd OSD are blurred too, via layer rules. Two exceptions: Ghostty is a touch more translucent (its window rule multiplies on top of that, plus its own background opacity), and Brave is forced fully opaque. Brave's own tab strip and toolbar are tinted to the palette's `#1a1b26` by a managed browser policy, so they blend in rather than sitting there as a gray block.
 *   **Complementary Spectrum:** Status modules and UI accents use a bold spectrum: **Blue** (#7aa2f7) for identity, **Green** (#9ece6a) for location, and **Orange** (#ff9e64) for status.
 *   **Automated Art:** The `setup-wallpapers` script fetches a starter Hyprchan wallpaper into `~/Pictures/Wallpapers` on first login (it runs at every Hyprland start but skips a file that's already there); drop in more images and `cycle-wallpaper` (`SUPER + W`) gives each monitor its own random pick from the folder, growing out from the cursor.
 *   **Themed Lock & Notifications:** `hyprlock` (with a live clock, date, weather, battery, now-playing track, and Fingerprint-or-Password prompt), `swaync` notifications, the `swayosd` volume/brightness OSD, and the `wlogout` power menu are all styled to match the Waybar/Wofi palette — dark translucent panels, blue borders, and urgency-tiered accent colors, including a recolored `wlogout` icon set (blue lock/logout, green suspend/hibernate, orange reboot, red shutdown).
 *   **Idle Inhibitor:** A clickable Waybar toggle (right of the volume module) suspends `hypridle`'s auto-lock/DPMS while active — turns red when suppressing.
 *   **Idle Warning:** The laptop panel dims to 10% at 4:30 idle, 30 seconds before the 5-minute lock; any input restores the brightness.
-*   **Workspace Buttons:** Each bar shows only its own monitor's workspaces that have windows in them, each with icons of the apps it holds.
+*   **Workspace Buttons:** Each bar shows only its own monitor's workspaces that have windows in them, each with icons of the apps it holds. Bar tooltips (calendar, weather, module details) are styled like the panels.
 *   **A Bar Per Monitor:** Every bar except the portrait Dell's shows now-playing media and an inline `cava` audio visualizer (click it to turn it off; a dim note icon stays to turn it back on). The laptop panel leaves out CPU/memory to save battery, the portrait Dell gets a slim bar (workspaces + clock), and everything else gets the full bar.
 *   **Privacy & Notifications:** A red Waybar indicator appears while the screen is being shared or the mic is recording. Notifications come from `swaync`: its bell in Waybar turns blue for unread ones, click it (or `SUPER + N`) for a notification center with history, a do-not-disturb switch and media controls, and right-click it to toggle do not disturb.
 *   **Motion:** Workspaces slide-and-fade, the scratchpad drops down from the top (dimming what's behind it), and the active border's blue→green gradient slowly rotates. Notifications slide in from the right and the launcher pops in. `SUPER + W` wallpapers grow outward from the cursor.
 *   **Overview & Switcher:** `SUPER + Tab` opens a `hyprshell` overview of every workspace and its windows with a built-in launcher (apps by usage, calculator, web search, power actions). `ALT + Tab` is a Windows-style switcher: most recently used first, hold Alt and tap Tab, release to switch. Both are themed and blurred to match.
+*   **Sharp Cursor:** the Catppuccin Mocha blue cursor is drawn from its vector (hyprcursor) version, so it stays crisp at the laptop's 1.175× and the docked monitors' 1.5× scaling.
 *   **Shape & Layout:** Windows use the same 12px corner radius as the bar, launcher and notifications. Pop-up utilities (volume, Bluetooth, network, image viewer) float centered instead of squashing the tiled layout, and `SUPER + G` turns windows into tabbed groups with a palette-colored tab bar.
 *   **Boot to Desktop:** A Plymouth splash (Catppuccin Mocha) with silent boot, including the LUKS prompt on framework, then a Tokyo Night–themed `tuigreet` headed with the machine's name and NixOS release. The TTY palette matches Ghostty's.
 *   **Themed CLI:** `bat`, `fzf`, `bottom`, `zathura`, `eza` (via `vivid`) and zsh's syntax highlighting and autosuggestions all use the same palette. Starship's right side shows how long slow (2s+) commands took and the time, and Ghostty draws a short fading trail when the cursor jumps.
 *   **Window Swallowing:** A graphical app started from a Ghostty window (an `xdg-open`ed PDF, `mpv`, `imv`, anything) takes that window's place until it closes.
 *   **Themed Git Diffs:** `git diff`/`log -p`/`show` go through `delta`: side-by-side, line numbers, tokyonight syntax and diff colors.
-*   **Themed Qt Apps:** syncthingtray and Octave get the palette through `qt5ct`/`qt6ct` with the Fusion style. KeePassXC is deliberately left out (no third-party theme plugin inside the password manager) and uses its own built-in Dark theme.
+*   **Themed Qt Apps:** syncthingtray and QGIS get the palette through `qt5ct`/`qt6ct` with the Fusion style. KeePassXC is deliberately left out (no third-party theme plugin inside the password manager) and uses its own built-in Dark theme.
+*   **Thunar:** the file manager (`SUPER + E`), with trash and removable/network mounts (`gvfs`) and image thumbnails (`tumbler`).
 *   **Themed GTK Apps:** Thunar, pavucontrol, Bluetooth and network settings and other GTK3/GTK4 apps use the palette too (darker header bars and sidebars, blue accents).
 *   **Weather:** A Waybar module next to the clock shows current conditions via `wttr.in`, with a graceful "N/A" fallback if the network or upstream service is unavailable.
 *   **Auto Blue-Light Filter:** `hyprsunset` runs as a daemon on login and switches itself between neutral (7:30am) and warm 2450K (8:00pm) — f.lux/redshift-style — per the schedule in `hyprsunset.conf`. A Waybar toggle (sun/moon icon, next to the idle inhibitor) shows and flips the current state; `SUPER + R`/`SUPER + SHIFT + R` do the same from the keyboard. Any of the three count as a manual override until the next scheduled switch.
@@ -59,7 +61,7 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 
 ## ⌨️ Hyprland Cheat Sheet
 
-System controls are bound to the **`SUPER`** (Command) key, apart from `Print` and the media keys.
+System controls are bound to the **`SUPER`** (Command) key, apart from `Print`, the media keys and the `ALT + Tab` switcher.
 
 ### Applications & Navigation
 | Key | Action |
@@ -110,11 +112,12 @@ System controls are bound to the **`SUPER`** (Command) key, apart from `Print` a
 The environment is "ready-to-code" immediately upon login, featuring a modern Zsh shell and a full compiler stack.
 
 *   **Languages:** Rust (Cargo/Rustc/Rustlings), Zig (ZLS), Julia, Lua, Octave, C/C++, and Python 3.
-*   **Modern Shell:** Zsh is the default shell, featuring syntax highlighting, auto-suggestions, and the **Starship** Powerline prompt.
+*   **Modern Shell:** Zsh is the default shell, featuring syntax highlighting, auto-suggestions, the **Starship** Powerline prompt, and a stock `fastfetch` system-info splash when a shell starts.
 *   **CLI Essentials:** `ripgrep`, `fd`, `bat` (cat), `eza` (ls), `zoxide` (cd), `gh` (GitHub CLI), and `direnv` for automatic flake environment loading.
 *   **Media & Printing:** `mpv` handles video/audio opened from Thunar; CUPS + Avahi provide zero-config discovery and printing to network/AirPrint printers, managed via `system-config-printer` (discovery is off on `framework`, which opens no inbound ports; add printers there by IP).
 *   **Screen Sharing:** `xdg-desktop-portal-hyprland` is wired in alongside the GTK portal, so screen/window capture works in Brave and any other portal-aware app.
 *   **Screen Recording:** `SUPER + ALT + R` toggles `wf-recorder` in the background, saving timestamped mp4s to `~/Videos/Recordings` with a start/stop notification.
+*   **Nix Housekeeping:** the store is garbage-collected weekly, deleting system generations older than 7 days, so rollbacks reach back about a week. Identical store files are deduplicated automatically.
 *   **Archives:** `xarchiver` (Thunar's archive-plugin backend) plus `_7zz`/`unrar`/`zip`/`unzip` handle zip/7z/rar/tar/gzip out of the box. `_7zz` is the official 7-Zip CLI rather than the abandoned `p7zip` fork, and `xarchiver` is overridden to use it as its 7z backend too — see `docs/gotchas.md`.
 *   **Password Manager:** `keepassxc` is the default handler for `.kdbx` files. Passwords copied from it are kept out of `SUPER + V` clipboard history.
 *   **File Sync:** `syncthing` runs as a system service (LAN/P2P sync), with `syncthingtray` in the waybar tray for status/control; `rclone` is available for cloud-storage remotes.

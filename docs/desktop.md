@@ -16,7 +16,8 @@ that one file, not in separate per-host configs.
 
 **This file's table is not machine-checked**, so update it by hand when
 binds change. **`hyprland.lua` is the source of truth**: regenerate from
-`grep 'hl.bind' users/td/hypr/hyprland.lua` if any doc disagrees.
+`grep 'hl.bind' users/td/hypr/hyprland.lua` if any doc disagrees, plus
+`users/td/hyprshell/config.json` for the two binds hyprshell registers.
 
 ## Keybindings (authoritative — from `hyprland.lua`)
 
@@ -47,8 +48,8 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 | `SUPER+SHIFT+W` | Toggle blackout wallpaper |
 | `SUPER+R` | Hyprsunset night override @ 2500K |
 | `SUPER+SHIFT+R` | Hyprsunset day (identity) |
-| `SUPER+SHIFT+S` | Region screenshot → `swappy` for annotation (swappy's own toolbar does the copy/save) |
-| `Print` | Full-output screenshot, instant copy+save, with notification |
+| `SUPER+SHIFT+S` | Region screenshot (`grimblast save area`) → `swappy` for annotation (swappy's own toolbar does the copy/save) |
+| `Print` | Full-output screenshot (`grimblast --notify copysave output`), instant copy+save, with notification |
 | `SUPER+C` | `hyprpicker -a` color picker |
 | `SUPER+V` | Clipboard history (`cliphist` → wofi) |
 | `SUPER+period` | `wofi-emoji`: types the pick into the focused window (`wtype`) and copies it |
@@ -108,6 +109,8 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `waybar-cava` | waybar module (click = toggle) | Audio visualizer: runs the `cava` CLI in raw mode and maps each frame to block characters. Quiet frames show flat bars; it hides after `waybarCavaHideAfter` (10) seconds of them, so dialogue gaps don't make it flicker. It sits at the left end of `modules-right` rather than in the center group, so appearing and disappearing doesn't shift the clock. Off means cava isn't running and a dim note icon remains. Used instead of waybar's built-in `cava` module, whose only click action freezes the bars. Toggling signals the runners listed in `$XDG_RUNTIME_DIR/waybar-cava/`. |
 | `update-check` | `update-check` user timer (daily 10:00, catches up after sleep) | Runs `nix flake update --output-lock-file <temp>` so `/etc/nixos` is never touched, compares it with `flake.lock`, and if any input is newer shows a notification listing them with **Update now** / **Later**. Waits for a network (`nm-online`); a failed check is silent until the next day. |
 | `update-apply` | "Update now" (opens in Ghostty) | Refuses if `flake.lock` has uncommitted changes. Otherwise `nix flake update`, then `nh os switch /etc/nixos -H <this host's flake attr> --ask`, which shows the package diff and asks before activating. Declining restores `flake.lock`; accepting offers to commit it. |
+| `idle-dim` | hypridle (270s idle / resume) | `idle-dim dim` saves the current backlight level in `$XDG_RUNTIME_DIR` and sets 10%; `idle-dim restore` puts it back. Replaces `brightnessctl -s`/`-r`, whose save file is a fixed `/tmp` path. |
+| `grafana-tunnel` | by hand: `grafana-tunnel <host> [local-port]` | SSH tunnel to Grafana on a monitoring host (dl-prototype, utm-nixos), where it listens only on 127.0.0.1, then opens the browser at `http://localhost:<port>`. See `modules/services/monitoring.nix`. |
 | `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `$XDG_RUNTIME_DIR` (checked to still be `wf-recorder` before it's signalled), saves timestamped mp4 to `~/Videos/Recordings`, `notify-send` toast on start/stop. |
 
 ## hyprsunset day/night schedule
@@ -209,8 +212,9 @@ be changed from settings. Check it's applied at `brave://policy`; policies
 are read only when Brave starts.
 
 Notifications are swaync (`services.swaync`, config and style in
-`swaync/`). `style.css` only overrides the palette variables and urgency
-borders of swaync's packaged stylesheet, which swaync always loads first.
+`swaync/`). `style.css` only overrides the palette variables, font and
+urgency borders of swaync's packaged stylesheet, which swaync always loads
+first.
 
 Qt apps use `qt5ct`/`qt6ct` (`qt.platformTheme.name = "qtct"`) with the
 Fusion style and `qtColorScheme` in `home.nix`, a palette built from the
@@ -244,6 +248,10 @@ Starship's `right_format` shows `cmd_duration` (commands over 2s) and the
 time. Ghostty's `custom-shader` is `ghostty/shaders/cursor_trail.glsl`, a
 fading trail when the cursor moves two or more cells; shaders keep an
 animation loop running while a Ghostty window is focused.
+
+Fonts (`modules/desktop/default.nix`): Nerd Font builds of JetBrains Mono
+(the UI and terminal font throughout), Fira Code and Zed Mono, plus Noto
+Color Emoji. Inter is the GTK UI font (`home.nix`).
 
 GTK/Qt/dconf theming (`gtk`, `qt`, `dconf.settings` in `home.nix`) is the
 declarative source of truth for dark mode + accent color — don't add
@@ -279,6 +287,13 @@ inactive and `hyprland.lua`'s autostart launches the processes instead:
   wanted by `wayland.systemd.target`, which defaults to
   `graphical-session.target`, so it isn't enabled; autostart runs
   `hyprshell run`, which finds `~/.config/hyprshell/config.json` itself.
+
+The same autostart also runs helpers that were never units: `nm-applet
+--indicator` (network icon in the waybar tray), `hyprpolkitagent` (the
+password prompt for privileged GUI actions such as mounting drives in
+Thunar; without an agent they fail silently), the clipboard watchers, and
+`spice-vdagent` (only does anything in the VM). `hyprland.lua`'s
+`hyprland.start` handler is the complete list.
 
 Check with `pgrep -a <name>`, not `systemctl --user`, which reports the
 unused units as inactive even while the processes run.

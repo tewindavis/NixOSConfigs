@@ -16,13 +16,34 @@ separately managed keypair. NixOS already provisions and protects that key,
 so this avoids a second secret-management problem just to bootstrap the
 first one.
 
+## Running sops
+
+`sops` isn't installed, and there is no personal age key: the only thing
+that can decrypt is a recipient host's SSH host key, which only root can
+read. So every `sops` command below runs like this, with `sudo` only reading
+the key and `sops` itself running as you (your `$EDITOR`, file stays yours):
+
+```bash
+cd /etc/nixos
+export SOPS_AGE_KEY=$(sudo nix run nixpkgs#ssh-to-age -- -private-key -i /etc/ssh/ssh_host_ed25519_key)
+nix run nixpkgs#sops -- secrets/secrets.yaml      # or: -- updatekeys secrets/secrets.yaml
+unset SOPS_AGE_KEY
+```
+
+The key has to be *converted* (`ssh-to-age -private-key`), the same way
+sops-nix does at activation, because the recipients in `.sops.yaml` are
+`ssh-to-age` conversions. Pointing sops at the raw SSH key
+(`SOPS_AGE_SSH_PRIVATE_KEY_FILE`) only works for files encrypted to
+`ssh-ed25519` recipients, and fails here with "Failed to get the data key".
+`unset` afterwards, since the variable holds the host's private key.
+
 ## Add a real secret
 
 1. Confirm the target host is an age recipient in `.sops.yaml` (only
    `framework` is today — see "Enroll a new host" below if not).
-2. `sops secrets/secrets.yaml` — opens cleartext in `$EDITOR`,
-   re-encrypts automatically on save. Never hand-edit the encrypted file or
-   commit a decrypted copy.
+2. `sops secrets/secrets.yaml` (run as in "Running sops" above) — opens
+   cleartext in `$EDITOR`, re-encrypts automatically on save. Never
+   hand-edit the encrypted file or commit a decrypted copy.
 3. Declare it in the relevant module: `sops.secrets.my_secret = {};`
 4. Reference the decrypted path at runtime:
    `config.sops.secrets.my_secret.path` (a runtime path under
@@ -37,10 +58,11 @@ cat /etc/ssh/ssh_host_ed25519_key.pub | nix run nixpkgs#ssh-to-age
 ```
 
 Add the resulting `age1...` key to `.sops.yaml` under `keys:`, add it to the
-relevant `creation_rules` key group, then re-encrypt for the new recipient:
+relevant `creation_rules` key group, then re-encrypt for the new recipient
+(on a host that can already decrypt, i.e. framework, as in "Running sops"):
 
 ```bash
-sops updatekeys secrets/secrets.yaml
+nix run nixpkgs#sops -- updatekeys secrets/secrets.yaml
 ```
 
 Skipping `updatekeys` after a `.sops.yaml` change means the new host is

@@ -48,7 +48,7 @@ docs/
 scripts/
   check-keybinds.sh   # README vs hyprland.lua + hyprshell/config.json bind diff; wired into `nix flake check`
   check-single-nixpkgs.sh   # fails if flake.lock pins >1 nixpkgs; wired into `nix flake check`
-secrets/secrets.yaml        # sops-encrypted; edit only via `sops secrets/secrets.yaml`
+secrets/secrets.yaml        # sops-encrypted; edit only via sops, as root-keyed in docs/secrets.md ("Running sops")
 .sops.yaml                  # sops age-key recipients per host
 treefmt.nix                 # nixfmt + statix + deadnix, run via `nix fmt`
 ```

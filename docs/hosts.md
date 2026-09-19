@@ -106,7 +106,7 @@ machine up is mostly ordering:
    .#dl-prototype`. SSH comes up key-only with `td`'s key from
    `users/td/nixos.nix`.
 5. If it will hold secrets, enroll it in sops first (`docs/secrets.md`,
-   "Enroll a new host"), including `sops updatekeys`. Nothing here needs a
+   "Enroll a new host"), including `sops updatekeys`, run from framework. Nothing here needs a
    secret yet: Grafana generates its own on first start.
 6. Check the monitoring came up: `systemctl status prometheus grafana
    grafana-secrets prometheus-node-exporter prometheus-nvidia-gpu-exporter

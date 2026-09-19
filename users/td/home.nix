@@ -890,10 +890,10 @@ in
   };
 
   # Qt Theming
-  # Qt apps (KeePassXC, syncthingtray, Octave) get the palette through
-  # qt5ct/qt6ct: a color scheme built from the Tokyo Night values, applied
-  # with the Fusion style (Adwaita's Qt style draws its own grays and
-  # ignores the palette).
+  # Qt apps (syncthingtray, QGIS; KeePassXC opts out, see its wrapper) get
+  # the palette through qt5ct/qt6ct: a color scheme built from the Tokyo
+  # Night values, applied with the Fusion style (Adwaita's Qt style draws
+  # its own grays and ignores the palette).
   qt = {
     enable = true;
     platformTheme.name = "qtct";
