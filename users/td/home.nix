@@ -736,7 +736,7 @@ let
   # and peaks at 466Hz, loud enough to distort the Framework's speakers with
   # the sink up. Volume is a stream gain on top of the sink volume, so this
   # is quiet at any sink setting; raise it here rather than swapping files.
-  notifySoundVolume = "0.25";
+  notifySoundVolume = "0.10";
   notify-sound = pkgs.writeShellScript "notify-sound" ''
     sounds=${pkgs.kdePackages.ocean-sound-theme}/share/sounds/ocean/stereo
     case "$1" in

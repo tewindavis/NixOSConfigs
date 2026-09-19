@@ -223,7 +223,7 @@ Notifications are swaync (`services.swaync`, config and style in
 scripts via `notify-sound`: `message-new-email` for normal urgency
 (skipped while do-not-disturb is on), `dialog-warning-auth` for critical
 (always, as critical popups bypass DND), nothing for low; KDE's ocean sound
-theme, played with `pw-play --volume` at `notifySoundVolume` (0.25, a stream
+theme, played with `pw-play --volume` at `notifySoundVolume` (0.10, a stream
 gain on top of the sink volume). Ocean rather than freedesktop because its
 tones sit near 350-500Hz; freedesktop's `message-new-instant` centres near
 900Hz with a 466Hz peak, which distorted the Framework's speakers. `style.css` only overrides the palette variables, font and
