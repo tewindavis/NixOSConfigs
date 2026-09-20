@@ -75,24 +75,27 @@ in
   };
   powerManagement.resumeCommands = "${applyLimit}";
 
-  # Owned by fwupd-refresh, matching /var/lib/fwupd itself: systemd-tmpfiles
-  # refuses to manage a root-owned directory inside one owned by an
-  # unprivileged user ("Detected unsafe path transition ... during
-  # canonicalization"), its guard against symlink attacks, and silently does
-  # nothing every boot. The daemon reads these as root, but the trust
-  # boundary is unchanged — fwupd's whole state directory already belongs to
-  # that user — and the link itself points into the immutable store.
-  systemd.tmpfiles.settings."10-fwupd-dock-quirk" = {
-    "/var/lib/fwupd/quirks.d".d = {
-      user = "fwupd-refresh";
-      group = "fwupd-refresh";
-      mode = "0755";
+  # A unit rather than systemd.tmpfiles, which cannot do this job: the quirk
+  # directory lives inside /var/lib/fwupd, owned by fwupd-refresh, and
+  # systemd-tmpfiles refuses to manage a differently-owned directory inside a
+  # user-owned one ("Detected unsafe path transition ... during
+  # canonicalization" — its symlink-attack guard). It declines *without*
+  # failing, so the only symptom is a missing file and one journal line. This
+  # runs as root, fixes the ownership itself, and if it ever can't, it fails
+  # visibly and the handler in modules/core/failure-notify.nix says so.
+  systemd.services.fwupd-dock-quirk = {
+    description = "Install the CalDigit TS4 hub quirk for fwupd";
+    wantedBy = [ "multi-user.target" ];
+    before = [ "fwupd.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
     };
-    "/var/lib/fwupd/quirks.d/99-caldigit-ts4-hub.quirk"."L+" = {
-      user = "fwupd-refresh";
-      group = "fwupd-refresh";
-      argument = "${dockHubQuirk}";
-    };
+    path = [ pkgs.coreutils ];
+    script = ''
+      install -d -o fwupd-refresh -g fwupd-refresh -m 0755 /var/lib/fwupd/quirks.d
+      ln -sfn ${dockHubQuirk} /var/lib/fwupd/quirks.d/99-caldigit-ts4-hub.quirk
+    '';
   };
 
   security.pam.services.login.fprintAuth = true;

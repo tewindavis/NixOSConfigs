@@ -55,8 +55,8 @@ hardware to manage.
   `mode = "preferred"`, `scale = "auto"`. Every other host uses that
   preferred/auto rule for all outputs.
 - A `no-probe` fwupd quirk for the dock's upstream Intel hub
-  (`USB\VID_8087&PID_0B40`), linked into `/var/lib/fwupd/quirks.d` by
-  tmpfiles. Without it `fwupd.service` cannot start while the TS4 is
+  (`USB\VID_8087&PID_0B40`), linked into `/var/lib/fwupd/quirks.d` by the
+  `fwupd-dock-quirk` oneshot unit. Without it `fwupd.service` cannot start while the TS4 is
   attached — see `docs/gotchas.md`.
 - `services.hardware.bolt` (in `modules/hardware/framework.nix`): the
   Thunderbolt controller's security level is `user`, so docks stay
