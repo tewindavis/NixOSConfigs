@@ -271,6 +271,9 @@ hl.bind(mainMod .. " + X", hl.dsp.window.kill())
 -- (Print) stays a plain instant copysave — no annotate step.
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("sh -c 'grimblast save area - | swappy -f -'"))
 hl.bind("Print", hl.dsp.exec_cmd("grimblast --notify copysave output"))
+-- Same region selection, but the text in it goes to the clipboard instead of
+-- an image (ocr-region in home.nix).
+hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("ocr-region"))
 hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind(mainMod .. " + ALT + R", hl.dsp.exec_cmd("toggle-recording"))
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("sh -c 'umask 077; cliphist list | wofi --dmenu | cliphist decode | wl-copy'"))

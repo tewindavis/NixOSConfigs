@@ -982,6 +982,29 @@ let
     exec ssh -N -L "$port:localhost:3000" "$host"
   '';
 
+  # Grab text off the screen (SUPER+SHIFT+T): select a region, OCR it, put the
+  # result on the clipboard. Same grimblast selection as the screenshot bind,
+  # with --freeze so a video frame or a menu can be captured mid-motion.
+  #
+  # The OCR result is untrusted text and swaync renders bodies as Pango
+  # markup, so the preview escapes &, < and > (see docs/security.md); the
+  # clipboard gets the text unmodified. wl-copy under `umask 077` matches the
+  # other clipboard callers, keeping cliphist's db private.
+  ocr-region = pkgs.writeShellScriptBin "ocr-region" ''
+    text=$(${pkgs.grimblast}/bin/grimblast --freeze save area - 2>/dev/null |
+      ${pkgs.tesseract}/bin/tesseract -l eng - - 2>/dev/null |
+      ${pkgs.gnused}/bin/sed -e 's/[[:space:]]*$//' -e '/./,$!d')
+    if [ -z "''${text//[[:space:]]/}" ]; then
+      ${pkgs.libnotify}/bin/notify-send -u low -a OCR "No text found"
+      exit 0
+    fi
+    umask 077
+    printf '%s' "$text" | ${pkgs.wl-clipboard}/bin/wl-copy
+    preview=$(printf '%s' "$text" | ${pkgs.coreutils}/bin/head -c 120 |
+      ${pkgs.gnused}/bin/sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+    ${pkgs.libnotify}/bin/notify-send -u low -a OCR "Copied $(printf '%s' "$text" | ${pkgs.coreutils}/bin/wc -c) chars" "$preview"
+  '';
+
   # Screen recording toggle (SUPER+ALT+R): mirrors the grimblast/swappy
   # screenshot pattern above, but for video. First call starts wf-recorder
   # in the background against the whole output and stashes its PID; second
@@ -1031,6 +1054,7 @@ in
     perf-mode
     power-watch
     media-inhibit
+    ocr-region
     update-check
     update-apply
     idle-dim

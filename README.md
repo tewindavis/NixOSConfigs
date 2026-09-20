@@ -95,6 +95,7 @@ System controls are bound to the **`SUPER`** (Command) key, apart from `Print`, 
 |:--- |:---|
 | `SUPER + SHIFT + L` | Lock Screen (Heavy Blur) |
 | `SUPER + SHIFT + S` | Screenshot Region → opens `swappy` to annotate (its toolbar does the copy/save) |
+| `SUPER + SHIFT + T` | OCR Region → copies the text in the selection to the clipboard |
 | `Print` | Screenshot Full Output (instant Copy + Save) |
 | `SUPER + ALT + R` | Toggle Screen Recording (mp4, `~/Videos/Recordings`) |
 | `SUPER + C` | Pick Color Under Cursor (`hyprpicker`, copies to clipboard) |
