@@ -1083,47 +1083,69 @@ let
   # so /etc/nixos is never touched, and if anything is newer, asks with a
   # notification. Nothing changes unless you click "Update now".
   update-check = pkgs.writeShellScriptBin "update-check" ''
-    set -u
-    export PATH=${
-      lib.makeBinPath [
-        pkgs.nix
-        pkgs.git
-        pkgs.jq
-        pkgs.coreutils
-      ]
-    }:$PATH
-    # No network yet (e.g. just woke): try again tomorrow, quietly.
-    ${pkgs.networkmanager}/bin/nm-online -q -t 120 || exit 0
+        set -u
+        export PATH=${
+          lib.makeBinPath [
+            pkgs.nix
+            pkgs.git
+            pkgs.jq
+            pkgs.coreutils
+          ]
+        }:$PATH
+        # No network yet (e.g. just woke): try again tomorrow, quietly.
+        ${pkgs.networkmanager}/bin/nm-online -q -t 120 || exit 0
 
-    tmp=$(mktemp -d)
-    trap 'rm -rf "$tmp"' EXIT
-    if ! nix flake update --flake /etc/nixos --output-lock-file "$tmp/new.lock" >"$tmp/log" 2>&1; then
-      echo "update check failed:"; cat "$tmp/log"
-      exit 0
-    fi
+        # Firmware first, and notify-only: installing it is a deliberate act with
+        # a reboot attached, so there's no action button here. fwupd's own
+        # fwupd-refresh.timer already pulls metadata daily as root, so this only
+        # reads, which needs no privileges. Probed at /run/current-system rather
+        # than depending on pkgs.fwupd, so hosts without fwupd (everything but
+        # framework) skip it instead of carrying it in the closure.
+        FWUPD=/run/current-system/sw/bin/fwupdmgr
+        if [ -x "$FWUPD" ]; then
+          # Device names come from firmware metadata and swaync renders bodies as
+          # Pango markup, so escape them.
+          fw=$("$FWUPD" get-updates --json 2>/dev/null |
+            jq -r '(.Devices // [])[] | "\(.Name): \(.Version // "?") → \((.Releases[0].Version) // "?")"' |
+            ${pkgs.gnused}/bin/sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+          if [ -n "$fw" ]; then
+            echo "firmware updates available:"; echo "$fw"
+            ${pkgs.libnotify}/bin/notify-send -a "Firmware updates" -i system-software-update \
+              "Firmware updates available" "$fw
 
-    changes=$(jq -r --slurpfile old /etc/nixos/flake.lock '
-      .nodes | to_entries[]
-      | select(.value.locked.rev?)
-      | .key as $k
-      | ($old[0].nodes[$k].locked // {}) as $o
-      | select($o.rev != .value.locked.rev)
-      | "\($k): \(($o.lastModified // 0) | todate | .[5:10]) → \(.value.locked.lastModified | todate | .[5:10])"
-    ' "$tmp/new.lock")
-    if [ -z "$changes" ]; then
-      echo "up to date"
-      exit 0
-    fi
-    echo "updates available:"; echo "$changes"
+    Run: sudo fwupdmgr update"
+          fi
+        fi
 
-    # --wait blocks until you pick an action or dismiss it; a popup that
-    # times out stays in swaync's notification center, still answerable.
-    action=$(${pkgs.libnotify}/bin/notify-send -a "System updates" -i system-software-update \
-      -A update="Update now" -A later="Later" --wait \
-      "Updates ready" "$changes")
-    if [ "$action" = update ]; then
-      ${ghosttyBin} --title="System update" -e update-apply
-    fi
+        tmp=$(mktemp -d)
+        trap 'rm -rf "$tmp"' EXIT
+        if ! nix flake update --flake /etc/nixos --output-lock-file "$tmp/new.lock" >"$tmp/log" 2>&1; then
+          echo "update check failed:"; cat "$tmp/log"
+          exit 0
+        fi
+
+        changes=$(jq -r --slurpfile old /etc/nixos/flake.lock '
+          .nodes | to_entries[]
+          | select(.value.locked.rev?)
+          | .key as $k
+          | ($old[0].nodes[$k].locked // {}) as $o
+          | select($o.rev != .value.locked.rev)
+          | "\($k): \(($o.lastModified // 0) | todate | .[5:10]) → \(.value.locked.lastModified | todate | .[5:10])"
+        ' "$tmp/new.lock")
+        if [ -z "$changes" ]; then
+          echo "up to date"
+          exit 0
+        fi
+        echo "updates available:"; echo "$changes"
+
+        # --wait blocks until you pick an action or dismiss it; a popup that
+        # times out stays in swaync's notification center, still answerable.
+        action=$(${pkgs.libnotify}/bin/notify-send -a "System updates" -i system-software-update \
+          -A update="Update now" -A later="Later" --wait \
+          "Updates ready" "$changes")
+        if [ "$action" = update ]; then
+          ${ghosttyBin} --title="System update" -e update-apply
+        fi
   '';
 
   # The "Update now" terminal: updates flake.lock, then `nh os switch --ask`,

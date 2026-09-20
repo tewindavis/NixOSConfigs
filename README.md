@@ -26,7 +26,7 @@ Hardened by default on every host. The full reference, with the cost of each cho
 *   **Passwords stay out of clipboard history:** entries copied from KeePassXC are never written to `cliphist`, and the history file is private (`0600`).
 *   **Hostile files:** archives go through the official 7-Zip rather than the abandoned `p7zip` fork, and the unmaintained LHA backend is removed.
 *   **Supply chain:** every flake input shares one pinned `nixpkgs`, and `nix flake check` fails if that changes. Neovim plugins are pinned by `lazy-lock.json`. `markdown-preview.nvim`, which downloaded an unsigned binary from a dormant repo, is disabled. `blink.cmp` still downloads its prebuilt fuzzy-matcher library; see `docs/security.md`.
-*   **Updates, on your say-so:** a daily check notifies you when newer inputs (nixpkgs, Home Manager, …) are available, listing what moved. **Update now** opens a terminal that updates `flake.lock` and runs `nh os switch --ask`, so you see the package diff and confirm before anything changes. Nothing updates on its own.
+*   **Updates, on your say-so:** a daily check notifies you when newer inputs (nixpkgs, Home Manager, …) are available, listing what moved. **Update now** opens a terminal that updates `flake.lock` and runs `nh os switch --ask`, so you see the package diff and confirm before anything changes. Nothing updates on its own. The same check tells you when Framework BIOS/EC firmware is available, without an install button — firmware means a reboot, so that one is always yours to start (`sudo fwupdmgr update`).
 
 ---
 
