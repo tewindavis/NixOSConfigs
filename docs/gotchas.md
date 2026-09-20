@@ -175,6 +175,23 @@ these from scratch.
   `hyprctl clients -j`. Pixels aren't portable across this setup's monitors
   (1920 logical wide laptop vs. the 1440-wide portrait Dell), so the PiP rule
   leaves the window centred rather than pinning a coordinate.
+- **Running a switch from a systemd user service kills the switch.**
+  `nh os switch` restarts user units, and systemd kills a unit's whole
+  cgroup when it stops it — so a terminal launched as a child of
+  `update-check.service` was SIGTERMed by the very switch it was running.
+  The visible damage was Home Manager activation dying with
+  `Failed to perform post-reload tasks: timed out waiting on channel`, the
+  switch exiting 4/NOPERMISSION, and a burst of "unit failed" notifications.
+  `update-check` now launches it with
+  `systemd-run --user --scope --collect`, which puts it in a transient scope
+  that isn't part of the generation, so `switch-to-configuration` leaves it
+  alone. Confirmed by stopping a parent unit and watching the child scope
+  keep running.
+- **A unit killed during a switch fires `OnFailure`.** Being stopped
+  mid-run is reported as `Failed with result 'signal'`, so anything hanging
+  off `OnFailure` hears about units that are simply being restarted. The
+  handler in `modules/core/failure-notify.nix` waits 5s and re-checks
+  `systemctl is-failed` for this reason.
 - **A bash trap waits for the running command.** A `trap ... TERM` doesn't
   fire until the current foreground command returns, so a poll loop ending
   in `sleep 30` takes up to 30s to clean up after being told to stop.

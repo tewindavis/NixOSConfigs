@@ -1183,7 +1183,18 @@ let
           -A update="Update now" -A later="Later" --wait \
           "Updates ready" "$changes")
         if [ "$action" = update ]; then
-          ${ghosttyBin} --title="System update" -e update-apply
+          # Launched in its own transient scope, NOT as a child of this
+          # service. `nh os switch` restarts user units, this one included,
+          # and systemd kills a unit's whole cgroup when it stops it — so
+          # running the switch from here meant the switch SIGTERMed the
+          # terminal running it, half way through. That took Home Manager
+          # activation down with it ("timed out waiting on channel"), failed
+          # the switch with exit 4, and left a trail of "unit failed"
+          # notifications. A transient scope isn't part of the generation, so
+          # switch-to-configuration leaves it alone.
+          ${pkgs.systemd}/bin/systemd-run --user --scope --collect \
+            --unit="nixos-update-apply-$$" \
+            ${ghosttyBin} --title="System update" -e update-apply
         fi
   '';
 

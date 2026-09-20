@@ -88,6 +88,17 @@ journal lines.
 - The handler template sets `OnFailure=` (empty) so a handler that fails
   can't trigger another one. Verified by making the handler fail on purpose
   and confirming no nested instances appear.
+- It waits 5s and re-checks `systemctl is-failed` before saying anything. A
+  switch stops and restarts units, and one killed mid-run reports
+  `Failed with result 'signal'` and fires `OnFailure` while already coming
+  back — so without this, every update produced a screenful of notifications
+  about units that were fine. A unit that keeps failing still ends in the
+  failed state and is reported.
+- `nixos-rebuild-switch-to-configuration.service` is skipped: a failed switch
+  already reports itself in the terminal that ran it.
+- One notification per unit per hour, stamped under `/run/notify-failure`
+  (or `$XDG_RUNTIME_DIR` for user units), so a daemon that can't start
+  doesn't produce a popup every time something retries it.
 - System-scope notifications are delivered by `runuser` into each
   `/run/user/<uid>` that has a `bus` socket. Before login there is no bus, so
   boot-time failures are dropped rather than queued into a burst at login.
