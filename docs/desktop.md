@@ -17,7 +17,9 @@ that one file, not in separate per-host configs.
 **This file's table is not machine-checked**, so update it by hand when
 binds change. **`hyprland.lua` is the source of truth**: regenerate from
 `grep 'hl.bind' users/td/hypr/hyprland.lua` if any doc disagrees, plus
-`users/td/hyprshell/config.json` for the two binds hyprshell registers.
+`users/td/hyprshell/config.json` for the four the hyprshell daemon
+registers from it (`SUPER+Tab` for the overview; `ALT+Tab`, `ALT+grave` and
+`ALT+SHIFT+Tab` for the switcher).
 
 ## Keybindings (authoritative — from `hyprland.lua`)
 

@@ -30,6 +30,16 @@ nix run nixpkgs#sops -- secrets/secrets.yaml      # or: -- updatekeys secrets/se
 unset SOPS_AGE_KEY
 ```
 
+To check which host a recipient line belongs to — no root needed, since this
+is the *public* half:
+
+```bash
+nix run nixpkgs#ssh-to-age -- -i /etc/ssh/ssh_host_ed25519_key.pub
+```
+
+The output is the `age1…` string that host must appear as in `.sops.yaml`.
+(Confirmed for `framework`: it matches the recipient recorded there.)
+
 The key has to be *converted* (`ssh-to-age -private-key`), the same way
 sops-nix does at activation, because the recipients in `.sops.yaml` are
 `ssh-to-age` conversions. Pointing sops at the raw SSH key

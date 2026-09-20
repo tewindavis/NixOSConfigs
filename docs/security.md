@@ -184,6 +184,12 @@ be escaped before it reaches them.
 - Track titles (web pages set these through Brave's media session): waybar's
   `mpris` module escapes them itself; `hyprlock-nowplaying` escapes `&`,
   `<`, `>` with sed.
+- OCR output (`ocr-region`): whatever text was on screen goes to the
+  clipboard verbatim, but the notification preview is escaped.
+- Journal lines and unit names (`notify-failure`, see above), the finished
+  command line (`notify-long-command`) and firmware device names from
+  `fwupdmgr` (`update-check`) are all escaped the same way before reaching a
+  notification body.
 
 ## Supply chain
 

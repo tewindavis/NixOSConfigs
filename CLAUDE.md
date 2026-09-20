@@ -95,9 +95,10 @@ nix fmt                                            # nixfmt + statix + deadnix o
 
 **Adding or removing a Hyprland keybind?** Update `hyprland.lua` *and*
 README's cheat sheet — `checks.keybindings` diffs the two and fails
-`nix flake check` if they diverge, in either direction. SUPER+Tab and
-ALT+Tab are the exception: the hyprshell daemon binds them at runtime from
-`users/td/hyprshell/config.json`, which the check also reads. `docs/desktop.md`'s
+`nix flake check` if they diverge, in either direction. The hyprshell binds are the
+exception: the daemon registers `SUPER+Tab`, `ALT+Tab`, `ALT+grave` and
+`ALT+SHIFT+Tab` at runtime from `users/td/hyprshell/config.json`, which the
+check also reads. `docs/desktop.md`'s
 table is not machine-checked, so update it by hand in the same change.
 
 Always run `nix fmt` before committing — treefmt is the formatting source of
