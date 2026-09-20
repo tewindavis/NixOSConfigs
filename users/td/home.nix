@@ -508,6 +508,27 @@ let
   # is Tctl), coretemp on Intel, then the ACPI zone as a last resort. A host
   # with none of them (the VM) prints empty text, which hides the module —
   # same graceful degradation as waybar-power-profile below.
+  # The battery stops at 80% (modules/hardware/framework.nix). This raises it
+  # for a trip and puts it back; `status` just reads it, which needs no root.
+  # Writing does, so `full`/`save` go through sudo, which takes the
+  # fingerprint reader here — nothing is granted NOPASSWD for this. The boot
+  # unit re-applies 80, so a `full` you forget about undoes itself.
+  battery-limit = pkgs.writeShellScriptBin "battery-limit" ''
+    F=/sys/class/power_supply/BAT1/charge_control_end_threshold
+    [ -r "$F" ] || { echo "no charge threshold on this machine" >&2; exit 1; }
+
+    set_limit() { # <value> <notification body>
+      printf '%s\n' "$1" | ${pkgs.sudo}/bin/sudo ${pkgs.coreutils}/bin/tee "$F" >/dev/null
+      ${pkgs.libnotify}/bin/notify-send -u low -a Battery "Charge limit now $1%" "$2"
+    }
+    case "''${1:-status}" in
+      status) echo "charge limit: $(cat "$F")%" ;;
+      full) set_limit 100 "Back to 80% at the next boot." ;;
+      save) set_limit 80 "Charging stops at 80% again." ;;
+      *) echo "usage: battery-limit status|full|save" >&2; exit 1 ;;
+    esac
+  '';
+
   waybar-temp = pkgs.writeShellScriptBin "waybar-temp" ''
     read_temp() {
       local h name
@@ -1252,6 +1273,7 @@ in
     toggle-scratchpad
     toggle-recording
     waybar-weather
+    battery-limit
     waybar-temp
     waybar-power-profile
     waybar-hyprsunset

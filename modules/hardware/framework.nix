@@ -1,5 +1,22 @@
-{ inputs, ... }:
-
+{
+  inputs,
+  pkgs,
+  ...
+}:
+let
+  # Lithium cells age fastest sitting at a full charge, and this laptop spends
+  # most of its life on the dock. The EC enforces the cap itself, so it holds
+  # even while the machine is off. `battery-limit full` (home.nix) raises it
+  # to 100 for travel; the unit below puts it back at the next boot, which is
+  # the intended escape hatch rather than a setting to remember to undo.
+  chargeLimit = 80;
+  thresholdFile = "/sys/class/power_supply/BAT1/charge_control_end_threshold";
+  applyLimit = pkgs.writeShellScript "apply-charge-limit" ''
+    # Absent on a host without the framework EC module, or before it loads.
+    [ -w ${thresholdFile} ] || exit 0
+    echo ${toString chargeLimit} > ${thresholdFile}
+  '';
+in
 {
   imports = [
     # Confirmed generation: Framework Laptop 13 (AMD Ryzen 7040Series), Ryzen 7
@@ -24,6 +41,20 @@
   # powerprofilesctl; waybar's custom/power-profile module (see waybar
   # config.jsonc) reads/cycles it. Mutually exclusive with TLP by design.
   services.power-profiles-daemon.enable = true;
+
+  # Re-applied on resume as well as at boot: the EC keeps the threshold over a
+  # suspend, but not over the firmware reset that a battery disconnect or an
+  # EC update causes, and re-running it is free.
+  systemd.services.battery-charge-limit = {
+    description = "Cap battery charge at ${toString chargeLimit}%";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = applyLimit;
+    };
+  };
+  powerManagement.resumeCommands = "${applyLimit}";
 
   security.pam.services.login.fprintAuth = true;
   security.pam.services.sudo.fprintAuth = true;

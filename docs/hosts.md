@@ -11,7 +11,7 @@ assuming a module applies everywhere.
 | `modules/services/vpn.nix` | ✓ | ✓ | ✓ |
 | `modules/services/syncthing.nix` | ✓ | ✓ | ✓ |
 | `modules/hardware/bluetooth.nix` | ✓ | ✓ | — |
-| `modules/hardware/framework.nix` (nixos-hardware 7040-amd, fprintd, fwupd, power-profiles, bolt) | ✓ | — | — |
+| `modules/hardware/framework.nix` (nixos-hardware 7040-amd, fprintd, fwupd, power-profiles, bolt, 80% charge cap) | ✓ | — | — |
 | `modules/hardware/nvidia.nix` | — | ✓ | — |
 | `modules/hardware/utm.nix` (QEMU/Spice guest) | — | — | ✓ |
 | `modules/dev/rl-binary.nix` (ghidra/radare2/gdb + RL Python) | — | ✓ | — |
