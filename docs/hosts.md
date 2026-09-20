@@ -8,14 +8,14 @@ assuming a module applies everywhere.
 |---|:---:|:---:|:---:|
 | `modules/core` | ✓ | ✓ | ✓ |
 | `modules/desktop` (Hyprland/Thunar/fonts) | ✓ | ✓ | ✓ |
-| `modules/services/vpn.nix` | ✓ | ✓ | ✓ |
+| `modules/services/vpn.nix` (`protonvpn-app` GUI + `protonvpn` CLI; systemd-resolved with LLMNR/mDNS off) | ✓ | ✓ | ✓ |
 | `modules/services/syncthing.nix` | ✓ | ✓ | ✓ |
 | `modules/hardware/bluetooth.nix` | ✓ | ✓ | — |
 | `modules/hardware/framework.nix` (nixos-hardware 7040-amd, fprintd, fwupd, power-profiles, bolt, 80% charge cap) | ✓ | — | — |
 | `modules/hardware/nvidia.nix` | — | ✓ | — |
 | `modules/hardware/utm.nix` (QEMU/Spice guest) | — | — | ✓ |
 | `modules/dev/rl-binary.nix` (ghidra/radare2/gdb + RL Python) | — | ✓ | — |
-| `modules/services/training-metrics.nix` (node + NVIDIA GPU exporters, training dashboards; imports `monitoring.nix`) | — | ✓ | — |
+| `modules/services/training-metrics.nix` (node + NVIDIA GPU exporters, three dashboards; imports `monitoring.nix`) | — | ✓ | — |
 | `modules/services/liftoff-telemetry.nix` (Liftoff UDP telemetry → Telegraf → Prometheus, dashboard; imports `monitoring.nix`) | — | ✓ | ✓ |
 
 `modules/services/monitoring.nix` (local-only Prometheus + Grafana) isn't
@@ -40,6 +40,13 @@ hardware to manage.
 - `power-profiles-daemon` enabled (balanced/power-saver/performance); waybar's
   power-profile widget only does something useful here — on the other two
   hosts it reports "unavailable" and degrades gracefully.
+- Battery charging stops at 80% (`systemd.services.battery-charge-limit` in
+  `modules/hardware/framework.nix`, applied at boot and on resume through
+  the EC's `charge_control_end_threshold`). `battery-limit full` raises it to
+  100% for a trip; the next boot puts it back. The sysfs attribute comes from
+  the `framework-laptop-kmod` EC module that `nixos-hardware` brings in.
+- `services.libinput.enable` — touchpad support; the gestures and
+  tap-to-click settings themselves are in `hyprland.lua`.
 - HiDPI: `hyprland.lua` special-cases this hostname to force
   `mode = "2256x1504@60"`, `scale = 1.175` (the exact divisor for a clean
   1920x1280 logical resolution) on `eDP-1` only. The same branch pins the two
@@ -79,8 +86,13 @@ hardware to manage.
   `sops.secrets.*` here.
 - Monitoring: Prometheus and Grafana on 127.0.0.1 (view with
   `grafana-tunnel dl-prototype`; admin password in
-  `/var/lib/grafana-secrets/admin_password`), fed by `node_exporter`, the
-  NVIDIA GPU exporter and Liftoff telemetry on UDP 9001.
+  `/var/lib/grafana-secrets/admin_password`), fed by `node_exporter` (with
+  the `systemd` collector on), the NVIDIA GPU exporter and Liftoff telemetry
+  on UDP 9001. Grafana is provisioned with two folders: **Training** holds
+  *node-exporter-full* (grafana.com dashboard 1860, pinned by revision and
+  hash), the NVIDIA exporter's own dashboard (its `DS_PROMETHEUS`
+  placeholder rewritten to this datasource's fixed uid at build time) and
+  this repo's *Training run*; **Liftoff** holds the telemetry dashboard.
 - Training runs: pass `sb3_prometheus.PrometheusCallback(run="name")` to
   `model.learn(...)` (package in `modules/dev/rl-binary.nix`). Everything
   stable-baselines3 logs (reward, episode length, fps, losses) is served on

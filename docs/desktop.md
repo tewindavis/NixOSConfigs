@@ -21,7 +21,10 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 
 ## Keybindings (authoritative — from `hyprland.lua`)
 
-`mainMod` = `SUPER`.
+`mainMod` = `SUPER`. **Caps Lock is Ctrl** (`ctrl:nocaps`), set in three
+places so it holds everywhere: `services.xserver.xkb.options` and
+`console.useXkbConfig` in `modules/core/default.nix` (TTYs), and
+`input.kb_options` in `hyprland.lua` (the Wayland session).
 
 | Bind | Action |
 |---|---|
@@ -59,7 +62,7 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 | `SUPER+ALT+R` | Toggle screen recording (whole output, with system audio) |
 | `SUPER+CTRL+R` | Record a dragged region (`toggle-recording region`); either bind stops it |
 | `SUPER+LMB` / `SUPER+RMB` | Drag to move / resize |
-| Volume/brightness/mute keys | `swayosd-client` (shows OSD + applies change; `locked` so they work on the lock screen) |
+| Volume/brightness/mute keys | `swayosd-client` (shows OSD + applies change; `locked` so they work on the lock screen). Writing brightness needs `/sys/class/backlight` access: swayosd ships a udev rule granting the `video` group, enabled by `services.udev.packages` in `modules/desktop/hyprland.nix`, and `td` is in that group (`users/td/nixos.nix`) |
 | Play/Pause, Next, Previous keys | `playerctl play-pause` / `next` / `previous` on the most recently active player; also `locked` |
 
 ## Waybar bars (one per output)
@@ -166,10 +169,35 @@ List namespaces with `hyprctl layers` while each surface is open.
 `anim-notifications` slides swaync's popups and panel in from the right; `anim-wofi` pops the
 launcher in.
 
-Also in `hl.config`: `rounding = 12` to match the stylesheets' 12px panels,
-`dim_special = 0.4` (default 0.2) to dim what's behind the scratchpad, and a
-`group` block that colors tabbed groups' borders and tab bar from the
-palette.
+Also in `hl.config`:
+
+- **`general`** — `gaps_in = 2`, `gaps_out = 8`; the outer gap matches
+  waybar's `margin-left`/`margin-right` so tiled windows line up with the bar
+  instead of running past it. `border_size = 2`, the active border a 45°
+  blue→green gradient (the same two colours as the group border), and
+  `layout = "dwindle"`.
+- **`decoration`** — `rounding = 12` to match the stylesheets' 12px panels,
+  `active_opacity`/`inactive_opacity` `0.9`/`0.8`, the blur and shadow
+  settings README describes, and `dim_special = 0.4` (default 0.2) to dim
+  what's behind the scratchpad.
+- **`input`** — `kb_options = ctrl:nocaps`, `follow_mouse = 1` (focus follows
+  the pointer), and for the touchpad `natural_scroll` and `tap_to_click`.
+- **`animations`** — one custom bezier (`myBezier`) plus per-leaf speeds;
+  `specialWorkspace` uses `slidevert` so the scratchpad drops in like a Quake
+  console. `borderangle` runs as a continuous `loop`, which is what spins the
+  active window's gradient — it keeps the compositor redrawing that border
+  the whole time it's focused, so it costs battery. Performance mode
+  (`perf-mode`) turns all of this off.
+- **`misc`** — window swallowing (see `docs/gotchas.md`),
+  `force_default_wallpaper = 0` and `disable_hyprland_logo = true`.
+- **`xwayland.force_zero_scaling`** — X11 clients render unscaled and are
+  scaled by the compositor, rather than coming out blurry on the 1.175 panel
+  and the Dells' 1.5.
+- A **`group`** block that colors tabbed groups' borders and tab bar from the
+  palette.
+
+Three-finger horizontal swipes switch workspace
+(`hl.gesture { fingers = 3, direction = "horizontal", action = "workspace" }`).
 
 ## Theming
 
@@ -193,6 +221,11 @@ Reuse these exact values when adding a UI surface rather than introducing new
 ones. Of the stylesheets above, the last two appear only in waybar's, as
 per-module accents, and aren't part of the core four.
 
+Ghostty (`ghostty/config`) runs JetBrainsMono Nerd Font at 12pt, 0.7
+background opacity with `background-blur`, no window decorations (Hyprland
+draws the border), a blinking block cursor, and no close confirmation. Its
+`custom-shader` is the cursor trail below.
+
 The 16-color ANSI palette is defined twice with the same values: Ghostty's
 (`ghostty/config`) and the TTY's `console.colors` (`modules/core/default.nix`).
 It uses the colors above plus Tokyo Night yellow `#e0af68`, which none of
@@ -200,7 +233,21 @@ the stylesheets use. tuigreet's
 `--theme` color names resolve through `console.colors`.
 
 hyprshell's overview, launcher and switcher use `hyprshell/styles.css`,
-which sets its CSS variables from the palette above.
+which sets its CSS variables from the palette above. Its behaviour is in
+`hyprshell/config.json`: the overview draws windows at `scale` 8.5, 5 per
+row, and hides special workspaces (`exclude_workspaces: "special:.*"`, so
+the scratchpad doesn't appear). The ALT+Tab switcher is filtered to
+`current_workspace` and doesn't change workspace as you cycle.
+
+`launch_modifier` (`ctrl`) is what the launcher's secondary actions hang
+off: Return launches the first match, **Ctrl+1/2/3…** the second, third and
+so on, **Ctrl+T** runs the typed text in `default_terminal` (`ghostty`), and
+Ctrl+<key> searches it in one of the built-in engines. The launcher also
+evaluates typed arithmetic, opens paths starting with `~` or `/` in the file
+manager, and takes power commands (type `actions` to list them). Inside the
+overview, Ctrl + vim keys move between workspaces and Esc closes it. Don't
+transcribe this from the config by hand — ask the binary:
+`hyprshell config explain -c users/td/hyprshell/config.json`.
 
 Terminal tools themed in `home.nix`: `bat` and `zathura` use
 tokyonight.nvim's own exports (from `pkgs.vimPlugins.tokyonight-nvim`);
@@ -218,9 +265,13 @@ Neovim's tokyonight is set to `night` (LazyVim's own
 default is `moon`) with a transparent background, in
 `nvim/lua/plugins/colorscheme.lua`.
 
-The lock screen's weather, battery and now-playing labels come from
-`waybar-weather` and two small helpers in `home.nix` (`hyprlock-battery`,
-`hyprlock-nowplaying`); each prints nothing when there's nothing to show.
+The lock screen (`programs.hyprlock`) accepts a fingerprint or a password —
+`auth.fingerprint.enabled`, working because
+`security.pam.services.hyprlock.fprintAuth` is set on framework — and `ignore_empty_input` means a stray
+Enter doesn't count as a failed attempt. Its weather, battery and
+now-playing labels come from `waybar-weather` and two small helpers in
+`home.nix` (`hyprlock-battery`, `hyprlock-nowplaying`); each prints nothing
+when there's nothing to show.
 hypridle dims the backlight to 10% at 270s idle and restores it on input,
 30s before the 300s lock, via `idle-dim dim|restore` (saves the previous
 level in `$XDG_RUNTIME_DIR` rather than brightnessctl's fixed `/tmp` path).
@@ -250,6 +301,13 @@ tones sit near 350-500Hz; freedesktop's `message-new-instant` centres near
 900Hz with a 466Hz peak, which distorted the Framework's speakers. `style.css` only overrides the palette variables, font and
 urgency borders of swaync's packaged stylesheet, which swaync always loads
 first.
+
+swaync's behaviour is in `swaync/config.json`: popups on the right at the
+top, dismissed after 8s (5s for low urgency) while **critical stays until
+you act on it** (`timeout-critical: 0`); grouped by app, with relative
+timestamps. The control centre is 420px wide (popups 360px) and shows a
+title bar with a Clear button, a do-not-disturb toggle, an mpris player with
+album art, then the notification list.
 
 Qt apps use `qt5ct`/`qt6ct` (`qt.platformTheme.name = "qtct"`) with the
 Fusion style and `qtColorScheme` in `home.nix`, a palette built from the
@@ -308,6 +366,36 @@ above and `check-keybinds.sh` knows nothing about it.
   atuin loses nothing.
 - Local only: `auto_sync` and `update_check` are off and no account is
   configured, so it never reaches the network.
+
+## Session environment
+
+Set in two places, both of which matter to how apps look and behave:
+
+`modules/desktop/hyprland.nix` (`environment.sessionVariables`, system-wide):
+
+- `NIXOS_OZONE_WL = 1` — Electron/Chromium apps run as native Wayland
+  clients instead of XWayland, which is what makes Brave sharp on HiDPI.
+- `GTK_THEME = adw-gtk3-dark` — forces dark for apps that read it rather
+  than asking the portal.
+- `XCURSOR_SIZE = 24` — matches `gtk.cursorTheme.size` in `home.nix`, for
+  clients that don't take the cursor from GTK.
+- `WLR_NO_HARDWARE_CURSORS = 1`, `WLR_RENDERER_ALLOW_SOFTWARE = 1` — for the
+  NVIDIA host and the VM, where a hardware cursor plane or a GPU renderer
+  isn't reliably available.
+
+`home.nix` (`home.sessionVariables`, this user):
+
+- `TERMINAL`, `BROWSER` — Ghostty and Brave, for anything that shells out to
+  "the terminal" or "the browser".
+- `XDG_SCREENSHOTS_DIR` — `~/Pictures/Screenshots`, which is where grimblast
+  saves. `home.activation.createScreenshotsDir` creates it, since grimblast
+  fails rather than creating a missing directory.
+- `NH_FLAKE = /etc/nixos` — lets `nh os switch`/`boot` find this flake from
+  any directory.
+- `HYPRCURSOR_THEME`/`HYPRCURSOR_SIZE` — taken from `gtk.cursorTheme` so the
+  vector cursor and the GTK one can't drift apart; without them Hyprland
+  scales the bitmap cursor to 1.175/1.5 and it blurs.
+- `PATH` — prepends `~/.local/bin`.
 
 ## Monitor layout
 

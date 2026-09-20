@@ -104,6 +104,30 @@ these from scratch.
   the scripts again. `notify-sound` checks DND itself for normal urgency
   and always exits 0 so a missing audio device can't loop.
 
+- **`home-manager.useGlobalPkgs = true`** (set in `flake.nix`) means the
+  package set comes from the NixOS `nixpkgs`, and `nixpkgs.*` options set
+  inside `users/td/home.nix` are ignored. `allowUnfree` works because
+  `modules/core/default.nix` sets it system-wide, not because home.nix asks
+  for it. An overlay or config tweak added to home.nix silently does nothing.
+- **A pre-existing file blocks activation unless it can be moved aside.**
+  `flake.nix` sets `home-manager.backupFileExtension = "backup"`, so a file
+  Home Manager wants to write that already exists is renamed to
+  `<name>.backup` in the same directory rather than failing the switch.
+  Without it, activation stops with a collision error listing the files
+  (`modules/files/check-link-targets.sh` in the home-manager source); the
+  other ways out it names are `backupCommand` and `force = true` on the
+  individual file option.
+- **SSH askpass has to be set explicitly here.**
+  `programs.ssh.enableAskPassword` defaults to `services.xserver.enable`,
+  which is false in this config (greetd + Hyprland, no X server). With it
+  off, `SSH_ASKPASS` is unset and ssh falls back to a compiled-in path that
+  doesn't exist on NixOS, so any caller without a controlling terminal — a
+  GUI app, or a command run detached — dies with
+  `ssh_askpass: exec(): No such file or directory` instead of prompting.
+  `modules/core/default.nix` turns it on and points it at seahorse's GTK
+  askpass (which inherits the adw-gtk3-dark/Papirus theming; the default
+  x11-ssh-askpass would need XWayland), and sets `AddKeysToAgent yes` so the
+  passphrase is asked once per session rather than per command.
 - **fzf and atuin both bind CTRL+R.** Each does it from its own zsh init
   snippet, so the winner is whichever Home Manager emits last — incidental
   ordering that can flip on an HM update. `programs.zsh.initContent`

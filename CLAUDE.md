@@ -54,6 +54,18 @@ secrets/secrets.yaml        # sops-encrypted; edit only via sops, as root-keyed 
 treefmt.nix                 # nixfmt + statix + deadnix, run via `nix fmt`
 ```
 
+**Flake facts worth knowing before you change anything:** `nixpkgs` tracks
+**nixos-unstable**, and every other input (`nixos-hardware`, `home-manager`,
+`treefmt-nix`, `sops-nix`) `follows` it — `checks.single-nixpkgs` fails if a
+second copy ever appears in the lock. Home Manager runs as a NixOS module
+with `useGlobalPkgs` (so `nixpkgs.*` inside `home.nix` is ignored — see
+`docs/gotchas.md`) and `backupFileExtension = "backup"`. It also passes
+`flakeAttr` — this host's `hosts/` directory name — into `home.nix`, which
+is how `update-apply` can run `nh os switch -H <attr>` correctly on
+`utm-vm`, whose hostname differs from its attribute. `system.stateVersion`
+(`25.11`, `modules/core`) and `home.stateVersion` record the release a host
+was first installed at; they are not a version to bump.
+
 **Convention:** a host's `configuration.nix` is just an `imports` list plus
 host-only settings (bootloader, hostName, CPU tuning). Shared logic always
 lives in `modules/`, never duplicated across hosts. All three hosts share one

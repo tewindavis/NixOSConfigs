@@ -64,7 +64,7 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 *   **Window Swallowing:** A graphical app started from a Ghostty window (an `xdg-open`ed PDF, `mpv`, `imv`, anything) takes that window's place until it closes.
 *   **Themed Git Diffs:** `git diff`/`log -p`/`show` go through `delta`: side-by-side, line numbers, tokyonight syntax and diff colors.
 *   **Themed Qt Apps:** syncthingtray and QGIS get the palette through `qt5ct`/`qt6ct` with the Fusion style. KeePassXC is deliberately left out (no third-party theme plugin inside the password manager) and uses its own built-in Dark theme.
-*   **Thunar:** the file manager (`SUPER + E`), with trash and removable/network mounts (`gvfs`) and image thumbnails (`tumbler`).
+*   **Thunar:** the file manager (`SUPER + E`), with trash and removable/network mounts (`gvfs`), image thumbnails (`tumbler`), the archive context menu (`thunar-archive-plugin`) and removable-media handling (`thunar-volman`) — though drives are already mounted for you by `udiskie` before Thunar sees them.
 *   **Themed GTK Apps:** Thunar, pavucontrol, Bluetooth and network settings and other GTK3/GTK4 apps use the palette too (darker header bars and sidebars, blue accents).
 *   **Weather:** A Waybar module next to the clock shows current conditions via `wttr.in`, with a graceful "N/A" fallback if the network or upstream service is unavailable.
 *   **Auto Blue-Light Filter:** `hyprsunset` runs as a daemon on login and switches itself between neutral (7:30am) and warm 2450K (8:00pm) — f.lux/redshift-style — per the schedule in `hyprsunset.conf`. A Waybar toggle (sun/moon icon, next to the idle inhibitor) shows and flips the current state; `SUPER + R`/`SUPER + SHIFT + R` do the same from the keyboard. Any of the three count as a manual override until the next scheduled switch.
@@ -73,7 +73,7 @@ The desktop environment is built on the **Tokyo Night (Night)** color palette, o
 
 ## ⌨️ Hyprland Cheat Sheet
 
-System controls are bound to the **`SUPER`** (Command) key, apart from `Print`, the media keys and the `ALT + Tab` switcher.
+System controls are bound to the **`SUPER`** (Command) key, apart from `Print`, the media keys and the `ALT + Tab` switcher. **Caps Lock is remapped to Ctrl** everywhere — in the Wayland session and in the TTYs.
 
 ### Applications & Navigation
 | Key | Action |
@@ -126,7 +126,7 @@ System controls are bound to the **`SUPER`** (Command) key, apart from `Print`, 
 
 The environment is "ready-to-code" immediately upon login, featuring a modern Zsh shell and a full compiler stack.
 
-*   **Languages:** Rust (Cargo/Rustc/Rustlings), Zig (ZLS), Julia, Lua, Octave, C/C++, and Python 3.
+*   **Languages:** Rust (Cargo/Rustc/Rustlings), Zig (ZLS), Julia, Lua, Octave, C/C++ (gcc, make, cmake), and Python 3 with `numpy`, `pandas`, `requests`, `ipython` and `virtualenv` already in the environment.
 *   **Modern Shell:** Zsh is the default shell, featuring syntax highlighting, auto-suggestions, the **Starship** Powerline prompt, and a stock `fastfetch` system-info splash when a shell starts.
 *   **CLI Essentials:** `ripgrep`, `fd`, `bat` (cat), `eza` (ls), `zoxide` (cd), `gh` (GitHub CLI), and `direnv` for automatic flake environment loading.
 *   **yazi:** a terminal file manager with real image, PDF and video previews in Ghostty, Tokyo Night themed. `y` opens it and leaves the shell in whatever folder you quit in.
@@ -136,6 +136,7 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 *   **Nix Housekeeping:** the store is garbage-collected weekly, deleting system generations older than 7 days, so rollbacks reach back about a week. Identical store files are deduplicated automatically. The boot menu keeps the 15 most recent generations, so the 1GB ESP doesn't fill with kernels.
 *   **Archives:** `xarchiver` (Thunar's archive-plugin backend) plus `_7zz`/`unrar`/`zip`/`unzip` handle zip/7z/rar/tar/gzip out of the box. `_7zz` is the official 7-Zip CLI rather than the abandoned `p7zip` fork, and `xarchiver` is overridden to use it as its 7z backend too — see `docs/gotchas.md`.
 *   **Password Manager:** `keepassxc` is the default handler for `.kdbx` files. Passwords copied from it are kept out of `SUPER + V` clipboard history.
+*   **VPN:** Proton VPN on every host — `protonvpn-app` for the desktop client, `protonvpn` for the CLI. DNS goes through `systemd-resolved` with LLMNR and multicast DNS switched off (see `docs/security.md`).
 *   **File Sync:** `syncthing` runs as a system service (LAN/P2P sync), with `syncthingtray` in the waybar tray for status/control; `rclone` is available for cloud-storage remotes.
 *   **System Monitor:** `resources`, a GTK4/libadwaita system monitor, complements the CLI `htop`/`bottom`.
 *   **Firmware:** `gnome-firmware` gives a GUI alongside `fwupdmgr` for firmware updates (the `fwupd` daemon only runs on `framework`).
@@ -148,6 +149,7 @@ Neovim is configured as a full IDE using the **LazyVim** framework, featuring:
 *   **Fuzzy Finder:** `Leader + Space` for instant file finding (LazyVim's current default picker is `snacks.picker`, not Telescope — Telescope is not installed).
 *   **File Explorer:** `Leader + e` for an integrated file tree (`snacks.explorer`; Neo-tree is not installed).
 *   **Language Servers:** All LSPs, formatters, and linters (Rust, Zig, Python, Nix, Lua, etc.) are installed declaratively via Nix in `home.nix` and picked up straight off `PATH`. Mason is deliberately disabled, so editor tooling stays reproducible with `nixos-rebuild` instead of drifting from whatever Mason downloaded at runtime. To add language support, add the package in `home.nix`. The plugins themselves are *not* Nix-managed: first launch clones lazy.nvim and every plugin pinned in `lazy-lock.json` from GitHub, and nvim-treesitter downloads and compiles its parsers. `:Lazy update` writes the new pins straight into this repo's `lazy-lock.json`, so updates show up in `git status` to commit or revert.
+*   **Language extras:** LazyVim's `rust`, `zig`, `python` (with `basedpyright` as the LSP), `clangd`, `nix`, `json`, `toml`, `yaml` and `markdown` extras are enabled in `lua/config/lazy.lua`, which is what decides which LSPs and formatters `home.nix` has to provide. `vim-be-good` is there too, on the `:VimBeGood` command.
 *   **Treesitter:** Automated syntax highlighting and structural editing.
 *   **Start Screen:** a block-letter NIXOS header in the desktop's blue→green gradient.
 *   **Colorscheme:** tokyonight's Night variant (LazyVim defaults to Moon), with a transparent background so Ghostty's blur shows through.
