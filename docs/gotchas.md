@@ -104,6 +104,20 @@ these from scratch.
   the scripts again. `notify-sound` checks DND itself for normal urgency
   and always exits 0 so a missing audio device can't loop.
 
+- **A bash trap waits for the running command.** A `trap ... TERM` doesn't
+  fire until the current foreground command returns, so a poll loop ending
+  in `sleep 30` takes up to 30s to clean up after being told to stop.
+  `media-inhibit` runs `sleep 30 &` then `wait $!` instead, the same trick
+  `waybar-cava` uses for USR1. Confirmed by `kill`ing the watcher and
+  watching its inhibitor survive.
+- **A systemd inhibitor outlives the process that asked for it.**
+  `systemd-inhibit ... sleep infinity` holds the lock until *it* exits, not
+  until its parent does, so a watcher killed with SIGKILL orphans one — and
+  an orphaned `--what=idle` lock means the screen never locks again. Verified
+  with `systemd-inhibit --list` after `kill -9`. `media-inhibit` writes the
+  PID to `$XDG_RUNTIME_DIR` and releases whatever the last run left at
+  startup.
+
 - **delta ignores `git -c` config.** It reads git config from the files on
   disk (libgit2), so `git -c include.path=... diff` changes git but not
   delta's options. To test a delta config, put it where git will find it,

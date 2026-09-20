@@ -815,6 +815,64 @@ let
     done
   '';
 
+  # Holds a logind idle inhibitor while audio is actually playing, so a movie
+  # or a long track doesn't get dimmed at 4m30s and locked at 5m. hypridle
+  # respects systemd idle inhibitors (its ignore_systemd_inhibit defaults to
+  # false and isn't set below), so this needs no hypridle config of its own —
+  # and it suppresses the 20-minute suspend listener too.
+  #
+  # "Playing" is a PipeWire output stream in the `running` state: a paused
+  # player drops out of running, so pausing a video re-arms the lock within a
+  # tick. The notification blips are excluded by name so a chime can't buy
+  # itself 30 seconds of inhibit. Capture streams (the cava visualizer) are a
+  # different media.class and never match.
+  media-inhibit = pkgs.writeShellScriptBin "media-inhibit" ''
+    RUNTIME="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    PIDFILE="$RUNTIME/media-inhibit.pid"
+
+    playing() {
+      [ -n "$(${pkgs.pipewire}/bin/pw-dump 2>/dev/null | ${pkgs.jq}/bin/jq -r '
+        .[] | select(.info.props."media.class" == "Stream/Output/Audio")
+            | select(.info.state == "running")
+            | select(.info.props."application.name" != "pw-play")
+            | .id' | head -1)" ]
+    }
+    # Same PID-file discipline as the other scripts here: verify the process
+    # is still ours before signalling it, never pkill a command-line pattern.
+    held() {
+      local pid
+      pid=$(cat "$PIDFILE" 2>/dev/null) || return 1
+      ${pkgs.gnugrep}/bin/grep -qa systemd-inhibit "/proc/$pid/cmdline" 2>/dev/null && echo "$pid"
+    }
+    release() {
+      local pid
+      if pid=$(held); then kill "$pid"; fi
+      rm -f "$PIDFILE"
+    }
+    trap 'release; exit 0' TERM INT HUP
+    # An inhibitor outlives the watcher that started it, so a previous run
+    # killed outright (SIGKILL, a logout race) would otherwise leave one
+    # blocking the lock forever. Drop any it left behind before starting.
+    release
+
+    while true; do
+      if playing; then
+        if ! held >/dev/null; then
+          ${pkgs.systemd}/bin/systemd-inhibit --what=idle --who=media-inhibit \
+            --why="audio playing" ${pkgs.coreutils}/bin/sleep infinity &
+          echo $! > "$PIDFILE"
+        fi
+      else
+        release
+      fi
+      # Backgrounded so the TERM trap runs now rather than after the sleep:
+      # bash defers a trap until the running foreground command returns, and
+      # a 30s delay there is 30s of not locking after logout.
+      sleep 30 &
+      wait $!
+    done
+  '';
+
   # hypridle's dim-before-lock step. Saves the current brightness in the
   # runtime dir and restores it on input, instead of brightnessctl -s/-r,
   # whose save file is a fixed path under the shared /tmp.
@@ -972,6 +1030,7 @@ in
     wallpaper-video
     perf-mode
     power-watch
+    media-inhibit
     update-check
     update-apply
     idle-dim

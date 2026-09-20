@@ -116,6 +116,7 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `wallpaper-video` | `cycle-wallpaper`, `toggle-blackout`, `perf-mode`, `power-watch` | Video wallpapers: one `mpvpaper` per output (`-p -a FULL`: pauses itself under a fullscreen window; `panscan=1.0` crops to fill), each with an mpv IPC socket in `$XDG_RUNTIME_DIR/wallpaper-video/`. `start`, `stop`, `stop-all [keep]`, `resume-saved`, `sync` (pause/resume to match `should-play`: on AC and performance mode off). |
 | `perf-mode` | `custom/perf` waybar button, `SUPER+SHIFT+F`; `power-watch` | `on`/`off`/`toggle`/`status`/`waybar` (the last renders the bar module). Sets `animations.enabled`, `decoration.blur.enabled` and `decoration.shadow.enabled` live via `hyprctl eval`, then `wallpaper-video sync` and `waybar-cava off`. Reads the live `animations:enabled` rather than a flag, since a config reload resets it. The visualizer is only turned back on if performance mode was what stopped it, tracked by a sentinel in `$XDG_RUNTIME_DIR` so a deliberate click on `custom/cava` survives a round trip. |
 | `power-watch` | autostart | Loop, every 10s: entering the power-saver profile runs `perf-mode on`, leaving it `perf-mode off` (changes only, so a manual toggle holds until the next change); keeps video wallpapers paused whenever they shouldn't play, re-applied each tick because mpvpaper's auto-pause can resume one when a fullscreen window closes; and warns on battery — normal notification at 20%, critical at 10%, once each per discharge, rearmed when the charger goes back in. Hosts with no `/sys/class/power_supply/BAT*` skip the battery part. |
+| `media-inhibit` | autostart | Holds a logind idle inhibitor (`systemd-inhibit --what=idle`) while PipeWire has an output stream in the `running` state, so hypridle's dim/lock/suspend all wait out a video or a long track. hypridle's `ignore_systemd_inhibit` defaults to false, so no hypridle config is needed. Pausing drops the stream out of `running`, re-arming the lock within a tick (30s); the notification blips are excluded by `application.name`, and capture streams (the visualizer) are a different `media.class`. An inhibitor outlives its watcher, so the script releases any left by a previous run at startup, and sleeps in the background so its TERM trap runs immediately rather than up to 30s later. |
 | `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `$XDG_RUNTIME_DIR` (checked to still be `wf-recorder` before it's signalled), saves timestamped mp4 to `~/Videos/Recordings`, `notify-send` toast on start/stop. |
 
 ## hyprsunset day/night schedule
@@ -302,7 +303,7 @@ inactive and `hyprland.lua`'s autostart launches the processes instead:
   `graphical-session.target`, so it isn't enabled; autostart runs
   `hyprshell run`, which finds `~/.config/hyprshell/config.json` itself.
 
-`power-watch` (above) is autostarted the same way. The same autostart also runs helpers that were never units: `nm-applet
+`power-watch` and `media-inhibit` (above) are autostarted the same way. The same autostart also runs helpers that were never units: `nm-applet
 --indicator` (network icon in the waybar tray), `hyprpolkitagent` (the
 password prompt for privileged GUI actions such as mounting drives in
 Thunar; without an agent they fail silently), the clipboard watchers, and

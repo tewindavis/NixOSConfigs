@@ -77,12 +77,13 @@ What closing everything costs on framework:
 ## Script state
 
 The shell scripts in `home.nix` (`toggle-recording`, `toggle-blackout`,
-`waybar-hyprsunset`, `waybar-cava`, `idle-dim`, `wallpaper-video`, `perf-mode`) keep their state in
+`waybar-hyprsunset`, `waybar-cava`, `idle-dim`, `wallpaper-video`, `perf-mode`,
+`media-inhibit`) keep their state in
 `$XDG_RUNTIME_DIR` (`/run/user/<uid>`: `0700`, cleared at logout), never at
 fixed names in the shared `/tmp`. `idle-dim` exists for this: `brightnessctl
 -s`/`-r` would save under brightnessctl's own fixed `/tmp/brightnessctl/`.
 Scripts that signal a PID from a file (`toggle-recording`, `waybar-cava`,
-`wallpaper-video`)
+`wallpaper-video`, `media-inhibit`)
 first check `/proc/<pid>/cmdline`, so a stale file can't hit an unrelated
 process.
 
@@ -215,6 +216,14 @@ These have been identified but not acted on.
   not the source edit. Review `git status` / `git diff` before switching.
 - **Syncthing's web GUI** listens on `127.0.0.1:8384`. Its password is
   GUI-managed state in `~/.config/syncthing/config.xml`, not declared in Nix.
+- **Audio playback defers the screen lock.** `media-inhibit` holds a logind
+  idle inhibitor while any PipeWire output stream is `running`, so hypridle's
+  dim, lock and 20-minute suspend all wait for it. Anything running as `td`
+  can hold a silent stream open and keep the machine unlocked indefinitely —
+  the same class of local-software gap as the mic indicator below, and
+  equally moot against something that could just kill hypridle. Closing the
+  lid still suspends and locks: an `idle` inhibitor doesn't block
+  `handle-lid-switch`.
 - **The mic indicator can be dodged by name.** Waybar's `privacy` module
   ignores any audio-capture stream whose PipeWire `node.name` is `cava`
   (the visualizer's own capture), and any program running as `td` can pick

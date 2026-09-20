@@ -382,4 +382,7 @@ hl.on("hyprland.start", function()
   -- Power profile -> performance mode, and pausing video wallpapers on
   -- battery (power-watch in home.nix).
   hl.exec_cmd("power-watch")
+  -- Hold off hypridle's dim/lock/suspend while audio is playing
+  -- (media-inhibit in home.nix).
+  hl.exec_cmd("media-inhibit")
 end)
