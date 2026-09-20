@@ -206,6 +206,20 @@ let
         else "\(.name) center"
         end')
 
+    # With output names as arguments, only those are changed — the
+    # monitor.added handler in hyprland.lua passes the one just plugged in,
+    # so docking doesn't reshuffle the wallpapers already up elsewhere.
+    if [ "$#" -gt 0 ]; then
+      filtered=()
+      for line in "''${OUTPUTS[@]}"; do
+        for want in "$@"; do
+          [ "''${line%% *}" = "$want" ] && filtered+=("$line")
+        done
+      done
+      OUTPUTS=("''${filtered[@]}")
+    fi
+    [ "''${#OUTPUTS[@]}" -gt 0 ] || exit 0
+
     i=0
     for line in "''${OUTPUTS[@]}"; do
       read -r output pos <<< "$line"

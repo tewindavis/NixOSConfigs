@@ -363,6 +363,18 @@ hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tr
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
 
+-- A newly plugged-in monitor comes up with no wallpaper until something
+-- sets one, so give it its own pick. Only that output is passed, so docking
+-- doesn't reshuffle the wallpapers already up on the others.
+-- The event payload is userdata, not a table (a `type(monitor) == "table"`
+-- guard silently never matches); its fields are read directly.
+hl.on("monitor.added", function(monitor)
+  local name = monitor and monitor.name
+  if name and name ~= "" then
+    hl.exec_cmd("cycle-wallpaper " .. name)
+  end
+end)
+
 -- Autostart
 hl.on("hyprland.start", function()
   -- First: bring up graphical-session.target, via the session target defined

@@ -104,6 +104,13 @@ these from scratch.
   the scripts again. `notify-sound` checks DND itself for normal urgency
   and always exits 0 so a missing audio device can't loop.
 
+- **Hyprland Lua event payloads are userdata, not tables.** A
+  `monitor.added` handler guarded with `type(monitor) == "table"` silently
+  never matches, and `tostring(monitor)` gives `HL.Monitor(1:HEADLESS-1)`,
+  not a name. Read the fields directly (`monitor.name`). Test a hotplug
+  handler without touching the dock: `hyprctl output create headless`
+  triggers a real `monitor.added`, and `hyprctl output remove HEADLESS-N`
+  undoes it.
 - **`graphical-session.target` can't be started by hand.** It sets
   `RefuseManualStart`, so `systemctl --user start graphical-session.target`
   fails with "Operation refused, unit ... may be requested by dependency
