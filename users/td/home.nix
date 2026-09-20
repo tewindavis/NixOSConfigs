@@ -180,6 +180,13 @@ let
   # a fraction of the monitor under it. 120fps to match the docked Dells.
   cycle-wallpaper = pkgs.writeShellScriptBin "cycle-wallpaper" ''
     WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
+    # awww now starts as a unit alongside this (hyprland-session.target), so
+    # the daemon may not have its socket up yet on the autostart run.
+    for _ in $(seq 30); do
+      ${pkgs.awww}/bin/awww query >/dev/null 2>&1 && break
+      sleep 0.1
+    done
+
     mapfile -t WALLS < <(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \
       -o -name "*.mp4" -o -name "*.webm" -o -name "*.mkv" -o -name "*.mov" \) | ${pkgs.coreutils}/bin/shuf)
     [ "''${#WALLS[@]}" -gt 0 ] || exit 0
@@ -1347,7 +1354,7 @@ in
     pkgs.wf-recorder # Screen recording backend for toggle-recording (SUPER+ALT+R)
     pkgs.wofi-emoji # Emoji picker (SUPER+period); types the pick via wtype and copies it
     pkgs.playerctl # Media keys (Play/Next/Prev in hyprland.lua)
-    pkgs.udiskie # Removable-drive automount; autostarted, see services.udiskie below
+    pkgs.udiskie # Removable-drive automount (services.udiskie below); also on PATH for `udiskie-umount` etc.
     pkgs.hyprshell # SUPER+Tab overview + launcher, ALT+Tab switcher (autostarted in hyprland.lua)
     # Password manager, launched without the qt5ct platform-theme plugin:
     # qt5ct has no nixpkgs maintainer, and a platform theme is loaded into
@@ -2182,12 +2189,29 @@ in
   # (or Thunar) is what flushes writes — udiskie doesn't unmount on unplug,
   # because by then it's too late.
   #
-  # The HM unit is WantedBy/PartOf graphical-session.target (and Requires
-  # tray.target), neither of which this session reaches, so it stays inactive
-  # and hyprland.lua autostarts the binary instead — same as hypridle and
-  # awww, see docs/desktop.md. Enabling the service here is still what writes
-  # ~/.config/udiskie/config.yml; the package has to be added by hand,
-  # because the module only references it from that dead unit.
+  # Runs from its Home Manager unit, pulled in by hyprland-session.target
+  # above; it also pulls in tray.target, which it Requires.
+  # greetd launches Hyprland directly rather than through UWSM, so nothing
+  # activates graphical-session.target — and it can't be started by hand
+  # (RefuseManualStart), only pulled in by a session target. This is that
+  # target; hyprland.lua starts it first thing in its autostart.
+  #
+  # Everything WantedBy/PartOf graphical-session.target then runs as intended
+  # and stops cleanly at logout: Home Manager's awww, hypridle, udiskie and
+  # swaync units, plus xdg-desktop-portal, whose
+  # Requisite=graphical-session.target meant it could not start at all —
+  # its D-Bus service file delegates activation to systemd, so screen sharing
+  # was broken outright. tray.target comes up too (udiskie Requires it).
+  systemd.user.targets.hyprland-session = {
+    Unit = {
+      Description = "Hyprland compositor session";
+      Documentation = [ "man:systemd.special(7)" ];
+      BindsTo = [ "graphical-session.target" ];
+      Wants = [ "graphical-session-pre.target" ];
+      After = [ "graphical-session-pre.target" ];
+    };
+  };
+
   services.udiskie = {
     enable = true;
     automount = true;

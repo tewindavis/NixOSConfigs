@@ -104,6 +104,21 @@ these from scratch.
   the scripts again. `notify-sound` checks DND itself for normal urgency
   and always exits 0 so a missing audio device can't loop.
 
+- **`graphical-session.target` can't be started by hand.** It sets
+  `RefuseManualStart`, so `systemctl --user start graphical-session.target`
+  fails with "Operation refused, unit ... may be requested by dependency
+  only". A session target that `BindsTo` it is the only way in — hence
+  `systemd.user.targets.hyprland-session` in `home.nix`. Home Manager's
+  units also can't be masked as a workaround (`systemctl --user mask` fails:
+  the unit file is already a symlink into the HM generation).
+- **`xdg-desktop-portal` can't fall back to D-Bus activation.** Its unit has
+  `Requisite=graphical-session.target` (fails immediately if that target
+  isn't already active) and its D-Bus service file sets
+  `SystemdService=xdg-desktop-portal.service`, so D-Bus activation hands off
+  to systemd and fails the same way. A session without
+  `graphical-session.target` therefore has no portal at all, which breaks
+  Wayland screen sharing; the file-chooser portal is less visible because
+  GTK/Chromium fall back to their own dialogs.
 - **A window rule's `move` takes absolute pixels only.** In Hyprland 0.56's
   Lua config, `hl.window_rule{ move = "100%-660 100%-420" }` is accepted (the
   API validates *field names* — an unknown field errors — but not values) and

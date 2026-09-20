@@ -365,10 +365,18 @@ hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true 
 
 -- Autostart
 hl.on("hyprland.start", function()
+  -- First: bring up graphical-session.target, via the session target defined
+  -- in home.nix (systemd.user.targets.hyprland-session). greetd launches
+  -- Hyprland directly rather than through UWSM, so nothing else activates it,
+  -- and it can't be started by hand (RefuseManualStart) — only pulled in by a
+  -- session target. Everything WantedBy it then starts here and stops at
+  -- logout: Home Manager's awww, hypridle, udiskie and swaync units, and
+  -- xdg-desktop-portal, whose Requisite=graphical-session.target meant it
+  -- could never start at all (so screen sharing didn't work).
+  hl.exec_cmd("systemctl --user start hyprland-session.target")
   hl.exec_cmd("spice-vdagent")
   hl.exec_cmd("nm-applet --indicator")
   hl.exec_cmd("hyprpolkitagent")
-  hl.exec_cmd("hypridle")
   -- Clipboard history, with password-manager entries filtered out.
   -- cliphist stores plaintext in $XDG_CACHE_HOME/cliphist/db, where
   -- KeePassXC's own clear-clipboard timeout can't reach it. KeePassXC
@@ -389,16 +397,17 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("umask 077; wl-paste --type image --watch cliphist store")
   hl.exec_cmd("wl-clip-persist --clipboard regular --all-mime-type-regex '^(?!x-kde-passwordManagerHint).+'")
   hl.exec_cmd("swayosd-server")
-  -- SUPER+Tab overview / ALT+Tab switcher. Autostarted rather than via Home
-  -- Manager's services.hyprshell, whose unit waits on
-  -- graphical-session.target, which this session never reaches.
+  -- SUPER+Tab overview / ALT+Tab switcher. Still autostarted rather than via
+  -- Home Manager's services.hyprshell: its unit is Type=simple with no
+  -- readiness protocol, and hyprshell reloads the Hyprland config as it
+  -- registers its binds, which is safer to have happen here, in order, than
+  -- racing the rest of the target (see docs/gotchas.md).
   hl.exec_cmd("hyprshell run")
   -- syncthingtray is launched here, like swayosd-server, because nothing
   -- else would: it has no unit at all (only a .desktop file). --wait holds
   -- it until waybar's tray exists.
   hl.exec_cmd("syncthingtray --wait")
   hl.exec_cmd("waybar")
-  hl.exec_cmd("awww-daemon")
   -- Bare invocation starts the daemon and loads the auto day/night schedule
   -- from hyprsunset.conf (see home.nix); SUPER+R/SHIFT+R below become
   -- manual IPC overrides against this same running daemon.
@@ -411,8 +420,4 @@ hl.on("hyprland.start", function()
   -- Hold off hypridle's dim/lock/suspend while audio is playing
   -- (media-inhibit in home.nix).
   hl.exec_cmd("media-inhibit")
-  -- Auto-mount removable drives. Its HM unit wants graphical-session.target
-  -- and tray.target, neither of which this session reaches, so start the
-  -- binary; it reads the config HM writes (services.udiskie in home.nix).
-  hl.exec_cmd("udiskie")
 end)

@@ -307,38 +307,49 @@ Hyprland re-applies them when a monitor is plugged in, so docking needs no
 separate profile switcher. On framework, the docked Dells are matched by
 serial (`desc:`); see the rules for the current layout.
 
-## Autostart instead of systemd user units
+## Session target and autostart
 
-Home Manager's graphical user services are `WantedBy`/`PartOf`
-`graphical-session.target`, which this session never reaches (that's a UWSM
-thing; this config launches Hyprland directly), so their units stay
-inactive and `hyprland.lua`'s autostart launches the processes instead:
+`hyprland.lua`'s `hyprland.start` handler runs
+`systemctl --user start hyprland-session.target` first. That target is
+defined in `home.nix` (`systemd.user.targets.hyprland-session`) and
+`BindsTo=graphical-session.target`, which is what actually brings the
+graphical session up: greetd launches Hyprland directly rather than through
+UWSM, so nothing else activates it, and it cannot be started by hand —
+`graphical-session.target` sets `RefuseManualStart`, so only a session
+target pulling it in works.
 
-- **`hypridle`, `awww`:** their HM units are also wanted by
-  `graphical-session.target` and stay inactive. `hyprland.lua` starts both
-  directly (`hypridle`, `awww-daemon`).
-- **`udiskie`:** its HM unit additionally `Requires=tray.target`, which is
-  never reached either, so `hyprland.lua` starts the binary. Enabling
-  `services.udiskie` is still what writes `~/.config/udiskie/config.yml`, but
-  the module only puts the package in that dead unit, so `pkgs.udiskie` is
-  added to `home.packages` by hand to get it on `PATH`.
-- **`swaync`:** its HM unit (`services.swaync`) is `Type=dbus` with
-  `BusName=org.freedesktop.Notifications`, so D-Bus activates it on the
-  first notification or `swaync-client` call. It works without the target.
-- **`swayosd-server`, `syncthingtray`:** no unit at all (no HM service is
-  enabled for either, and syncthingtray only ships a `.desktop` file, which
-  nothing here processes). Autostart is the only thing that launches them.
-- **`hyprshell`:** HM's `services.hyprshell` would work, but its unit is
-  wanted by `wayland.systemd.target`, which defaults to
-  `graphical-session.target`, so it isn't enabled; autostart runs
-  `hyprshell run`, which finds `~/.config/hyprshell/config.json` itself.
+What the target starts, rather than autostart:
 
-`power-watch` and `media-inhibit` (above) are autostarted the same way. The same autostart also runs helpers that were never units: `nm-applet
---indicator` (network icon in the waybar tray), `hyprpolkitagent` (the
-password prompt for privileged GUI actions such as mounting drives in
-Thunar; without an agent they fail silently), the clipboard watchers, and
-`spice-vdagent` (only does anything in the VM). `hyprland.lua`'s
-`hyprland.start` handler is the complete list.
+- **`awww`, `hypridle`, `udiskie`, `swaync`:** their Home Manager units are
+  `WantedBy=graphical-session.target`, so they start with the session and
+  stop at logout. `udiskie` additionally `Requires=tray.target`, which comes
+  up in the same transaction.
+- **`xdg-desktop-portal`:** has `Requisite=graphical-session.target`, and its
+  D-Bus service file delegates activation to systemd
+  (`SystemdService=xdg-desktop-portal.service`), so before this target
+  existed it could not start by any route — screen sharing was broken
+  outright. It is D-Bus activated on demand once the target is up, and
+  `xdg-desktop-portal-hyprland`/`-gtk` follow it.
 
-Check with `pgrep -a <name>`, not `systemctl --user`, which reports the
-unused units as inactive even while the processes run.
+Still autostarted, because nothing else would start them:
+
+- **`waybar`, `swayosd-server`, `syncthingtray`:** no unit at all (no HM
+  service is enabled for either, and syncthingtray only ships a `.desktop`
+  file, which nothing here processes).
+- **`hyprshell`:** HM's `services.hyprshell` would work now, but autostart
+  keeps it in a known order — it reloads the Hyprland config while
+  registering its binds (see `docs/gotchas.md`), better done in sequence than
+  racing the target.
+- **`hyprsunset`, `setup-wallpapers`, `cycle-wallpaper`, `power-watch`,
+  `media-inhibit`**, plus `nm-applet --indicator` (network icon in the waybar
+  tray), `hyprpolkitagent` (the password prompt for privileged GUI actions
+  such as mounting drives in Thunar; without an agent they fail silently),
+  the clipboard watchers, and `spice-vdagent` (only does anything in the VM).
+
+`hyprland.lua`'s `hyprland.start` handler is the complete list of what is
+autostarted; `systemctl --user list-dependencies graphical-session.target`
+lists what the target starts.
+
+Because `awww` now starts as a unit in parallel with the autostart,
+`cycle-wallpaper` polls `awww query` for up to 3s before setting anything
+rather than assuming the daemon is already up.
