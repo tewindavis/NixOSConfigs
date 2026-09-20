@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Pre-commit hook for this repo. Enabled with:
+#
+#   git config core.hooksPath scripts/githooks
+#
+# which is repo-local on purpose — a global hooksPath would run this against
+# every other repo too.
+#
+# Deliberately cheap (~2s): it only catches the two kinds of pure mechanical
+# drift that `nix flake check` would otherwise find later. That check remains
+# the authority; this is not a substitute for running it.
+#
+# Caveat shared with every formatting hook: it inspects the working tree, not
+# the staged content, so a partially staged file is checked in full.
+set -uo pipefail
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+fail=0
+
+# treefmt's --ci reformats and *then* fails, so a non-zero exit here means
+# files on disk have just been rewritten and need re-staging.
+if ! nix fmt -- --ci >/dev/null 2>&1; then
+  echo "pre-commit: treefmt reformatted files." >&2
+  echo "            Review them, 'git add', and commit again." >&2
+  fail=1
+fi
+
+if ! ./scripts/check-keybinds.sh >/dev/null 2>&1; then
+  echo "pre-commit: README's keybind cheat sheet and hyprland.lua disagree:" >&2
+  ./scripts/check-keybinds.sh 2>&1 | sed 's/^/            /' >&2
+  fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo "            (bypass with --no-verify if you mean it)" >&2
+fi
+exit "$fail"

@@ -91,6 +91,19 @@ table is not machine-checked, so update it by hand in the same change.
 Always run `nix fmt` before committing — treefmt is the formatting source of
 truth (`treefmt.nix`), not manual style matching.
 
+A pre-commit hook enforces both of the above mechanically. It is repo-local,
+so a fresh clone needs it enabled once:
+
+```bash
+git config core.hooksPath scripts/githooks
+```
+
+It runs treefmt in `--ci` mode (which reformats and *then* fails, so a failed
+commit means files were just rewritten and need re-staging) and
+`check-keybinds.sh`, taking about two seconds. `nix flake check` is still the
+authority; the hook only catches mechanical drift early. Bypass with
+`--no-verify`.
+
 **Always pass an explicit `#<attr>`.** The flake attribute is the
 `hosts/<name>/` directory name, which is *not* always the machine's
 hostname: `utm-vm`'s `networking.hostName` is `utm-nixos`. A bare
