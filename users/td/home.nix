@@ -815,27 +815,37 @@ let
     done
   '';
 
-  # Holds a logind idle inhibitor while audio is actually playing, so a movie
-  # or a long track doesn't get dimmed at 4m30s and locked at 5m. hypridle
-  # respects systemd idle inhibitors (its ignore_systemd_inhibit defaults to
-  # false and isn't set below), so this needs no hypridle config of its own —
-  # and it suppresses the 20-minute suspend listener too.
+  # Watches what the session is doing and holds things off accordingly:
   #
-  # "Playing" is a PipeWire output stream in the `running` state: a paused
-  # player drops out of running, so pausing a video re-arms the lock within a
-  # tick. The notification blips are excluded by name so a chime can't buy
-  # itself 30 seconds of inhibit. Capture streams (the cava visualizer) are a
-  # different media.class and never match.
+  #   audio playing or screen being shared -> logind idle inhibitor, so a
+  #     film or a demo isn't dimmed at 4m30s and locked at 5m. hypridle
+  #     respects systemd idle inhibitors (its ignore_systemd_inhibit defaults
+  #     to false and isn't set below), so no hypridle config is needed, and
+  #     the 20-minute suspend listener is covered too.
+  #   screen being shared -> a swaync inhibitor, so notification popups stay
+  #     off the shared screen. An inhibitor rather than do-not-disturb: DND is
+  #     a setting you might have turned on yourself, and this must not end up
+  #     turning it off for you. Notifications still land in the history.
+  #
+  # Both signals are PipeWire nodes in the `running` state, read from one
+  # dump per tick: `Stream/Output/Audio` for playback (a paused player drops
+  # out of running, so pausing re-arms the lock within a tick, and the
+  # notification blips are excluded by name so a chime can't buy itself 5
+  # seconds of inhibit), and `Stream/Input/Video` for a screencast — the same
+  # test waybar's privacy module makes, so the bar's indicator and this agree.
   media-inhibit = pkgs.writeShellScriptBin "media-inhibit" ''
     RUNTIME="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
     PIDFILE="$RUNTIME/media-inhibit.pid"
+    SWAYNC=${pkgs.swaynotificationcenter}/bin/swaync-client
 
-    playing() {
-      [ -n "$(${pkgs.pipewire}/bin/pw-dump 2>/dev/null | ${pkgs.jq}/bin/jq -r '
-        .[] | select(.info.props."media.class" == "Stream/Output/Audio")
-            | select(.info.state == "running")
-            | select(.info.props."application.name" != "pw-play")
-            | .id' | head -1)" ]
+    # "<audio streams> <video capture streams>", both running only.
+    counts() {
+      ${pkgs.pipewire}/bin/pw-dump 2>/dev/null | ${pkgs.jq}/bin/jq -r '
+        [ .[] | select(.info.state == "running") | .info.props ] as $p
+        | [ ($p | map(select(."media.class" == "Stream/Output/Audio"
+                             and ."application.name" != "pw-play")) | length),
+            ($p | map(select(."media.class" == "Stream/Input/Video")) | length) ]
+        | "\(.[0]) \(.[1])"' 2>/dev/null
     }
     # Same PID-file discipline as the other scripts here: verify the process
     # is still ours before signalling it, never pkill a command-line pattern.
@@ -849,26 +859,49 @@ let
       if pid=$(held); then kill "$pid"; fi
       rm -f "$PIDFILE"
     }
-    trap 'release; exit 0' TERM INT HUP
-    # An inhibitor outlives the watcher that started it, so a previous run
-    # killed outright (SIGKILL, a logout race) would otherwise leave one
-    # blocking the lock forever. Drop any it left behind before starting.
-    release
+    unshare_notifications() { $SWAYNC -Ir media-inhibit >/dev/null 2>&1 || true; }
+    cleanup() {
+      release
+      unshare_notifications
+    }
+    trap 'cleanup; exit 0' TERM INT HUP
+    # Both inhibitors outlive the watcher that set them, so a previous run
+    # killed outright (SIGKILL, a logout race) would otherwise leave the idle
+    # one blocking the lock forever and notifications silenced. Drop whatever
+    # the last run left behind before starting.
+    cleanup
 
+    sharing=no
     while true; do
-      if playing; then
+      read -r audio video <<< "$(counts)"
+      audio="''${audio:-0}"
+      video="''${video:-0}"
+
+      if [ "$audio" -gt 0 ] || [ "$video" -gt 0 ]; then
         if ! held >/dev/null; then
           ${pkgs.systemd}/bin/systemd-inhibit --what=idle --who=media-inhibit \
-            --why="audio playing" ${pkgs.coreutils}/bin/sleep infinity &
+            --why="audio playing or screen shared" ${pkgs.coreutils}/bin/sleep infinity &
           echo $! > "$PIDFILE"
         fi
       else
         release
       fi
+
+      if [ "$video" -gt 0 ]; then
+        # Re-asserted every tick rather than only on the edge: swaync keys
+        # inhibitors by app id and ignores a duplicate, so this is free, and
+        # it restores the inhibitor if swaync restarted mid-share.
+        $SWAYNC -Ia media-inhibit >/dev/null 2>&1 || true
+        sharing=yes
+      elif [ "$sharing" = yes ]; then
+        unshare_notifications
+        sharing=no
+      fi
+
       # Backgrounded so the TERM trap runs now rather than after the sleep:
       # bash defers a trap until the running foreground command returns, and
-      # a 30s delay there is 30s of not locking after logout.
-      sleep 30 &
+      # a delay there is a delay in re-arming the lock after logout.
+      sleep 5 &
       wait $!
     done
   '';

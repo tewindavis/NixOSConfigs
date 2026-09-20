@@ -216,8 +216,9 @@ These have been identified but not acted on.
   not the source edit. Review `git status` / `git diff` before switching.
 - **Syncthing's web GUI** listens on `127.0.0.1:8384`. Its password is
   GUI-managed state in `~/.config/syncthing/config.xml`, not declared in Nix.
-- **Audio playback defers the screen lock.** `media-inhibit` holds a logind
-  idle inhibitor while any PipeWire output stream is `running`, so hypridle's
+- **Audio playback and screen sharing defer the screen lock.**
+  `media-inhibit` holds a logind idle inhibitor while any PipeWire output
+  stream, or any video capture stream, is `running`, so hypridle's
   dim, lock and 20-minute suspend all wait for it. Anything running as `td`
   can hold a silent stream open and keep the machine unlocked indefinitely —
   the same class of local-software gap as the mic indicator below, and
