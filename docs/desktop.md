@@ -140,6 +140,13 @@ daemon directly.
   `docs/gotchas.md` for why plain `"1.0 1.0"` doesn't work here.
 - `scratchpad-term` — floats the scratchpad terminal, sizes it `1400 900`,
   and puts it on `special:scratchpad`.
+- `pip` — floats and pins browser picture-in-picture windows at `640 360`
+  with `keep_aspect_ratio`, so a video follows you across workspaces. Matched
+  on title (`^([Pp]icture[ -][Ii]n[ -][Pp]icture)$`), which covers Chromium's
+  "Picture in picture" and Firefox's "Picture-in-Picture" without naming a
+  class. It opens centred: `move` only honours absolute pixels here, which
+  aren't portable across a 1920-wide laptop and a 1440-wide portrait Dell —
+  see `docs/gotchas.md`.
 - `float-<class>` — floats, sizes and centers pavucontrol
   (`org.pulseaudio.pavucontrol`), `blueman-manager`, `nm-connection-editor`
   and `imv`. Classes were read from `hyprctl clients`; check there before

@@ -232,6 +232,27 @@ hl.window_rule({
   workspace = "special:scratchpad",
 })
 
+-- Browser picture-in-picture: float it, pin it (pinned windows follow you
+-- onto every workspace, which is the whole point of PiP), at a 16:9 size.
+-- Matched on title rather than class, because that's what distinguishes the
+-- PiP window from its parent browser, and one rule then covers Chromium's
+-- "Picture in picture" and Firefox's "Picture-in-Picture".
+--
+-- No `move`: this Hyprland only honours absolute pixels there, and any pixel
+-- pair that lands bottom-right on the 1920-wide laptop is off-screen on the
+-- 1440-wide portrait Dell. The percentage forms ("100%-660 100%-420",
+-- "66% 68%", "onscreen ...") are accepted by the API and then silently
+-- ignored — the window just opens centred (see docs/gotchas.md). Centred is
+-- the fallback here too; drag it where you want it.
+hl.window_rule({
+  name = "pip",
+  match = { title = "^([Pp]icture[ -][Ii]n[ -][Pp]icture)$" },
+  float = true,
+  pin = true,
+  size = "640 360",
+  keep_aspect_ratio = true,
+})
+
 -- Pop-up utilities (mostly waybar click targets) float centered instead of
 -- squashing the tiled layout. Classes confirmed via `hyprctl clients`;
 -- pavucontrol's is its reverse-DNS app-id.

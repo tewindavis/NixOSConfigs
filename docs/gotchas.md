@@ -104,6 +104,15 @@ these from scratch.
   the scripts again. `notify-sound` checks DND itself for normal urgency
   and always exits 0 so a missing audio device can't loop.
 
+- **A window rule's `move` takes absolute pixels only.** In Hyprland 0.56's
+  Lua config, `hl.window_rule{ move = "100%-660 100%-420" }` is accepted (the
+  API validates *field names* — an unknown field errors — but not values) and
+  then silently ignored: the window opens centred. `"66% 68%"` and
+  `"onscreen 100%-660 100%-420"` behave the same way; `"1240 880"` works.
+  Confirmed by opening `ghostty --title=...` against each form and reading
+  `hyprctl clients -j`. Pixels aren't portable across this setup's monitors
+  (1920 logical wide laptop vs. the 1440-wide portrait Dell), so the PiP rule
+  leaves the window centred rather than pinning a coordinate.
 - **A bash trap waits for the running command.** A `trap ... TERM` doesn't
   fire until the current foreground command returns, so a poll loop ending
   in `sleep 30` takes up to 30s to clean up after being told to stop.
