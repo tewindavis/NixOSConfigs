@@ -1,7 +1,10 @@
 { lib, pkgs, ... }:
 
 {
-  imports = [ ./secrets.nix ];
+  imports = [
+    ./secrets.nix
+    ./failure-notify.nix
+  ];
 
   # Nix Settings
   nix.settings.experimental-features = [

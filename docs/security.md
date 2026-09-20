@@ -74,6 +74,24 @@ What closing everything costs on framework:
 - `sb3_prometheus.PrometheusCallback` serves a training process's metrics
   on `127.0.0.1:9435` only (dl-prototype).
 
+## Unit failure notifications
+
+`modules/core/failure-notify.nix` adds an `OnFailure` drop-in to every
+service in both the system and user scopes (shipped through
+`systemd.packages`, because `/etc/systemd/system` is already a directory in
+the etc tree and a new subdirectory under it fails the etc build). The
+handler posts a critical notification naming the unit with the last 5
+journal lines.
+
+- Journal lines are untrusted text rendered as Pango markup, so the handler
+  escapes them; see "Untrusted text rendered as markup" below.
+- The handler template sets `OnFailure=` (empty) so a handler that fails
+  can't trigger another one. Verified by making the handler fail on purpose
+  and confirming no nested instances appear.
+- System-scope notifications are delivered by `runuser` into each
+  `/run/user/<uid>` that has a `bus` socket. Before login there is no bus, so
+  boot-time failures are dropped rather than queued into a burst at login.
+
 ## Script state
 
 The shell scripts in `home.nix` (`toggle-recording`, `toggle-blackout`,

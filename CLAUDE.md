@@ -32,6 +32,7 @@ hosts/<name>/
 modules/
   core/          default.nix   # settings shared by every host (locale, nix.gc, pipewire, printing, ...)
                  secrets.nix   # sops-nix wiring (inert until sops.secrets.* declared)
+                 failure-notify.nix  # notify on any failed unit, both scopes
   desktop/       default.nix   # Thunar, fonts, archive support; imports hyprland.nix
                  hyprland.nix  # greetd/tuigreet, portals, polkit, gnome-keyring
   hardware/      framework.nix, nvidia.nix, utm.nix, bluetooth.nix   # per-host opt-in modules
