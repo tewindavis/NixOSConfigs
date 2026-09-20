@@ -24,6 +24,12 @@
   # physical access boot `init=/bin/sh`. LUKS (see hardware-configuration.nix)
   # still guards the data here, but this closes the tamper path itself.
   boot.loader.systemd-boot.editor = false;
+  # Keep the boot menu to the 15 most recent generations. Without this every
+  # switch adds an entry (43 had accumulated on framework) and each one keeps
+  # its kernel and initrd on the 1GB ESP. Older generations stay in the Nix
+  # store and come back on the next `nixos-rebuild boot`; only their menu
+  # entries and kernels are dropped.
+  boot.loader.systemd-boot.configurationLimit = 15;
 
   # Nothing SSHes into the laptop (the only accepted login in the 30 days
   # before this change was a localhost test), and it is the host that roams
