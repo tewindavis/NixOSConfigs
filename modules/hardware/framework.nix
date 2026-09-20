@@ -75,13 +75,24 @@ in
   };
   powerManagement.resumeCommands = "${applyLimit}";
 
+  # Owned by fwupd-refresh, matching /var/lib/fwupd itself: systemd-tmpfiles
+  # refuses to manage a root-owned directory inside one owned by an
+  # unprivileged user ("Detected unsafe path transition ... during
+  # canonicalization"), its guard against symlink attacks, and silently does
+  # nothing every boot. The daemon reads these as root, but the trust
+  # boundary is unchanged — fwupd's whole state directory already belongs to
+  # that user — and the link itself points into the immutable store.
   systemd.tmpfiles.settings."10-fwupd-dock-quirk" = {
     "/var/lib/fwupd/quirks.d".d = {
-      user = "root";
-      group = "root";
+      user = "fwupd-refresh";
+      group = "fwupd-refresh";
       mode = "0755";
     };
-    "/var/lib/fwupd/quirks.d/99-caldigit-ts4-hub.quirk"."L+".argument = "${dockHubQuirk}";
+    "/var/lib/fwupd/quirks.d/99-caldigit-ts4-hub.quirk"."L+" = {
+      user = "fwupd-refresh";
+      group = "fwupd-refresh";
+      argument = "${dockHubQuirk}";
+    };
   };
 
   security.pam.services.login.fprintAuth = true;

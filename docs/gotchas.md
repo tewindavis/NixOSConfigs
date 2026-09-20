@@ -187,6 +187,12 @@ these from scratch.
   timed out`. (The tool then gives up and continues, which is why it
   finishes and the daemon doesn't.) A `no-probe` quirk on that instance ID
   fixes it; `modules/hardware/framework.nix` ships it.
+  A third: the tmpfiles rule that installs it must own
+  `/var/lib/fwupd/quirks.d` as `fwupd-refresh`, matching `/var/lib/fwupd`.
+  systemd-tmpfiles refuses to manage a root-owned directory inside a
+  user-owned one — "Detected unsafe path transition ... during
+  canonicalization", its symlink-attack guard — and does nothing every boot
+  without failing the unit, so the only sign is the missing file.
   Two things to know if you write another quirk: fwupd 2.1.6 loads them
   only from its own store path and `/var/lib/fwupd/quirks.d` — **not**
   `/etc/fwupd` — and `DisabledDevices` is no use here because it filters
