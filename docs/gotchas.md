@@ -104,6 +104,12 @@ these from scratch.
   the scripts again. `notify-sound` checks DND itself for normal urgency
   and always exits 0 so a missing audio device can't loop.
 
+- **fzf and atuin both bind CTRL+R.** Each does it from its own zsh init
+  snippet, so the winner is whichever Home Manager emits last — incidental
+  ordering that can flip on an HM update. `programs.zsh.initContent`
+  (`lib.mkAfter`) re-binds it explicitly after both, so the outcome doesn't
+  depend on that order. Check what the generated rc actually does with
+  `grep -n 'fzf --zsh\|atuin init\|bindkey .\^R' <home-files>/.zshrc`.
 - **wttr.in's weather emoji carry a variation selector.** `%c` returns
   things like `☀️` = `U+2600 U+FE0F`. JetBrainsMono Nerd Font covers none of
   those emoji, so the symbol came from a fallback font while `U+FE0F` was

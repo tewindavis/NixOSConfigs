@@ -212,13 +212,7 @@ zsh's `syntaxHighlighting.styles` and `autosuggestion.highlight` are set by
 hand from the palette, as is atuin's theme (`programs.atuin.themes.tokyonight`,
 written to `~/.config/atuin/themes/`; its colour names come from the atuin
 binary: `AlertInfo`/`AlertWarn`/`AlertError`, `Annotation`, `Base`,
-`Guidance`, `Important`, `Title`, `Muted`). CTRL+R is atuin (SQLite-backed history with fuzzy search), bound explicitly
-in `programs.zsh.initContent` rather than left to atuin's own init: fzf's zsh
-integration binds the same key, and which one wins depends on the order Home
-Manager emits the two snippets. fzf keeps CTRL+T and ALT+C, Up stays plain zsh
-history (`--disable-up-arrow`), and `~/.zsh_history` is still written, so
-removing atuin loses nothing. It is local-only: `auto_sync` and `update_check`
-are both off and no account is configured, so it never reaches the network.
+`Guidance`, `Important`, `Title`, `Muted`).
 
 Neovim's tokyonight is set to `night` (LazyVim's own
 default is `moon`) with a transparent background, in
@@ -298,6 +292,22 @@ GTK/Qt/dconf theming (`gtk`, `qt`, `dconf.settings` in `home.nix`) is the
 declarative source of truth for dark mode + accent color — don't add
 `gsettings` calls to Hyprland autostart to set these; they'd just fight the
 declarative config on every rebuild.
+
+## Shell history (atuin)
+
+CTRL+R opens atuin — SQLite-backed history with fuzzy search, showing the
+directory and exit status of each command. Not a Hyprland bind: the
+compositor never sees it, so it does not belong in the keybinding table
+above and `check-keybinds.sh` knows nothing about it.
+
+- Bound explicitly in `programs.zsh.initContent`, last, rather than left to
+  atuin's own init snippet. fzf's zsh integration binds CTRL+R too; see
+  `docs/gotchas.md`.
+- fzf keeps CTRL+T and ALT+C. Up-arrow stays plain zsh history
+  (`--disable-up-arrow`), and `~/.zsh_history` is still written, so removing
+  atuin loses nothing.
+- Local only: `auto_sync` and `update_check` are off and no account is
+  configured, so it never reaches the network.
 
 ## Monitor layout
 
