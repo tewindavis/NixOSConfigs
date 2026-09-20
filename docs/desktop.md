@@ -196,7 +196,18 @@ tokyonight's yazi export (with its `[filetype]` `name` keys rewritten to
 `url` at build time, see `docs/gotchas.md`); `eza` reads
 `LS_COLORS` from `vivid generate tokyonight-night`, generated at build time.
 zsh's `syntaxHighlighting.styles` and `autosuggestion.highlight` are set by
-hand from the palette. Neovim's tokyonight is set to `night` (LazyVim's own
+hand from the palette, as is atuin's theme (`programs.atuin.themes.tokyonight`,
+written to `~/.config/atuin/themes/`; its colour names come from the atuin
+binary: `AlertInfo`/`AlertWarn`/`AlertError`, `Annotation`, `Base`,
+`Guidance`, `Important`, `Title`, `Muted`). CTRL+R is atuin (SQLite-backed history with fuzzy search), bound explicitly
+in `programs.zsh.initContent` rather than left to atuin's own init: fzf's zsh
+integration binds the same key, and which one wins depends on the order Home
+Manager emits the two snippets. fzf keeps CTRL+T and ALT+C, Up stays plain zsh
+history (`--disable-up-arrow`), and `~/.zsh_history` is still written, so
+removing atuin loses nothing. It is local-only: `auto_sync` and `update_check`
+are both off and no account is configured, so it never reaches the network.
+
+Neovim's tokyonight is set to `night` (LazyVim's own
 default is `moon`) with a transparent background, in
 `nvim/lua/plugins/colorscheme.lua`.
 

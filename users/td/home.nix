@@ -1900,10 +1900,54 @@ in
     # starship one above (VS Code's shell integration, CI, etc).
     initContent = lib.mkAfter ''
       source ${lsColors}
+      # fzf and atuin both bind CTRL+R from their own init snippets, and which
+      # one wins depends on the order Home Manager emits them. Bind it here,
+      # last, so it's atuin either way. fzf keeps CTRL+T and ALT+C.
+      bindkey '^R' atuin-search
       if [[ $TERM != "dumb" ]]; then
         fastfetch
       fi
     '';
+  };
+
+  # Shell history in SQLite with a fuzzy search UI on CTRL+R, replacing zsh's
+  # plain reverse search. Local only: no account, no sync, and update_check
+  # off, so it never talks to the network. The zsh history file above still
+  # gets written, so nothing is lost if atuin is removed.
+  #
+  # --disable-up-arrow keeps Up as plain zsh history (same key, same
+  # behaviour as before); only CTRL+R changes. enter_accept = false puts the
+  # chosen command on the prompt for editing rather than running it straight
+  # from the picker.
+  programs.atuin = {
+    enable = true;
+    flags = [ "--disable-up-arrow" ];
+    settings = {
+      auto_sync = false;
+      update_check = false;
+      style = "compact";
+      inline_height = 20;
+      show_preview = true;
+      enter_accept = false;
+      filter_mode = "global";
+      theme.name = "tokyonight";
+    };
+    # Same palette as the rest of the rice (see docs/desktop.md); atuin's
+    # own themes are TOML files under ~/.config/atuin/themes/.
+    themes.tokyonight = {
+      theme.name = "tokyonight";
+      colors = {
+        AlertInfo = "#9ece6a";
+        AlertWarn = "#ff9e64";
+        AlertError = "#f7768e";
+        Annotation = "#7dcfff";
+        Base = "#c0caf5";
+        Guidance = "#414868";
+        Important = "#bb9af7";
+        Title = "#7aa2f7";
+        Muted = "#565f89";
+      };
+    };
   };
 
   programs.bash.enable = true;
