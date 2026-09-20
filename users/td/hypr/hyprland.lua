@@ -388,4 +388,8 @@ hl.on("hyprland.start", function()
   -- Hold off hypridle's dim/lock/suspend while audio is playing
   -- (media-inhibit in home.nix).
   hl.exec_cmd("media-inhibit")
+  -- Auto-mount removable drives. Its HM unit wants graphical-session.target
+  -- and tray.target, neither of which this session reaches, so start the
+  -- binary; it reads the config HM writes (services.udiskie in home.nix).
+  hl.exec_cmd("udiskie")
 end)

@@ -1147,6 +1147,7 @@ in
     pkgs.wf-recorder # Screen recording backend for toggle-recording (SUPER+ALT+R)
     pkgs.wofi-emoji # Emoji picker (SUPER+period); types the pick via wtype and copies it
     pkgs.playerctl # Media keys (Play/Next/Prev in hyprland.lua)
+    pkgs.udiskie # Removable-drive automount; autostarted, see services.udiskie below
     pkgs.hyprshell # SUPER+Tab overview + launcher, ALT+Tab switcher (autostarted in hyprland.lua)
     # Password manager, launched without the qt5ct platform-theme plugin:
     # qt5ct has no nixpkgs maintainer, and a platform theme is loaded into
@@ -1948,6 +1949,26 @@ in
         Muted = "#565f89";
       };
     };
+  };
+
+  # Auto-mount removable drives (udisks2 is already on system-wide, via
+  # gvfs/Thunar). Mounts land under /run/media/td/<label>, a notification says
+  # where, and the tray icon appears only while something is mounted, so it
+  # costs nothing in the bar the rest of the time. Unmounting from the tray
+  # (or Thunar) is what flushes writes — udiskie doesn't unmount on unplug,
+  # because by then it's too late.
+  #
+  # The HM unit is WantedBy/PartOf graphical-session.target (and Requires
+  # tray.target), neither of which this session reaches, so it stays inactive
+  # and hyprland.lua autostarts the binary instead — same as hypridle and
+  # awww, see docs/desktop.md. Enabling the service here is still what writes
+  # ~/.config/udiskie/config.yml; the package has to be added by hand,
+  # because the module only references it from that dead unit.
+  services.udiskie = {
+    enable = true;
+    automount = true;
+    notify = true;
+    tray = "auto";
   };
 
   programs.bash.enable = true;

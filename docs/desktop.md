@@ -305,6 +305,11 @@ inactive and `hyprland.lua`'s autostart launches the processes instead:
 - **`hypridle`, `awww`:** their HM units are also wanted by
   `graphical-session.target` and stay inactive. `hyprland.lua` starts both
   directly (`hypridle`, `awww-daemon`).
+- **`udiskie`:** its HM unit additionally `Requires=tray.target`, which is
+  never reached either, so `hyprland.lua` starts the binary. Enabling
+  `services.udiskie` is still what writes `~/.config/udiskie/config.yml`, but
+  the module only puts the package in that dead unit, so `pkgs.udiskie` is
+  added to `home.packages` by hand to get it on `PATH`.
 - **`swaync`:** its HM unit (`services.swaync`) is `Type=dbus` with
   `BusName=org.freedesktop.Notifications`, so D-Bus activates it on the
   first notification or `swaync-client` call. It works without the target.
