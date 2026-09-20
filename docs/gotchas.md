@@ -175,6 +175,22 @@ these from scratch.
   `hyprctl clients -j`. Pixels aren't portable across this setup's monitors
   (1920 logical wide laptop vs. the 1440-wide portrait Dell), so the PiP rule
   leaves the window centred rather than pinning a coordinate.
+- **A wedged dock hub can stop fwupd starting at all.** With the CalDigit
+  TS4 attached, `fwupd.service` failed its start timeout every time —
+  including when given 15 minutes, so it was wedged rather than slow. The
+  cause is one USB device: the dock's upstream Intel hub (`8087:0b40`)
+  stops answering descriptor requests, and fwupd blocks on it while
+  enumerating. `fwupdtool get-devices --verbose` is the way to see this;
+  the daemon logs nothing between "Starting" and the timeout, while the
+  tool shows a 42-second gap followed by
+  `failed to setup: failed to get USB descriptor: USB error: Operation
+  timed out`. (The tool then gives up and continues, which is why it
+  finishes and the daemon doesn't.) A `no-probe` quirk on that instance ID
+  fixes it; `modules/hardware/framework.nix` ships it.
+  Two things to know if you write another quirk: fwupd 2.1.6 loads them
+  only from its own store path and `/var/lib/fwupd/quirks.d` — **not**
+  `/etc/fwupd` — and `DisabledDevices` is no use here because it filters
+  after setup, which is exactly where the hang is.
 - **Running a switch from a systemd user service kills the switch.**
   `nh os switch` restarts user units, and systemd kills a unit's whole
   cgroup when it stops it — so a terminal launched as a child of
