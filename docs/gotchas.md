@@ -325,6 +325,15 @@ these from scratch.
   get silently dropped (visible only as a "conflicts with recursively
   symlinked file" build warning) — `sideloadInitLua` loads that generated
   content via a wrapper `--cmd` flag instead, so both coexist.
+- **Adding a plugin spec doesn't install it; the next nvim launch does.**
+  `users/td/nvim/lua/plugins/*.lua` is read by lazy.nvim, which clones the
+  plugin from GitHub on the next start and records the commit in
+  `lazy-lock.json` — so a new spec shows up as a *lockfile* change to commit,
+  not as anything a `nixos-rebuild` produced. The one exception in this repo
+  is the Scheme setup, whose interpreter (`pkgs.mitscheme`) is Nix-managed
+  while its editor plugins are not: `nvim/lua/plugins/scheme.lua` pins
+  Conjure's `command` to `mit-scheme`, which only resolves because home.nix
+  installs it.
 - **lazy.nvim writes its lockfile to the repo, not `~/.config`.**
   `~/.config/nvim/lazy-lock.json` is a read-only store symlink, so a stock
   `:Lazy update` moves the installed plugins but cannot record them — this

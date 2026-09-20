@@ -173,5 +173,9 @@ language extra that consumes them) and picked up off `PATH`. Mason is
 explicitly disabled — `users/td/nvim/lua/plugins/mason.lua` turns off
 `mason.nvim`, `mason-lspconfig`, `mason-tool-installer` and `mason-nvim-dap`.
 To add language support, add the package to `home.nix`; `:Mason` will not
-help. (The plugins themselves and treesitter parsers *are* still fetched at
-first launch — only the tool binaries come from Nix.)
+help. Scheme is the one language here set up without an LSP or completion at
+all, on purpose — `users/td/nvim/lua/plugins/scheme.lua` disables blink.cmp
+for `scheme` buffers and pairs `pkgs.mitscheme` with Conjure's REPL.
+
+(The plugins themselves and treesitter parsers *are* still fetched at first
+launch — only the tool binaries come from Nix.)

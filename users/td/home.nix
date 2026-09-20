@@ -1368,6 +1368,10 @@ in
     pkgs.julia
     pkgs.octave
     pkgs.lua
+    # MIT/GNU Scheme, for SICP. Provides both `mit-scheme` and `scheme`;
+    # `mit-scheme` is the name Conjure's Scheme client launches by default
+    # (nvim/lua/plugins/scheme.lua).
+    pkgs.mitscheme
     pkgs.gcc
     pkgs.gnumake
     pkgs.cmake
@@ -1457,6 +1461,7 @@ in
     })
     pkgs.resources # GTK4/libadwaita system monitor (GUI complement to bottom/htop)
     pkgs.rclone # CLI sync/mount for cloud storage remotes
+    pkgs.obsidian # Markdown notes (unfree; allowUnfree is set in modules/core)
     pkgs.gnome-firmware # GUI firmware updater, complements fwupd (see framework host)
     pkgs.syncthingtray # Waybar tray icon/control for the syncthing service
     # (modules/services/syncthing.nix)

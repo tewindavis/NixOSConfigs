@@ -126,7 +126,7 @@ System controls are bound to the **`SUPER`** (Command) key, apart from `Print`, 
 
 The environment is "ready-to-code" immediately upon login, featuring a modern Zsh shell and a full compiler stack.
 
-*   **Languages:** Rust (Cargo/Rustc/Rustlings), Zig (ZLS), Julia, Lua, Octave, C/C++ (gcc, make, cmake), and Python 3 with `numpy`, `pandas`, `requests`, `ipython` and `virtualenv` already in the environment.
+*   **Languages:** Rust (Cargo/Rustc/Rustlings), Zig (ZLS), Julia, Lua, Octave, Scheme (MIT/GNU Scheme, for SICP), C/C++ (gcc, make, cmake), and Python 3 with `numpy`, `pandas`, `requests`, `ipython` and `virtualenv` already in the environment.
 *   **Modern Shell:** Zsh is the default shell, featuring syntax highlighting, auto-suggestions, the **Starship** Powerline prompt, and a stock `fastfetch` system-info splash when a shell starts.
 *   **CLI Essentials:** `ripgrep`, `fd`, `bat` (cat), `eza` (ls), `zoxide` (cd), `gh` (GitHub CLI), and `direnv` for automatic flake environment loading.
 *   **yazi:** a terminal file manager with real image, PDF and video previews in Ghostty, Tokyo Night themed. `y` opens it and leaves the shell in whatever folder you quit in.
@@ -135,6 +135,7 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 *   **Screen Recording:** `SUPER + ALT + R` toggles `wf-recorder` in the background, `SUPER + CTRL + R` records just a dragged region, and both capture what you're hearing along with the picture. Timestamped mp4s land in `~/Videos/Recordings`, and a red dot with a running timer sits in the bar while it records — click it to stop.
 *   **Nix Housekeeping:** the store is garbage-collected weekly, deleting system generations older than 7 days, so rollbacks reach back about a week. Identical store files are deduplicated automatically. The boot menu keeps the 15 most recent generations, so the 1GB ESP doesn't fill with kernels.
 *   **Archives:** `xarchiver` (Thunar's archive-plugin backend) plus `_7zz`/`unrar`/`zip`/`unzip` handle zip/7z/rar/tar/gzip out of the box. `_7zz` is the official 7-Zip CLI rather than the abandoned `p7zip` fork, and `xarchiver` is overridden to use it as its 7z backend too — see `docs/gotchas.md`.
+*   **Notes:** `obsidian` for Markdown notes (its vault is yours to place; nothing here points at one).
 *   **Password Manager:** `keepassxc` is the default handler for `.kdbx` files. Passwords copied from it are kept out of `SUPER + V` clipboard history.
 *   **VPN:** Proton VPN on every host — `protonvpn-app` for the desktop client, `protonvpn` for the CLI. DNS goes through `systemd-resolved` with LLMNR and multicast DNS switched off (see `docs/security.md`).
 *   **File Sync:** `syncthing` runs as a system service (LAN/P2P sync), with `syncthingtray` in the waybar tray for status/control; `rclone` is available for cloud-storage remotes.
@@ -150,6 +151,7 @@ Neovim is configured as a full IDE using the **LazyVim** framework, featuring:
 *   **File Explorer:** `Leader + e` for an integrated file tree (`snacks.explorer`; Neo-tree is not installed).
 *   **Language Servers:** All LSPs, formatters, and linters (Rust, Zig, Python, Nix, Lua, etc.) are installed declaratively via Nix in `home.nix` and picked up straight off `PATH`. Mason is deliberately disabled, so editor tooling stays reproducible with `nixos-rebuild` instead of drifting from whatever Mason downloaded at runtime. To add language support, add the package in `home.nix`. The plugins themselves are *not* Nix-managed: first launch clones lazy.nvim and every plugin pinned in `lazy-lock.json` from GitHub, and nvim-treesitter downloads and compiles its parsers. `:Lazy update` writes the new pins straight into this repo's `lazy-lock.json`, so updates show up in `git status` to commit or revert.
 *   **Language extras:** LazyVim's `rust`, `zig`, `python` (with `basedpyright` as the LSP), `clangd`, `nix`, `json`, `toml`, `yaml` and `markdown` extras are enabled in `lua/config/lazy.lua`, which is what decides which LSPs and formatters `home.nix` has to provide. `vim-be-good` is there too, on the `:VimBeGood` command.
+*   **Scheme (SICP):** open a `.scm` file and Conjure starts an MIT Scheme REPL inside Neovim — `<localleader>ee` evaluates the form under the cursor, `er` the outermost one, `ef` the file, and `ls` opens the result log. Parens are coloured by nesting depth (`rainbow-delimiters`) and edited structurally with `nvim-paredit` (slurp/barf, drag, wrap). **Completion is deliberately off in Scheme buffers** — no popup while you type. `:ConjureSchool` is a guided tour of the rest.
 *   **Treesitter:** Automated syntax highlighting and structural editing.
 *   **Start Screen:** a block-letter NIXOS header in the desktop's blue→green gradient.
 *   **Colorscheme:** tokyonight's Night variant (LazyVim defaults to Moon), with a transparent background so Ghostty's blur shows through.
