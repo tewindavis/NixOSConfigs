@@ -81,6 +81,15 @@ window#waybar {
     color: #f7768e; /* Red - lock/DPMS suppressed, matches critical notifications */
 }
 
+/* Only rendered while recording, so it should read as "live" */
+#custom-recording {
+    color: #f7768e; /* Red, matches the privacy indicator */
+    padding: 0 10px;
+    margin: 4px 4px;
+    border-radius: 8px;
+    background: rgba(26, 27, 38, 0.9);
+}
+
 #custom-perf {
     color: #bb9af7; /* Purple - effects on */
 }

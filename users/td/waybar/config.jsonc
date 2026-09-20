@@ -19,7 +19,7 @@
         "output": "eDP-1",
         "modules-left": ["hyprland/workspaces", "hyprland/window"],
         "modules-center": ["clock", "custom/weather"],
-        "modules-right": ["mpris", "custom/cava", "privacy", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "custom/perf", "custom/hyprsunset", "custom/notification", "tray", "custom/power"]
+        "modules-right": ["mpris", "custom/cava", "custom/recording", "privacy", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "custom/perf", "custom/hyprsunset", "custom/notification", "tray", "custom/power"]
     },
 
     // Portrait Dell: only 1440 logical px wide, so just workspaces and the clock.
@@ -52,6 +52,6 @@
         "output": ["!eDP-1", "!Dell Inc. DELL S2725QC 83VD464", "*"],
         "modules-left": ["hyprland/workspaces", "hyprland/window"],
         "modules-center": ["clock", "custom/weather"],
-        "modules-right": ["mpris", "custom/cava", "privacy", "cpu", "memory", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "custom/perf", "custom/hyprsunset", "custom/notification", "tray", "custom/power"]
+        "modules-right": ["mpris", "custom/cava", "custom/recording", "privacy", "cpu", "memory", "custom/power-profile", "battery", "bluetooth", "network", "pulseaudio", "idle_inhibitor", "custom/perf", "custom/hyprsunset", "custom/notification", "tray", "custom/power"]
     }
 ]

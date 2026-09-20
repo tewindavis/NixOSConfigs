@@ -297,6 +297,8 @@ hl.bind("Print", hl.dsp.exec_cmd("grimblast --notify copysave output"))
 hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("ocr-region"))
 hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind(mainMod .. " + ALT + R", hl.dsp.exec_cmd("toggle-recording"))
+-- Same recorder, but for a dragged region; either bind stops a running one.
+hl.bind(mainMod .. " + CTRL + R", hl.dsp.exec_cmd("toggle-recording region"))
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("sh -c 'umask 077; cliphist list | wofi --dmenu | cliphist decode | wl-copy'"))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("wlogout"))
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("toggle-scratchpad"))

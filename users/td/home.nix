@@ -1073,25 +1073,69 @@ let
   # call sends SIGINT (wf-recorder's clean-stop signal, finalizes the mp4)
   # and clears the PID file. notify-send gives a themed start/stop toast
   # through whatever notification daemon is running (swaync here).
+  # Subcommands: no argument toggles whole-output recording, `region` starts
+  # one for a dragged selection (and toggles off like the plain form), and
+  # `status` renders the waybar module, which is empty except while recording.
   toggle-recording = pkgs.writeShellScriptBin "toggle-recording" ''
     RUNTIME="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
     PIDFILE="$RUNTIME/wf-recorder.pid"
+    STARTFILE="$RUNTIME/wf-recorder.start"
     OUT_DIR="$HOME/Videos/Recordings"
-    mkdir -p "$OUT_DIR"
 
     # Only signal the PID if it's still wf-recorder: a stale file (e.g. the
     # recorder crashed) could otherwise name some unrelated process.
-    PID=$(cat "$PIDFILE" 2>/dev/null)
-    if [ -n "$PID" ] && ${pkgs.gnugrep}/bin/grep -qa wf-recorder "/proc/$PID/cmdline" 2>/dev/null; then
-      kill -INT "$PID"
-      rm -f "$PIDFILE"
-      ${pkgs.libnotify}/bin/notify-send "Screen Recording" "Stopped"
-    else
-      FILE="$OUT_DIR/recording-$(date +%Y%m%d-%H%M%S).mp4"
-      ${pkgs.wf-recorder}/bin/wf-recorder -f "$FILE" >"$RUNTIME/wf-recorder.log" 2>&1 &
-      echo $! > "$PIDFILE"
-      ${pkgs.libnotify}/bin/notify-send "Screen Recording" "Started: $FILE"
+    running() {
+      local pid
+      pid=$(cat "$PIDFILE" 2>/dev/null) || return 1
+      ${pkgs.gnugrep}/bin/grep -qa wf-recorder "/proc/$pid/cmdline" 2>/dev/null && echo "$pid"
+    }
+
+    if [ "''${1:-}" = status ]; then
+      if running >/dev/null; then
+        started=$(cat "$STARTFILE" 2>/dev/null || echo 0)
+        elapsed=$(( $(date +%s) - started ))
+        [ "$started" = 0 ] && elapsed=0
+        ${pkgs.jq}/bin/jq -nc --arg t "$(printf '%d:%02d' $((elapsed / 60)) $((elapsed % 60)))" \
+          '{text: "", class: "recording", tooltip: "Recording \($t) (click to stop)"}'
+      else
+        # Empty text hides a custom module, so the bar shows nothing when idle.
+        ${pkgs.jq}/bin/jq -nc '{text: ""}'
+      fi
+      exit 0
     fi
+
+    if PID=$(running); then
+      kill -INT "$PID" # wf-recorder's clean stop: finalizes the mp4
+      rm -f "$PIDFILE" "$STARTFILE"
+      ${pkgs.libnotify}/bin/notify-send "Screen Recording" "Stopped"
+      exit 0
+    fi
+
+    mkdir -p "$OUT_DIR"
+    args=()
+    if [ "''${1:-}" = region ]; then
+      # slurp writes nothing and fails if the selection is cancelled.
+      geom=$(${pkgs.slurp}/bin/slurp 2>/dev/null) || exit 0
+      [ -n "$geom" ] || exit 0
+      args+=(-g "$geom")
+    fi
+
+    # Record what's playing, by capturing the default sink's monitor source.
+    # The default sink is whatever pw-metadata says it is right now, so this
+    # follows a switch to the dock or headphones instead of pinning a device;
+    # if it can't be resolved, recording still starts, just silent.
+    sink=$(${pkgs.pipewire}/bin/pw-metadata -n default 2>/dev/null |
+      ${pkgs.gnugrep}/bin/grep -o "default.audio.sink' value:'[^']*'" |
+      ${pkgs.gnused}/bin/sed "s/.*value:'//; s/'$//" |
+      ${pkgs.jq}/bin/jq -r '.name // empty' 2>/dev/null)
+    [ -n "$sink" ] && args+=("--audio=$sink.monitor")
+
+    FILE="$OUT_DIR/recording-$(date +%Y%m%d-%H%M%S).mp4"
+    ${pkgs.wf-recorder}/bin/wf-recorder "''${args[@]}" -f "$FILE" \
+      >"$RUNTIME/wf-recorder.log" 2>&1 &
+    echo $! > "$PIDFILE"
+    date +%s > "$STARTFILE"
+    ${pkgs.libnotify}/bin/notify-send "Screen Recording" "Started: $FILE"
   '';
 in
 {

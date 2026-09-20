@@ -116,6 +116,16 @@
         "tooltip": true
     },
 
+    // Only visible while a recording is running: `toggle-recording status`
+    // prints empty text otherwise, which hides a custom module.
+    "custom/recording": {
+        "exec": "toggle-recording status",
+        "on-click": "toggle-recording",
+        "return-type": "json",
+        "interval": 2,
+        "tooltip": true
+    },
+
     // One-click "stop spending resources on looking good": see perf-mode in
     // home.nix. Polled as well as refreshed on click, since SUPER+SHIFT+F
     // and power-watch flip the same state behind the bar's back.

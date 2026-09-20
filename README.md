@@ -101,7 +101,8 @@ System controls are bound to the **`SUPER`** (Command) key, apart from `Print`, 
 | `SUPER + SHIFT + S` | Screenshot Region → opens `swappy` to annotate (its toolbar does the copy/save) |
 | `SUPER + SHIFT + T` | OCR Region → copies the text in the selection to the clipboard |
 | `Print` | Screenshot Full Output (instant Copy + Save) |
-| `SUPER + ALT + R` | Toggle Screen Recording (mp4, `~/Videos/Recordings`) |
+| `SUPER + ALT + R` | Toggle Screen Recording (mp4 + system audio, `~/Videos/Recordings`) |
+| `SUPER + CTRL + R` | Record a dragged Region (same toggle to stop) |
 | `SUPER + C` | Pick Color Under Cursor (`hyprpicker`, copies to clipboard) |
 | `SUPER + V` | Clipboard History |
 | `SUPER + Period` | Emoji Picker (types it and copies it) |
@@ -127,7 +128,7 @@ The environment is "ready-to-code" immediately upon login, featuring a modern Zs
 *   **yazi:** a terminal file manager with real image, PDF and video previews in Ghostty, Tokyo Night themed. `y` opens it and leaves the shell in whatever folder you quit in.
 *   **Media & Printing:** `mpv` handles video/audio opened from Thunar; CUPS + Avahi provide zero-config discovery and printing to network/AirPrint printers, managed via `system-config-printer` (discovery is off on `framework`, which opens no inbound ports; add printers there by IP).
 *   **Screen Sharing:** `xdg-desktop-portal-hyprland` is wired in alongside the GTK portal, so screen/window capture works in Brave and any other portal-aware app.
-*   **Screen Recording:** `SUPER + ALT + R` toggles `wf-recorder` in the background, saving timestamped mp4s to `~/Videos/Recordings` with a start/stop notification.
+*   **Screen Recording:** `SUPER + ALT + R` toggles `wf-recorder` in the background, `SUPER + CTRL + R` records just a dragged region, and both capture what you're hearing along with the picture. Timestamped mp4s land in `~/Videos/Recordings`, and a red dot with a running timer sits in the bar while it records — click it to stop.
 *   **Nix Housekeeping:** the store is garbage-collected weekly, deleting system generations older than 7 days, so rollbacks reach back about a week. Identical store files are deduplicated automatically. The boot menu keeps the 15 most recent generations, so the 1GB ESP doesn't fill with kernels.
 *   **Archives:** `xarchiver` (Thunar's archive-plugin backend) plus `_7zz`/`unrar`/`zip`/`unzip` handle zip/7z/rar/tar/gzip out of the box. `_7zz` is the official 7-Zip CLI rather than the abandoned `p7zip` fork, and `xarchiver` is overridden to use it as its 7z backend too — see `docs/gotchas.md`.
 *   **Password Manager:** `keepassxc` is the default handler for `.kdbx` files. Passwords copied from it are kept out of `SUPER + V` clipboard history.

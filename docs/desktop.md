@@ -56,7 +56,8 @@ binds change. **`hyprland.lua` is the source of truth**: regenerate from
 | `SUPER+V` | Clipboard history (`cliphist` → wofi) |
 | `SUPER+period` | `wofi-emoji`: types the pick into the focused window (`wtype`) and copies it |
 | `SUPER+N` | Toggle the swaync notification center (`swaync-client -t -sw`) |
-| `SUPER+ALT+R` | Toggle screen recording |
+| `SUPER+ALT+R` | Toggle screen recording (whole output, with system audio) |
+| `SUPER+CTRL+R` | Record a dragged region (`toggle-recording region`); either bind stops it |
 | `SUPER+LMB` / `SUPER+RMB` | Drag to move / resize |
 | Volume/brightness/mute keys | `swayosd-client` (shows OSD + applies change; `locked` so they work on the lock screen) |
 | Play/Pause, Next, Previous keys | `playerctl play-pause` / `next` / `previous` on the most recently active player; also `locked` |
@@ -90,6 +91,7 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `pulseaudio` | `pavucontrol` |
 | `custom/power-profile` | Cycle power profile |
 | `custom/hyprsunset` | Toggle blue-light filter |
+| `custom/recording` | Stop the running recording (only visible while one runs) |
 | `custom/perf` | Toggle performance mode (`perf-mode toggle`); dim wand icon means the effects are currently off |
 | `custom/power` | `wlogout` |
 | `custom/notification` | Click: toggle the swaync notification center. Right-click: toggle do not disturb (`swaync-client -d`). State comes from `swaync-client -swb`; its `alt` value picks the icon and is the CSS class |
@@ -119,7 +121,7 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `power-watch` | autostart | Loop, every 10s: entering the power-saver profile runs `perf-mode on`, leaving it `perf-mode off` (changes only, so a manual toggle holds until the next change); keeps video wallpapers paused whenever they shouldn't play, re-applied each tick because mpvpaper's auto-pause can resume one when a fullscreen window closes; warns on battery — normal notification at 20%, critical at 10%, once each per discharge, rearmed when the charger goes back in (hosts with no `/sys/class/power_supply/BAT*` skip this) — and every 60th tick (10 minutes) warns per filesystem on disk use, normal at 90% and critical at 95%, rearmed when it drops back under 90%. `df -l` so a hung network mount can't stall the loop. |
 | `media-inhibit` | autostart | Every 5s, from one `pw-dump`: a running `Stream/Output/Audio` node (notification blips excluded by `application.name`) or a running `Stream/Input/Video` node (a screencast — the same test waybar's `privacy` module makes) holds a logind idle inhibitor, so hypridle's dim, lock and 20-minute suspend all wait. A screencast additionally adds a swaync inhibitor, keeping notification popups off the shared screen without touching your own do-not-disturb setting (it's re-asserted every tick, which is free because swaync keys inhibitors by app id, and restores it if swaync restarted mid-share). Both inhibitors outlive the watcher, so the script clears whatever the last run left at startup and sleeps in the background so its TERM trap runs immediately. |
 | `ocr-region` | `SUPER+SHIFT+T` | `grimblast --freeze save area -` piped through `tesseract -l eng` into `wl-copy`; `--freeze` so a moving frame or an open menu can be selected. Notifies with the character count and a 120-char preview, or "No text found". The preview escapes Pango markup (OCR output is untrusted text, and swaync renders bodies as markup); the clipboard gets it verbatim. `umask 077` like the other clipboard callers. |
-| `toggle-recording` | `SUPER+ALT+R` | Starts/stops `wf-recorder` in the background, PID tracked in `$XDG_RUNTIME_DIR` (checked to still be `wf-recorder` before it's signalled), saves timestamped mp4 to `~/Videos/Recordings`, `notify-send` toast on start/stop. |
+| `toggle-recording` | `SUPER+ALT+R`, `SUPER+CTRL+R`, `custom/recording` | No argument records the whole output, `region` records a `slurp` selection (a cancelled selection exits without recording), and either stops a running one. PID tracked in `$XDG_RUNTIME_DIR` (checked to still be `wf-recorder` before it's signalled), timestamped mp4 into `~/Videos/Recordings`, `notify-send` on start/stop. Audio comes from the default sink's `.monitor`, resolved per recording from `pw-metadata -n default` so it follows a switch to the dock or headphones; if it can't be resolved the recording starts silent rather than failing. `status` renders the bar module, with the elapsed time in the tooltip, and prints empty text when idle, which is what hides the module. |
 
 ## hyprsunset day/night schedule
 
