@@ -848,6 +848,50 @@ let
   # the sink up. Volume is a stream gain on top of the sink volume, so this
   # is quiet at any sink setting; raise it here rather than swapping files.
   notifySoundVolume = "0.10";
+  # Called by the zsh hooks below when a command took a while: $1 elapsed
+  # seconds, $2 its exit status, $3 the command line.
+  #
+  # Silent if the terminal is focused — you don't need telling about a build
+  # you're watching. "Focused" means the active window's PID is this shell's
+  # own or one of its ancestors. Ghostty runs every window in one process (the
+  # same reason window swallowing catches the most recently focused window,
+  # see hyprland.lua), so any focused Ghostty window counts as this one and
+  # suppresses the notification; other terminals are identified exactly.
+  notify-long-command = pkgs.writeShellScript "notify-long-command" ''
+    elapsed="$1"
+    status="$2"
+    cmd="$3"
+
+    active=$(${pkgs.hyprland}/bin/hyprctl activewindow -j 2>/dev/null |
+      ${pkgs.jq}/bin/jq -r '.pid // empty')
+    if [ -n "$active" ]; then
+      p=$PPID
+      while [ "$p" -gt 1 ]; do
+        [ "$p" = "$active" ] && exit 0
+        p=$(${pkgs.procps}/bin/ps -o ppid= -p "$p" 2>/dev/null | tr -d ' ')
+        [ -n "$p" ] || break
+      done
+    fi
+
+    if [ "$elapsed" -ge 3600 ]; then
+      pretty=$(printf '%dh%02dm' $((elapsed / 3600)) $(((elapsed % 3600) / 60)))
+    elif [ "$elapsed" -ge 60 ]; then
+      pretty=$(printf '%dm%02ds' $((elapsed / 60)) $((elapsed % 60)))
+    else
+      pretty="''${elapsed}s"
+    fi
+
+    if [ "$status" = 0 ]; then
+      title="Finished in $pretty"
+    else
+      title="Failed ($status) after $pretty"
+    fi
+    # The command line is rendered as Pango markup by swaync, so escape it.
+    body=$(printf '%s' "$cmd" | ${pkgs.coreutils}/bin/head -c 200 |
+      ${pkgs.gnused}/bin/sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+    ${pkgs.libnotify}/bin/notify-send -u low -a shell "$title" "$body"
+  '';
+
   notify-sound = pkgs.writeShellScript "notify-sound" ''
     sounds=${pkgs.kdePackages.ocean-sound-theme}/share/sounds/ocean/stereo
     case "$1" in
@@ -2061,6 +2105,30 @@ in
       # one wins depends on the order Home Manager emits them. Bind it here,
       # last, so it's atuin either way. fzf keeps CTRL+T and ALT+C.
       bindkey '^R' atuin-search
+
+      # Notify when a slow command finishes in a terminal you've since left
+      # (notify-long-command above decides about focus). 30s is above the
+      # noise floor of everyday commands and below a nix build.
+      zmodload zsh/datetime
+      typeset -g _long_cmd_start=0 _long_cmd_line=""
+      _long_cmd_preexec() {
+        _long_cmd_start=$EPOCHSECONDS
+        _long_cmd_line=$1
+      }
+      _long_cmd_precmd() {
+        local st=$?
+        if (( _long_cmd_start > 0 )); then
+          local elapsed=$(( EPOCHSECONDS - _long_cmd_start ))
+          if (( elapsed >= 30 )); then
+            ${notify-long-command} "$elapsed" "$st" "$_long_cmd_line" &!
+          fi
+        fi
+        _long_cmd_start=0
+      }
+      autoload -Uz add-zsh-hook
+      add-zsh-hook preexec _long_cmd_preexec
+      add-zsh-hook precmd _long_cmd_precmd
+
       if [[ $TERM != "dumb" ]]; then
         fastfetch
       fi
