@@ -495,6 +495,55 @@ let
   # daemon (see modules/hardware/framework.nix); on the other two hosts
   # powerprofilesctl errors and this reports "unavailable", same graceful-
   # degradation pattern as waybar's built-in bluetooth module on utm-vm.
+  # CPU temperature for waybar. hwmon numbers are assigned in probe order and
+  # move between boots, so the sensor is found by name rather than by a
+  # /sys/class/hwmon/hwmonN path: k10temp on both AMD hosts (its temp1_input
+  # is Tctl), coretemp on Intel, then the ACPI zone as a last resort. A host
+  # with none of them (the VM) prints empty text, which hides the module —
+  # same graceful degradation as waybar-power-profile below.
+  waybar-temp = pkgs.writeShellScriptBin "waybar-temp" ''
+    read_temp() {
+      local h name
+      for want in k10temp coretemp zenpower; do
+        for h in /sys/class/hwmon/hwmon*; do
+          name=$(cat "$h/name" 2>/dev/null) || continue
+          if [ "$name" = "$want" ] && [ -r "$h/temp1_input" ]; then
+            echo "$(($(cat "$h/temp1_input") / 1000)) $name"
+            return 0
+          fi
+        done
+      done
+      if [ -r /sys/class/thermal/thermal_zone0/temp ]; then
+        echo "$(($(cat /sys/class/thermal/thermal_zone0/temp) / 1000)) thermal_zone0"
+        return 0
+      fi
+      return 1
+    }
+
+    # Tested for emptiness rather than by `read`'s exit status: reading an
+    # empty here-string still succeeds (it's one empty line), so a host with
+    # no sensor would otherwise fall through to "°C" and integer-compare
+    # errors instead of hiding the module.
+    found=$(read_temp) || found=""
+    if [ -z "$found" ]; then
+      ${pkgs.jq}/bin/jq -nc '{text: ""}'
+      exit 0
+    fi
+    read -r temp sensor <<< "$found"
+    # AMD mobile parts sit in the 70s under any real load, so "warm" starts
+    # well above that; hot is close to the 95C throttle point.
+    if [ "$temp" -ge 95 ]; then
+      class=hot
+    elif [ "$temp" -ge 85 ]; then
+      class=warm
+    else
+      class=normal
+    fi
+    ${pkgs.jq}/bin/jq -nc --arg text "$(printf '  %s°C' "$temp")" \
+      --arg class "$class" --arg tip "CPU temperature: $temp°C ($sensor)" \
+      '{text: $text, class: $class, tooltip: $tip}'
+  '';
+
   waybar-power-profile = pkgs.writeShellScriptBin "waybar-power-profile" ''
     PPCTL="${pkgs.power-profiles-daemon}/bin/powerprofilesctl"
 
@@ -1152,6 +1201,7 @@ in
     toggle-scratchpad
     toggle-recording
     waybar-weather
+    waybar-temp
     waybar-power-profile
     waybar-hyprsunset
     waybar-cava

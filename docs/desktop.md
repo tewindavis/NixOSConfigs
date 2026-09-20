@@ -92,6 +92,7 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `custom/power-profile` | Cycle power profile |
 | `custom/hyprsunset` | Toggle blue-light filter |
 | `custom/recording` | Stop the running recording (only visible while one runs) |
+| `custom/temp` | No click action; CPU temperature, orange at 85°C and red at 95°C |
 | `custom/perf` | Toggle performance mode (`perf-mode toggle`); dim wand icon means the effects are currently off |
 | `custom/power` | `wlogout` |
 | `custom/notification` | Click: toggle the swaync notification center. Right-click: toggle do not disturb (`swaync-client -d`). State comes from `swaync-client -swb`; its `alt` value picks the icon and is the CSS class |
@@ -109,6 +110,7 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `toggle-blackout` | `SUPER+SHIFT+W` | Solid-black background toggle for glare relief: `wallpaper-video stop-all keep` (videos sit above awww, so they must go) then `awww clear`; off again runs `awww restore` and `wallpaper-video resume-saved`. State is a sentinel file in `$XDG_RUNTIME_DIR`. |
 | `toggle-scratchpad` | `SUPER+S` | Dropdown terminal. First call spawns a ghostty tagged `--class=com.td.scratchpad` into the `special:scratchpad` workspace (matched by the `scratchpad-term` window rule in `hyprland.lua`); later calls just toggle visibility. |
 | `waybar-weather` | waybar module | wttr.in one-liner as JSON for waybar's `custom` module type; falls back to `"N/A"` on any fetch failure. |
+| `waybar-temp` | `custom/temp` (10s) | CPU temperature, found by sensor *name* (`k10temp`, then `coretemp`, `zenpower`, then `thermal_zone0`) because hwmon numbers are assigned in probe order and move between boots. Classes `warm` at 85°C and `hot` at 95°C, chosen above the 70s these AMD parts idle-to-load at. A host with no sensor prints empty text, which hides the module. |
 | `waybar-power-profile` | waybar module (click = cycle) | Reads/cycles `power-profiles-daemon`'s profile. Only meaningful on `framework` (see `docs/hosts.md`) — reports "unavailable" elsewhere. |
 | `waybar-hyprsunset` | waybar module (click = toggle), `SUPER+R`/`SUPER+SHIFT+R` | Blue-light filter widget. Per `docs/gotchas.md`, this is the *only* correct way to drive hyprsunset once the daemon is already running. |
 | `waybar-cava` | waybar module (click = toggle) | Audio visualizer: runs the `cava` CLI in raw mode and maps each frame to block characters. Quiet frames show flat bars; it hides after `waybarCavaHideAfter` (10) seconds of them, so dialogue gaps don't make it flicker. It sits at the left end of `modules-right` rather than in the center group, so appearing and disappearing doesn't shift the clock. Off means cava isn't running and a dim note icon remains. Used instead of waybar's built-in `cava` module, whose only click action freezes the bars. Toggling signals the runners listed in `$XDG_RUNTIME_DIR/waybar-cava/`. `toggle`/`on`/`off`/`status`: the forced forms and the query exist for `perf-mode`, which has to set a state rather than flip one. |

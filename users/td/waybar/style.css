@@ -81,6 +81,22 @@ window#waybar {
     color: #f7768e; /* Red - lock/DPMS suppressed, matches critical notifications */
 }
 
+#custom-temp {
+    color: #c0caf5;
+    padding: 0 10px;
+    margin: 4px 4px;
+    border-radius: 8px;
+    background: rgba(26, 27, 38, 0.9);
+}
+
+#custom-temp.warm {
+    color: #ff9e64; /* Orange - running hot, matches the clock/weather accent */
+}
+
+#custom-temp.hot {
+    color: #f7768e; /* Red - near the throttle point */
+}
+
 /* Only rendered while recording, so it should read as "live" */
 #custom-recording {
     color: #f7768e; /* Red, matches the privacy indicator */

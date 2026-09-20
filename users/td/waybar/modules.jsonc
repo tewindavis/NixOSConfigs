@@ -116,6 +116,15 @@
         "tooltip": true
     },
 
+    // Finds the sensor by name (hwmon numbers move between boots); empty
+    // text, which hides the module, on a host with no CPU sensor.
+    "custom/temp": {
+        "exec": "waybar-temp",
+        "return-type": "json",
+        "interval": 10,
+        "tooltip": true
+    },
+
     // Only visible while a recording is running: `toggle-recording status`
     // prints empty text otherwise, which hides a custom module.
     "custom/recording": {
