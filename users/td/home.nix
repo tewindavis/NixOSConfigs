@@ -506,6 +506,31 @@ let
       echo '{"text": " N/A", "tooltip": "Weather unavailable"}'
       exit 0
     fi
+
+    # wttr.in's %c is an emoji, and several of them carry U+FE0F (the emoji
+    # variation selector). JetBrainsMono Nerd Font covers none of those
+    # emoji, so the icon came from a fallback font while the selector was
+    # drawn by Unifont as a little box with its hex digits in it — the
+    # "weird glyph" next to the temperature. Mapping to the Nerd Font
+    # weather range instead drops the selector entirely and matches the rest
+    # of the bar. See docs/gotchas.md.
+    # `read` splits on whitespace runs, so the two spaces wttr.in puts between
+    # icon and temperature don't become three once the icon is replaced.
+    read -r icon_raw temp <<< "$WEATHER"
+    icon_raw=''${icon_raw//$'\ufe0f'/}
+    icon_raw=''${icon_raw//$'\ufe0e'/}
+    case "$icon_raw" in
+      $'\u2600') icon=$'\ue30d' ;;                  # sunny
+      $'\u26c5') icon=$'\ue302' ;;                  # partly cloudy
+      $'\u2601') icon=$'\ue312' ;;                  # cloudy
+      $'\U0001f32b') icon=$'\ue313' ;;              # fog
+      $'\U0001f327') icon=$'\ue318' ;;              # rain
+      $'\U0001f326') icon=$'\ue319' ;;              # showers
+      $'\U0001f328' | $'\u2744') icon=$'\ue31a' ;; # snow
+      $'\U0001f329' | $'\u26c8') icon=$'\ue31d' ;; # thunder
+      *) icon=$'\ue374' ;;                          # unknown / not available
+    esac
+    WEATHER="$icon  $temp"
     TOOLTIP=$(${pkgs.curl}/bin/curl -fs --max-time 5 'https://wttr.in/?format=%l:+%C+%t+(feels+like+%f),+humidity+%h,+wind+%w' 2>/dev/null)
     TOOLTIP=''${TOOLTIP:-$WEATHER}
     ${pkgs.jq}/bin/jq -nc --arg text "$WEATHER" --arg tooltip "$TOOLTIP" '{text: $text, tooltip: $tooltip}'

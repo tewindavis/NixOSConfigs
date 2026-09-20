@@ -104,6 +104,16 @@ these from scratch.
   the scripts again. `notify-sound` checks DND itself for normal urgency
   and always exits 0 so a missing audio device can't loop.
 
+- **wttr.in's weather emoji carry a variation selector.** `%c` returns
+  things like `☀️` = `U+2600 U+FE0F`. JetBrainsMono Nerd Font covers none of
+  those emoji, so the symbol came from a fallback font while `U+FE0F` was
+  drawn by Unifont as a small box containing its hex digits — a stray glyph
+  next to the temperature. `waybar-weather` maps each symbol onto the Nerd
+  Font weather range instead, which drops the selector and matches the rest
+  of the bar. Check coverage with
+  `fc-list ':charset=<hex>' family | grep -i jetbrains`, and remember
+  `fc-match` answers with a default font even when nothing covers the
+  codepoint — `fc-list` is the one that tells the truth.
 - **Hyprland Lua event payloads are userdata, not tables.** A
   `monitor.added` handler guarded with `type(monitor) == "table"` silently
   never matches, and `tostring(monitor)` gives `HL.Monitor(1:HEADLESS-1)`,
