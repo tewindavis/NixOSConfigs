@@ -386,6 +386,33 @@ let
       fi
     }
 
+    # Disk warnings, same shape as the battery ones: 90% full notifies, 95%
+    # goes critical, each once per filesystem until it drops back under 90%.
+    # Checked every 10 minutes rather than every tick, since disks don't fill
+    # in 10 seconds. `df -l` skips network mounts, which can hang.
+    declare -A disk_warned
+    check_disk() {
+      local pct mount
+      while read -r pct mount; do
+        pct="''${pct%\%}"
+        [ -n "$mount" ] || continue
+        case "$pct" in *[!0-9]* | "") continue ;; esac
+        if [ "$pct" -ge 95 ] && [ "''${disk_warned[$mount]:-}" != critical ]; then
+          ${pkgs.libnotify}/bin/notify-send -u critical -a Disk \
+            "$mount is $pct% full" "Free some space."
+          disk_warned[$mount]=critical
+        elif [ "$pct" -ge 90 ] && [ -z "''${disk_warned[$mount]:-}" ]; then
+          ${pkgs.libnotify}/bin/notify-send -u normal -a Disk "$mount is $pct% full"
+          disk_warned[$mount]=low
+        elif [ "$pct" -lt 90 ]; then
+          unset "disk_warned[$mount]"
+        fi
+      done < <(${pkgs.coreutils}/bin/df -l --output=pcent,target \
+        -x tmpfs -x devtmpfs -x efivarfs -x overlay -x squashfs 2>/dev/null |
+        ${pkgs.coreutils}/bin/tail -n +2)
+    }
+
+    ticks=0
     last_profile=$(profile)
     [ "$last_profile" = power-saver ] && $PERF on
     last_play=$($WV should-play)
@@ -405,6 +432,8 @@ let
       fi
       last_play=$play
       check_battery
+      if [ $((ticks % 60)) -eq 0 ]; then check_disk; fi
+      ticks=$((ticks + 1))
     done
   '';
 
