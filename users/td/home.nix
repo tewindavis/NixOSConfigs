@@ -216,8 +216,29 @@ let
             >/dev/null
         }
 
+        # Applied rules do not always take: while hyprland.lua still carried an
+
+        # `output = ""` preferred/auto catch-all, it sometimes won over these and
+
+        # silently reset the desk (laptop to scale 2, Dells to 59Hz). That rule is
+
+        # gone now, but a layout that fails quietly is what wasted an evening, so
+
+        # this reads the result back instead of trusting that `hyprctl eval`
+
+        # returning "ok" means the monitor actually moved.
+
+        attempt=1
+
+        settled=0
+
+        while [ "$attempt" -le 3 ] && [ "$settled" != 1 ]; do
+
         x=0
-        declare -A PLACED
+
+        declare -A PLACED=()
+
+        declare -A EXPECT=()
         # match|mode|scale|transform|logical width once rotated
         for entry in ''${DESK[@]+"''${DESK[@]}"}; do
           IFS='|' read -r match mode scale transform width <<< "$entry"
@@ -233,6 +254,7 @@ let
           [ -n "$out" ] || continue
           apply "$out" "$mode" "''${x}x0" "$scale" "$transform"
           PLACED[$out]=1
+          EXPECT[$out]="$x|$scale|$transform"
           x=$((x + width))
         done
 
@@ -243,6 +265,23 @@ let
             "hl.monitor({ output = \"$name\", mode = \"preferred\", position = \"auto\", scale = \"auto\" })" \
             >/dev/null
         done
+
+        # Read back what actually happened, and retry if a monitor didn't move.
+        ${pkgs.coreutils}/bin/sleep 1
+        settled=1
+        for out in "''${!EXPECT[@]}"; do
+          want="''${EXPECT[$out]}"
+          got=$($HCTL monitors -j 2>/dev/null | ${pkgs.jq}/bin/jq -r --arg n "$out" \
+            '.[] | select(.name == $n) | "\(.x)|\(.scale)|\(.transform)"')
+          [ "$got" = "$want" ] || settled=0
+        done
+        attempt=$((attempt + 1))
+        done
+
+        if [ "$settled" != 1 ]; then
+          echo "monitor-layout: the layout did not take after 3 attempts" >&2
+          exit 1
+        fi
   '';
 
   # Wallpaper Setup Script

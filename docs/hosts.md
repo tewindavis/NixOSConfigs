@@ -47,13 +47,15 @@ hardware to manage.
   the `framework-laptop-kmod` EC module that `nixos-hardware` brings in.
 - `services.libinput.enable` — touchpad support; the gestures and
   tap-to-click settings themselves are in `hyprland.lua`.
-- HiDPI: `hyprland.lua` special-cases this hostname to force
-  `mode = "2256x1504@60"`, `scale = 1.175` (the exact divisor for a clean
-  1920x1280 logical resolution) on `eDP-1` only. The same branch pins the two
-  docked Dell S2725QCs by serial (`desc:`), with mode, position, scale and the
-  portrait one's `transform`, and gives any other display
-  `mode = "preferred"`, `scale = "auto"`. Every other host uses that
-  preferred/auto rule for all outputs.
+- HiDPI and the desk: the only host with a `DESK` table in `monitor-layout`
+  (`home.nix`). It sets `eDP-1` to `2256x1504@60` at `scale = 1.175` (the
+  exact divisor for a clean 1920x1280 logical resolution), then the two Dell
+  S2725QCs by EDID serial — landscape in the centre, the other rotated 270°
+  on the right. Displays not in the table get `preferred`/`auto` and are
+  appended to the right, which is what a borrowed dock or a projector gets.
+  Every other host has an empty table and auto-configures everything. See
+  `docs/desktop.md` ("Monitor layout") for why it reads the kernel's EDID
+  rather than using Hyprland's `desc:` matching.
 - A `no-probe` fwupd quirk for the dock's upstream Intel hub
   (`USB\VID_8087&PID_0B40`), linked into `/var/lib/fwupd/quirks.d` by the
   `fwupd-dock-quirk` oneshot unit. Without it `fwupd.service` cannot start while the TS4 is

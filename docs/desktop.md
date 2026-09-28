@@ -6,9 +6,9 @@ packages, swaync/hyprlock/hypridle config, theming), and
 `users/td/waybar/` (per-output bar layout in `config.jsonc`, shared module
 definitions in `modules.jsonc`, stylesheet; all linked in by `home.nix`). A
 single `hyprland.lua` source file is shared, unmodified, across all three
-hosts — `home.nix` substitutes `@HOSTNAME@` into it at build time, so
-host-specific behavior lives in `if "@HOSTNAME@" == "..."` branches inside
-that one file, not in separate per-host configs.
+hosts, unmodified — nothing is substituted into it. The one part that has
+to differ per host, the monitor layout, lives in `monitor-layout`'s `DESK`
+table in `home.nix` instead (see "Monitor layout" below).
 
 `README.md` carries the same cheat sheet for humans, and `checks.keybindings`
 (via `scripts/check-keybinds.sh`) fails `nix flake check` if README and
@@ -122,11 +122,11 @@ From `waybar/modules.jsonc`, which is the source of truth:
 | `waybar-power-profile` | waybar module (click = cycle) | Reads/cycles `power-profiles-daemon`'s profile. Only meaningful on `framework` (see `docs/hosts.md`) — reports "unavailable" elsewhere. |
 | `waybar-hyprsunset` | waybar module (click = toggle), `SUPER+R`/`SUPER+SHIFT+R` | Blue-light filter widget. Per `docs/gotchas.md`, this is the *only* correct way to drive hyprsunset once the daemon is already running. |
 | `waybar-cava` | waybar module (click = toggle) | Audio visualizer: runs the `cava` CLI in raw mode and maps each frame to block characters. Quiet frames show flat bars; it hides after `waybarCavaHideAfter` (10) seconds of them, so dialogue gaps don't make it flicker. It sits at the left end of `modules-right` rather than in the center group, so appearing and disappearing doesn't shift the clock. Off means cava isn't running and a dim note icon remains. Used instead of waybar's built-in `cava` module, whose only click action freezes the bars. Toggling signals the runners listed in `$XDG_RUNTIME_DIR/waybar-cava/`. `toggle`/`on`/`off`/`status`: the forced forms and the query exist for `perf-mode`, which has to set a state rather than flip one. |
-| `update-check` | `update-check` user timer (daily 10:00, catches up after sleep) | Two checks. Firmware: reads `fwupdmgr get-updates --json` (unprivileged — fwupd's own `fwupd-refresh.timer` pulls the metadata as root) and notifies, with no action button, since installing firmware means a reboot; `fwupdmgr` is probed at `/run/current-system/sw/bin`, so hosts without fwupd skip it rather than pulling `pkgs.fwupd` into the closure. Then inputs: runs `nix flake update --output-lock-file <temp>` so `/etc/nixos` is never touched, compares with `flake.lock`, and if any input is newer shows a notification with **Update now** / **Later**. Waits for a network (`nm-online`); a failed check is silent until the next day. |
+| `update-check` | `update-check` user timer (daily 10:00, catches up after sleep) | Two checks. Firmware: reads `fwupdmgr get-updates --json` (unprivileged — fwupd's own `fwupd-refresh.timer` pulls the metadata as root) and notifies, with no action button, since installing firmware means a reboot; `fwupdmgr` is probed at `/run/current-system/sw/bin`, so hosts without fwupd skip it rather than pulling `pkgs.fwupd` into the closure. Then inputs: runs `nix flake update --output-lock-file <temp>` so `/etc/nixos` is never touched, compares with `flake.lock`, and if any input is newer shows a notification with **Update now** / **Later**. **Update now** opens the terminal through `systemd-run --user --scope`, outside this service's own cgroup — otherwise the switch it runs restarts this unit and kills the terminal mid-update (see `docs/gotchas.md`). Waits for a network (`nm-online`); a failed check is silent until the next day. |
 | `update-apply` | "Update now" (opens in Ghostty) | Refuses if `flake.lock` has uncommitted changes. Otherwise `nix flake update`, then `nh os switch /etc/nixos -H <this host's flake attr> --ask`, which shows the package diff and asks before activating. Declining restores `flake.lock`; accepting offers to commit it. |
 | `idle-dim` | hypridle (270s idle / resume) | `idle-dim dim` saves the current backlight level in `$XDG_RUNTIME_DIR` and sets 10%; `idle-dim restore` puts it back. Replaces `brightnessctl -s`/`-r`, whose save file is a fixed `/tmp` path. |
 | `grafana-tunnel` | by hand: `grafana-tunnel <host> [local-port]` | SSH tunnel to Grafana on a monitoring host (dl-prototype, utm-nixos), where it listens only on 127.0.0.1, then opens the browser at `http://localhost:<port>`. See `modules/services/monitoring.nix`. |
-| `wallpaper-video` | `cycle-wallpaper`, `toggle-blackout`, `perf-mode`, `power-watch` | Video wallpapers: one `mpvpaper` per output (`-p -a FULL`: pauses itself under a fullscreen window; `panscan=1.0` crops to fill), each with an mpv IPC socket in `$XDG_RUNTIME_DIR/wallpaper-video/`. `start`, `stop`, `stop-all [keep]`, `resume-saved`, `sync` (pause/resume to match `should-play`: on AC and performance mode off). |
+| `wallpaper-video` | `cycle-wallpaper`, `toggle-blackout`, `perf-mode`, `power-watch` | Video wallpapers (`vainfo`, from `libva-utils`, is installed to check the VA-API decode they rely on): one `mpvpaper` per output (`-p -a FULL`: pauses itself under a fullscreen window; `panscan=1.0` crops to fill), each with an mpv IPC socket in `$XDG_RUNTIME_DIR/wallpaper-video/`. `start`, `stop`, `stop-all [keep]`, `resume-saved`, `sync` (pause/resume to match `should-play`: on AC and performance mode off). |
 | `perf-mode` | `custom/perf` waybar button, `SUPER+SHIFT+F`; `power-watch` | `on`/`off`/`toggle`/`status`/`waybar` (the last renders the bar module). Sets `animations.enabled`, `decoration.blur.enabled` and `decoration.shadow.enabled` live via `hyprctl eval`, then `wallpaper-video sync` and `waybar-cava off`. Reads the live `animations:enabled` rather than a flag, since a config reload resets it. The visualizer is only turned back on if performance mode was what stopped it, tracked by a sentinel in `$XDG_RUNTIME_DIR` so a deliberate click on `custom/cava` survives a round trip. |
 | `power-watch` | autostart | Loop, every 10s: entering the power-saver profile runs `perf-mode on`, leaving it `perf-mode off` (changes only, so a manual toggle holds until the next change); keeps video wallpapers paused whenever they shouldn't play, re-applied each tick because mpvpaper's auto-pause can resume one when a fullscreen window closes; warns on battery — normal notification at 20%, critical at 10%, once each per discharge, rearmed when the charger goes back in (hosts with no `/sys/class/power_supply/BAT*` skip this) — and every 60th tick (10 minutes) warns per filesystem on disk use, normal at 90% and critical at 95%, rearmed when it drops back under 90%. `df -l` so a hung network mount can't stall the loop. |
 | `media-inhibit` | autostart | Every 5s, from one `pw-dump`: a running `Stream/Output/Audio` node (notification blips excluded by `application.name`) or a running `Stream/Input/Video` node (a screencast — the same test waybar's `privacy` module makes) holds a logind idle inhibitor, so hypridle's dim, lock and 20-minute suspend all wait. A screencast additionally adds a swaync inhibitor, keeping notification popups off the shared screen without touching your own do-not-disturb setting (it's re-asserted every tick, which is free because swaync keys inhibitors by app id, and restores it if swaync restarted mid-share). Both inhibitors outlive the watcher, so the script clears whatever the last run left at startup and sleeps in the background so its TERM trap runs immediately. |
@@ -402,12 +402,48 @@ Set in two places, both of which matter to how apps look and behave:
 
 ## Monitor layout
 
-`hl.monitor` rules at the top of `hyprland.lua` are the only thing that sets
-monitor mode, scale, position and rotation. There is no kanshi. Rules
-that match a specific output win over the `output = ""` catch-all, and
-Hyprland re-applies them when a monitor is plugged in, so docking needs no
-separate profile switcher. On framework, the docked Dells are matched by
-serial (`desc:`); see the rules for the current layout.
+Set by the `monitor-layout` script (`home.nix`). `hyprland.lua` has **no**
+`hl.monitor` rules at all, deliberately — see below. There is no kanshi.
+
+The script reads each connected connector's EDID serial straight from
+`/sys/class/drm/card*-*/edid` and applies `hl.monitor` rules **by connector
+name**. It works that way because Hyprland's own connector → EDID
+association came back crossed after a dock replug and a reload did not
+clear it, which silently rotated the wrong physical panel; the kernel
+matched the desk in every state checked. See `docs/gotchas.md`.
+
+- The layout is the `DESK` table, generated per host in `home.nix`: one
+  entry per display as `match|mode|scale|transform|logical-width`, in
+  left-to-right order. `match` is an EDID serial, or a connector name for
+  the built-in panel, which reports no serial.
+- Each entry is placed where the previous one ended, so unplugging a
+  monitor closes the gap instead of leaving a hole in the coordinate space.
+- Anything not in the table — a borrowed dock, a projector, a hotel TV —
+  gets `preferred`/`auto` and is appended to the right of the known ones.
+- It runs from the autostart and again on every `monitor.added`, so a
+  replug corrects itself without intervention.
+- It reads the result back and retries up to three times, then exits
+  non-zero if the layout still didn't take. `hyprctl eval` returns `ok` for
+  a rule that is subsequently overridden, so "the command succeeded" says
+  nothing about where the monitor ended up.
+
+`hyprland.lua` used to carry an `output = ""` preferred/auto catch-all as a
+default. It had to go: a config *reload* re-applies rules, and reloads
+happen for reasons that aren't yours — hyprshell reloads the config while
+registering its binds — so the catch-all kept resetting the desk, putting
+the laptop panel on scale 2 and dropping the Dells from 120Hz to 59. Worse,
+while it existed it could also beat `monitor-layout`'s own rules outright.
+With no rules in the config there is nothing to re-apply, and unknown
+displays get the same preferred/auto treatment from the script instead.
+
+Only framework has a `DESK` table; the other hosts get an empty one and so
+auto-configure everything.
+
+To change the layout: `wdisplays` applies changes live and persists
+nothing, so drag and rotate there until it looks right, then write the
+result into the `DESK` table to make it survive a reload. Individual rules
+can also be trialled with
+`hyprctl eval 'hl.monitor({ ... })'`.
 
 ## Session target and autostart
 

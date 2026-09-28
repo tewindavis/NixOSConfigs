@@ -35,11 +35,13 @@ these from scratch.
   `brave-opaque` window rule).
 - **`hl.monitor({ output = "" })` matches every output, docked ones
   included.** framework's panel rule used to be that catch-all, so both 4K
-  Dells came up at 2256x1504 with 1.175 scale. Scope panel rules to `eDP-1`
-  and match externals by `desc:<make model serial>` from `hyprctl monitors`.
-  `DP-N` names follow the dock port and swap if the cables do. Rules can be
-  trialled live with `hyprctl eval 'hl.monitor({ ... })'` before editing.
-  `transform = 1` vs `3` (90° vs 270°) is easiest to settle by trying one.
+  Dells came up at 2256x1504 with 1.175 scale, so scope panel rules to a
+  specific output rather than the catch-all. `DP-N` names follow the dock
+  port and swap if the cables do, which is why this config keys on EDID
+  serials instead — though *not* through Hyprland's `desc:` matching, which
+  has its own failure mode (next entry). Rules can be trialled live with
+  `hyprctl eval 'hl.monitor({ ... })'` before editing. `transform = 1` vs
+  `3` (90° vs 270°) is easiest to settle by trying one.
 - **A Thunderbolt dock that enumerates but does nothing** (no displays, no USB):
   check `/sys/bus/thunderbolt/devices/*/authorized`. At security level `user`
   it stays `0` until bolt approves the dock, which is why framework enables
@@ -175,6 +177,15 @@ these from scratch.
   `hyprctl clients -j`. Pixels aren't portable across this setup's monitors
   (1920 logical wide laptop vs. the 1440-wide portrait Dell), so the PiP rule
   leaves the window centred rather than pinning a coordinate.
+- **A monitor rule in the config is re-applied on every reload, and can
+  beat a rule set at runtime.** An `output = ""` preferred/auto catch-all
+  in `hyprland.lua` reset the desk on every `hyprctl reload` — laptop to
+  scale 2, Dells from 120Hz to 59 — and reloads are not always yours
+  (hyprshell reloads the config while registering its binds). It also won
+  over `hl.monitor` rules applied through `hyprctl eval`, which return `ok`
+  and then quietly lose. The config now carries no monitor rules at all;
+  `monitor-layout` owns them, and reads the result back rather than
+  trusting the `ok`.
 - **Hyprland's connector → EDID association can come back crossed after a
   dock replug.** With nothing physically moved, Hyprland reported
   `DP-5 = 10VD464` while `/sys/class/drm/card1-DP-5/edid` said `83VD464`,

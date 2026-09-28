@@ -2,19 +2,18 @@
 -- .conf/hyprlang syntax as legacy and looks for hyprland.lua first.
 -- See https://wiki.hypr.land/configuring/
 
--- Monitor layout is applied by `monitor-layout` (home.nix), not from here:
--- it reads each connector's EDID serial from /sys/class/drm, because
--- Hyprland's own connector -> EDID association came back crossed after a
--- dock replug and `hyprctl reload` did not clear it (see docs/gotchas.md).
--- This rule is just the pre-script default, and what every unknown display
--- keeps: Hyprland's own guess.
-hl.monitor({
-  output = "",
-  mode = "preferred",
-  position = "auto",
-  scale = "auto",
-})
-
+-- No hl.monitor rules here on purpose. `monitor-layout` (home.nix) owns the
+-- layout: it reads each connector's EDID serial from /sys/class/drm, because
+-- Hyprland's own connector -> EDID association came back crossed after a dock
+-- replug and a reload did not clear it (see docs/gotchas.md).
+--
+-- There used to be an `output = ""` preferred/auto catch-all here as a
+-- default. It had to go: a rule is re-applied on every config *reload*, and
+-- reloads happen for reasons that aren't yours (hyprshell reloads the config
+-- while registering its binds), so it kept resetting the desk — the laptop
+-- panel to scale 2, the Dells from 120Hz to 59. With no rule, a reload has
+-- nothing to re-apply and the layout survives. monitor-layout gives unknown
+-- displays the same preferred/auto treatment explicitly, so nothing is lost.
 hl.config({
   xwayland = {
     force_zero_scaling = true,
