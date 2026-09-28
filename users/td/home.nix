@@ -148,6 +148,103 @@ let
   hyprsunsetNightStart = "20:00";
   hyprsunsetNightTemp = "2450"; # ~30% warmer/redder than the previous 3500K
 
+  # The desk, left to right, as (match|mode|scale|transform|logical width).
+  # `match` is an EDID serial, or a connector name for the built-in panel,
+  # which reports no serial. Only framework has this desk; every other host
+  # (and every unknown display) falls through to preferred/auto below.
+  deskLayout =
+    if osConfig.networking.hostName == "framework" then
+      ''
+        DESK=(
+          # Laptop panel: 2256x1504 at scale 1.175 -> 1920x1280 logical.
+          "eDP-1|2256x1504@60|1.175|0|1920"
+          # Dell S2725QC, landscape: 3840x2160 at 1.5 -> 2560x1440 logical.
+          "10VD464|3840x2160@120|1.5|0|2560"
+          # The other S2725QC, rotated 270 degrees -> 1440x2560 logical.
+          "83VD464|3840x2160@120|1.5|3|1440"
+        )
+      ''
+    else
+      ''
+        DESK=()
+      '';
+
+  # Applies the desk layout by reading each connector's EDID serial straight
+  # from the kernel, instead of trusting Hyprland's own `desc:` matching.
+  #
+  # Why: after unplugging and replugging the dock, Hyprland's connector ->
+  # EDID association came back crossed — it reported DP-5 as 10VD464 while
+  # /sys/class/drm said DP-5 was 83VD464 — so the `desc:` rules rotated the
+  # wrong physical panel, and `hyprctl reload` did not clear it. The kernel
+  # agreed with the physical desk in every state we checked, so it is the
+  # source of truth here and rules are applied by connector name.
+  #
+  # Monitors are placed left to right in DESK ORDER, each starting where the
+  # previous one ended, so an absent display closes the gap instead of
+  # leaving a hole. Anything not in the table — a foreign dock, a projector,
+  # a hotel TV — gets Hyprland's own preferred mode and is appended to the
+  # right of the known ones.
+  monitor-layout = pkgs.writeShellScriptBin "monitor-layout" ''
+        set -u
+        HCTL=${pkgs.hyprland}/bin/hyprctl
+        ${deskLayout}
+
+        # "<connector> <edid-serial>" per connected output, from the kernel.
+        mapfile -t PAIRS < <(${pkgs.python3}/bin/python3 - <<'PY'
+    import glob, os
+    for d in sorted(glob.glob('/sys/class/drm/card*-*')):
+        try:
+            if open(os.path.join(d, 'status')).read().strip() != 'connected':
+                continue
+            edid = open(os.path.join(d, 'edid'), 'rb').read()
+        except OSError:
+            continue
+        name = os.path.basename(d).split('-', 1)[1]
+        serial = '''
+        # EDID 1.x descriptor blocks; type 0xFF is the display serial string.
+        for off in (54, 72, 90, 108):
+            b = edid[off:off + 18]
+            if len(b) == 18 and b[0:3] == b'\x00\x00\x00' and b[3] == 0xFF:
+                serial = b[5:].decode('ascii', 'replace').strip().strip('\x00')
+        print(name, serial)
+    PY
+        )
+
+        apply() { # <output> <mode> <position> <scale> <transform>
+          $HCTL eval \
+            "hl.monitor({ output = \"$1\", mode = \"$2\", position = \"$3\", scale = $4, transform = $5 })" \
+            >/dev/null
+        }
+
+        x=0
+        declare -A PLACED
+        # match|mode|scale|transform|logical width once rotated
+        for entry in ''${DESK[@]+"''${DESK[@]}"}; do
+          IFS='|' read -r match mode scale transform width <<< "$entry"
+          out=""
+          for p in ''${PAIRS[@]+"''${PAIRS[@]}"}; do
+            name="''${p%% *}"
+            serial="''${p#* }"
+            if [ "$name" = "$match" ] || { [ -n "$serial" ] && [ "$serial" = "$match" ]; }; then
+              out="$name"
+              break
+            fi
+          done
+          [ -n "$out" ] || continue
+          apply "$out" "$mode" "''${x}x0" "$scale" "$transform"
+          PLACED[$out]=1
+          x=$((x + width))
+        done
+
+        for p in ''${PAIRS[@]+"''${PAIRS[@]}"}; do
+          name="''${p%% *}"
+          [ -n "''${PLACED[$name]:-}" ] && continue
+          $HCTL eval \
+            "hl.monitor({ output = \"$name\", mode = \"preferred\", position = \"auto\", scale = \"auto\" })" \
+            >/dev/null
+        done
+  '';
+
   # Wallpaper Setup Script
   setup-wallpapers = pkgs.writeShellScriptBin "setup-wallpapers" ''
     WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
@@ -1355,6 +1452,7 @@ in
     perf-mode
     power-watch
     media-inhibit
+    monitor-layout
     ocr-region
     update-check
     update-apply
@@ -1472,6 +1570,9 @@ in
     })
     pkgs.resources # GTK4/libadwaita system monitor (GUI complement to bottom/htop)
     pkgs.rclone # CLI sync/mount for cloud storage remotes
+    pkgs.wdisplays # GUI display arranger. Applies live and persists nothing,
+    # which is the point: drag/rotate to try something, then put it in
+    # monitor-layout's DESK table (home.nix) to make it stick.
     pkgs.obsidian # Markdown notes (unfree; allowUnfree is set in modules/core)
     pkgs.gnome-firmware # GUI firmware updater, complements fwupd (see framework host)
     pkgs.syncthingtray # Waybar tray icon/control for the syncthing service
@@ -1561,16 +1662,11 @@ in
 
   # Manual Hyprland Config (Bypasses buggy HM module STUB)
   # Hyprland 0.56+ treats hyprland.conf as legacy and prefers hyprland.lua.
-  # This same file is shared across all three hosts (see flake.nix's mkHost),
-  # so @HOSTNAME@ is substituted here rather than hardcoding one host's
-  # monitor mode/scale into a config that also deploys to dl-prototype/utm-nixos.
-  xdg.configFile."hypr/hyprland.lua".text =
-    builtins.replaceStrings
-      [ "@HOSTNAME@" ]
-      [
-        osConfig.networking.hostName
-      ]
-      (builtins.readFile ./hypr/hyprland.lua);
+  # The same file deploys to all three hosts unmodified: what used to be a
+  # host-specific monitor block (substituted in through an @HOSTNAME@
+  # placeholder) now lives in `monitor-layout` above, which is where the
+  # host-dependent part — the desk table — is generated instead.
+  xdg.configFile."hypr/hyprland.lua".source = ./hypr/hyprland.lua;
 
   # hyprsunset auto day/night schedule: hyprsunset is a Hyprlang tool (not
   # Lua like hyprland.lua), and reads this from its default XDG path on

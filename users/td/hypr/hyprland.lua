@@ -2,54 +2,18 @@
 -- .conf/hyprlang syntax as legacy and looks for hyprland.lua first.
 -- See https://wiki.hypr.land/configuring/
 
--- The hostname placeholder below is substituted by home.nix at build time
--- (osConfig.networking.hostName), since this same file is shared, unmodified,
--- across all three hosts. Only "framework" has its exact panel mode/scale
--- tuned below; dl-prototype and utm-nixos fall back to Hyprland's own
--- auto-detection rather than inheriting Framework's HiDPI panel mode, which
--- wouldn't exist on them.
-if "@HOSTNAME@" == "framework" then
-  -- Scoped to eDP-1: output = "" would also force the panel's mode/scale onto
-  -- anything plugged into the dock.
-  hl.monitor({
-    output = "eDP-1",
-    mode = "2256x1504@60",
-    position = "0x0",
-    scale = 1.175, -- 2256x1504 panel; 1.175 is the exact divisor Hyprland wants (-> 1920x1280 logical)
-  })
-  -- CalDigit TS4 desk setup: laptop | Dell landscape | Dell portrait. Matched
-  -- by serial (desc:), not DP-N, since the connector names depend on which
-  -- dock port each cable is in. Positions are in logical pixels: 4K / 1.5 =
-  -- 2560x1440, so the landscape Dell starts at the laptop's 1920 logical width
-  -- and the portrait one at 1920 + 2560. transform = 3 is 270°.
-  hl.monitor({
-    output = "desc:Dell Inc. DELL S2725QC 10VD464",
-    mode = "3840x2160@120",
-    position = "1920x0",
-    scale = 1.5,
-  })
-  hl.monitor({
-    output = "desc:Dell Inc. DELL S2725QC 83VD464",
-    mode = "3840x2160@120",
-    position = "4480x0",
-    scale = 1.5,
-    transform = 3,
-  })
-  -- Any other display (projector, hotel TV): Hyprland's own guess.
-  hl.monitor({
-    output = "",
-    mode = "preferred",
-    position = "auto",
-    scale = "auto",
-  })
-else
-  hl.monitor({
-    output = "",
-    mode = "preferred",
-    position = "auto",
-    scale = "auto",
-  })
-end
+-- Monitor layout is applied by `monitor-layout` (home.nix), not from here:
+-- it reads each connector's EDID serial from /sys/class/drm, because
+-- Hyprland's own connector -> EDID association came back crossed after a
+-- dock replug and `hyprctl reload` did not clear it (see docs/gotchas.md).
+-- This rule is just the pre-script default, and what every unknown display
+-- keeps: Hyprland's own guess.
+hl.monitor({
+  output = "",
+  mode = "preferred",
+  position = "auto",
+  scale = "auto",
+})
 
 hl.config({
   xwayland = {
@@ -369,6 +333,10 @@ hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true 
 -- The event payload is userdata, not a table (a `type(monitor) == "table"`
 -- guard silently never matches); its fields are read directly.
 hl.on("monitor.added", function(monitor)
+  -- Re-apply the whole layout first: a hotplug is exactly when Hyprland's
+  -- desc: matching goes stale, and monitor-layout works from the kernel's
+  -- view instead. Then give the new output its own wallpaper.
+  hl.exec_cmd("monitor-layout")
   local name = monitor and monitor.name
   if name and name ~= "" then
     hl.exec_cmd("cycle-wallpaper " .. name)
@@ -386,6 +354,8 @@ hl.on("hyprland.start", function()
   -- xdg-desktop-portal, whose Requisite=graphical-session.target meant it
   -- could never start at all (so screen sharing didn't work).
   hl.exec_cmd("systemctl --user start hyprland-session.target")
+  -- Desk layout by EDID serial, before anything else paints to a screen.
+  hl.exec_cmd("monitor-layout")
   hl.exec_cmd("spice-vdagent")
   hl.exec_cmd("nm-applet --indicator")
   hl.exec_cmd("hyprpolkitagent")

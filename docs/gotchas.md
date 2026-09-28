@@ -175,6 +175,16 @@ these from scratch.
   `hyprctl clients -j`. Pixels aren't portable across this setup's monitors
   (1920 logical wide laptop vs. the 1440-wide portrait Dell), so the PiP rule
   leaves the window centred rather than pinning a coordinate.
+- **Hyprland's connector → EDID association can come back crossed after a
+  dock replug.** With nothing physically moved, Hyprland reported
+  `DP-5 = 10VD464` while `/sys/class/drm/card1-DP-5/edid` said `83VD464`,
+  and the two stayed swapped through `hyprctl reload` — so `desc:` monitor
+  rules rotated the wrong physical panel. The kernel matched the desk in
+  every state checked, so it is the source of truth: `monitor-layout`
+  (home.nix) reads the serial out of each connector's EDID and applies rules
+  by *connector name*. Compare the two with
+  `hyprctl monitors -j | jq -r '.[] | "\(.name) \(.serial)"'` against the
+  EDID bytes at offsets 54/72/90/108 (descriptor type `0xFF` is the serial).
 - **A wedged dock hub can stop fwupd starting at all.** With the CalDigit
   TS4 attached, `fwupd.service` failed its start timeout every time —
   including when given 15 minutes, so it was wedged rather than slow. The
