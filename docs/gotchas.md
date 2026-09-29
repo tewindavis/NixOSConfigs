@@ -36,7 +36,9 @@ these from scratch.
 - **`hl.monitor({ output = "" })` matches every output, docked ones
   included.** framework's panel rule used to be that catch-all, so both 4K
   Dells came up at 2256x1504 with 1.175 scale, so scope panel rules to a
-  specific output rather than the catch-all. `DP-N` names follow the dock
+  specific output rather than the catch-all. (There are no `hl.monitor`
+  rules in the config today at all — `monitor-layout` applies them at
+  runtime — but the trap still applies to anything you add.) `DP-N` names follow the dock
   port and swap if the cables do, which is why this config keys on EDID
   serials instead — though *not* through Hyprland's `desc:` matching, which
   has its own failure mode (next entry). Rules can be trialled live with

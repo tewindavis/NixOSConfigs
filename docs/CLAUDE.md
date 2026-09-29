@@ -16,7 +16,7 @@ bend the code to match it.
 | Question | Authority |
 |---|---|
 | Which keys are bound | `users/td/hypr/hyprland.lua`, plus `users/td/hyprshell/config.json` (the four binds the hyprshell daemon registers) |
-| Monitor mode/scale/position/rotation | the `DESK` table in `users/td/home.nix` (`monitor-layout`), **not** `hyprland.lua`, which keeps only the preferred/auto catch-all |
+| Monitor mode/scale/position/rotation | the `DESK` table in `users/td/home.nix` (`monitor-layout`). `hyprland.lua` has no `hl.monitor` rules at all |
 | Which serial belongs to which connector | the kernel: `/sys/class/drm/card*-*/edid`. Hyprland's `desc:`/`serial` can be stale after a hotplug — see `docs/gotchas.md` |
 | Which packages, LSPs, scripts, dotfiles exist | `users/td/home.nix` (user); system-wide packages in `modules/core` and `modules/desktop`; the RL Python env in `modules/dev/rl-binary.nix` |
 | Which modules a host gets | `hosts/<name>/configuration.nix` |

@@ -77,8 +77,12 @@ outputs are matched:
 - **Laptop panel:** by connector name, `eDP-1`. Its description can't be
   used because the panel reports no serial, so waybar sees it as
   `"BOE 0x0BCA "` with a trailing space.
-- **Dells:** by description (`make model serial`), like the `desc:` monitor
-  rules in `hyprland.lua`, because `DP-N` names follow the dock port.
+- **Dells:** by description (`make model serial`), because `DP-N` names
+  follow the dock port. Note waybar takes that description from the
+  compositor, so it inherits the crossed-EDID problem that pushed the
+  monitor layout onto kernel data (see "Monitor layout"): after a hotplug
+  the slim bar can land on the wrong Dell until Hyprland's association
+  resyncs. waybar has no equivalent of reading `/sys` itself.
 - **The last bar:** excludes the named outputs and ends with `"*"`, so it
   covers the landscape Dell, dl-prototype, utm-vm and any unknown display.
   In waybar's `output` arrays, entries are checked in order, and a list of
@@ -478,11 +482,14 @@ Still autostarted, because nothing else would start them:
   keeps it in a known order — it reloads the Hyprland config while
   registering its binds (see `docs/gotchas.md`), better done in sequence than
   racing the target.
+- **`monitor-layout`** — first in the handler, before anything paints to a
+  screen, and again on every `monitor.added`.
 - **`hyprsunset`, `setup-wallpapers`, `cycle-wallpaper`, `power-watch`,
   `media-inhibit`**, plus `nm-applet --indicator` (network icon in the waybar
   tray), `hyprpolkitagent` (the password prompt for privileged GUI actions
   such as mounting drives in Thunar; without an agent they fail silently),
-  the clipboard watchers, and `spice-vdagent` (only does anything in the VM).
+  the clipboard watchers (`wl-paste --watch` for text and images, and
+  `wl-clip-persist`), and `spice-vdagent` (only does anything in the VM).
 
 `hyprland.lua`'s `hyprland.start` handler is the complete list of what is
 autostarted; `systemctl --user list-dependencies graphical-session.target`
