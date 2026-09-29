@@ -288,6 +288,14 @@ GTK apps' colors come from `gtk.gtk3.extraCss` / `gtk.gtk4.extraCss`
 named colors adw-gtk3 and libadwaita read, set from the palette, with
 header bars and sidebars in `#15161e` around `#1a1b26` content.
 
+The icon theme is `Papirus-Dark`, but not stock Papirus: `gtk.iconTheme`
+names it without a `package`, and the only provider on the profile is
+`catppuccin-papirus-folders`, whose `folder.svg` resolves to
+`folder-cat-mocha-blue.svg` — so folder icons are Catppuccin mocha blue,
+the same flavour and accent as the cursor. `gnome-themes-extra` is there
+for the Adwaita GTK2 theme, so legacy GTK2 apps don't fall back to the
+unthemed default.
+
 Brave's tab strip and toolbar are tinted by a managed Chromium policy,
 `BrowserThemeColor = "#1a1b26"`, written to
 `/etc/brave/policies/managed/theme.json` by `modules/desktop/default.nix`.
