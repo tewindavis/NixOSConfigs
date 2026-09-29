@@ -260,6 +260,23 @@ These have been identified but not acted on.
   equally moot against something that could just kill hypridle. Closing the
   lid still suspends and locks: an `idle` inhibitor doesn't block
   `handle-lid-switch`.
+- **Two unpatched CVEs in the current pin (audit of 2026-09-28).** Both
+  are upstream's to fix and will clear on a normal `nix flake update`; noted
+  so the exposure is understood in the meantime.
+  - `glibc` 2.42, CVE-2026-5450: heap overflow when `scanf` is called with
+    `%mc` and a width on attacker-controlled input. nixpkgs' 2.42
+    release-branch patch does not carry the fix. `%mc` is rare, so exposure
+    is a program that both uses it and parses untrusted text with it.
+  - `thrift` 0.22.0, CVE-2026-55971 / CVE-2026-58662: heap overflow and
+    out-of-bounds read in the C++ bindings, fixed in 0.24.0. It reaches
+    this system only as GRASS → GDAL → Arrow → `libparquet` → thrift, so the
+    exposure is opening an untrusted **Parquet** file in GRASS or QGIS.
+- **Two unmaintained packages installed.** `ltrace` 0.7.91 (dl-prototype's
+  binary-analysis kit) has had no upstream commit in ~6 years and no
+  nixpkgs maintainer; it parses ELF from the very binaries under analysis,
+  the same abandoned-parser-on-hostile-input shape as `lhasa`. `pkgs.lua` is
+  Lua 5.2.4, a line that ended in 2015 (`lua5_4` is current); it is only a
+  REPL here.
 - **The mic indicator can be dodged by name.** Waybar's `privacy` module
   ignores any audio-capture stream whose PipeWire `node.name` is `cava`
   (the visualizer's own capture), and any program running as `td` can pick

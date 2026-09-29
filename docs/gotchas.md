@@ -435,6 +435,25 @@ these from scratch.
   bytes itself, so the backends are what to check. Verify with:
   `strings $(readlink -f $(command -v xarchiver)) | grep -c lhasa` → expect 0.
 
+## Auditing
+
+- **`vulnix` over-reports by a factor of roughly ten; triage before acting.**
+  The 2026-09-28 scan returned 479 matches, 41 "critical", for the framework
+  closure. Real, unpatched-in-pin: two (`glibc` and `thrift`, see
+  `docs/security.md`). The rest fell into four buckets, in order of how much
+  they contributed: CPE name collisions (`zlib` CVE-2026-27820 is the Ruby
+  gem, `cargo` CVE-2026-58521 a MediaWiki extension, `snappy` CVE-2023-41330
+  the PHP library, `orc` CVE-2025-47436 Apache ORC, `bolt` a CMS);
+  build-time dependencies that aren't in the running system (`python2`,
+  `go` bootstrap, `shellcheck`, `memcached`); wildcard CPE ranges that flag a
+  version already fixed (`perl` 5.42.3 vs a fix in 5.42.3-RC1); and
+  nixpkgs-applied patches it cannot see. Triage in this order: is the package
+  in `nix-store -qR /run/current-system` at all; does NVD's affected range
+  (`services.nvd.nist.gov/rest/json/cves/2.0?cveId=`) actually include our
+  version; does `pkgs.<p>.patches` already carry the fix; and only then, what
+  input reaches it (`nix why-depends --precise`). Exit code 2 from vulnix
+  means "matches found", not an error.
+
 ## Deploying
 
 - **The `rebuild` alias breaks on `utm-vm`.** `home.nix` defines
